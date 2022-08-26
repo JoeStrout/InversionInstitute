@@ -1,0 +1,67 @@
+scale: 0.5
+top: {
+  x: 0.35; y: 4.2; z: 0
+  minRot: 0; maxRot: 1.491
+  head: {
+	x: -0.61; y: 6.53
+	minRot: -0.647; maxRot: 1.141; animPhase: 0.5
+	face: {
+		x: 0; y: 0; z: -0.09
+		eyebrow: {
+			eyebrowImg: { x: 0.643; y: 2.666; sprite: Eyebrow1 }
+		}
+		eyes: {
+			eyesImg: { x: 0.638; y: 1.954; sprite: Eyes1 }
+		}
+		mouth: {
+			mouthImg: { x: 0.659; y: 0.515; sprite: Mouth1 }
+		}
+	}
+	backHair: {
+		z: -0.01
+		backHairImg: { x: 0.178; y: 0.153; sprite: BackHairImg }
+	}
+	headImg: {
+		x: 0; y: 0; z: -0.08
+		headImg: {
+			x: 0.173; y:2.383001; z:0
+			sprite: HeadImg
+		}
+	}
+  }
+  leftShoulder: {
+  	x: 1.149; y: 5.123; z: -0.02
+  	minRot: 0; maxRot: 1.044002; animPhase: 0.5
+	leftArm: {
+		x: 1.69; y: -4.53; z:-0.03
+		minRot: -5.69101; maxRot: 0; animPhase: 0.5
+		leftArmImg: { x: -1.15; y: -1.764; sprite: LeftArmImg }
+	}
+	leftShoulderImg: { x: 0.948; y: -2.204; sprite: LeftShoulderImg }
+  }
+  rightShoulder: {
+  	x: -2.34; y: 4.820001; z: -0.06
+  	minRot: -2.106995; maxRot: 0; animPhase: 0.5
+  	rightArm: {
+  		x: -1.1; y: -4.33; z: -0.01
+  		minRot: 0; maxRot: 4.047002; animPhase: 0
+  		rightArmImg: { x: 2.255; y: -1.512; sprite: RightArmImg }
+  	}
+  	rightShoulderImg: { x: -0.415; y: -1.917; sprite: RightShoulderImg }
+  }
+  bodyImg: {
+  	x: -0.35; y: -4.2; z: -0.04
+  	topImg: {
+  		x: 0.19; y:7.44; z:0
+  		sprite: TopImg
+  	}
+  }
+}
+bottom: {
+  x: 0.33; y: 3.3; z: -0.03
+  minRot: -0.271; maxRot: 0
+  bottomImg: {
+  	x: -0.07; y:-9.3; z: 0
+  	sprite: BottomImg
+  }
+}
