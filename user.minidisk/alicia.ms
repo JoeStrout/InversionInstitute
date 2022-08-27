@@ -2,8 +2,9 @@
 // She's the main mathematician (and becomes the first computer scientist)
 // at the Inversion Institute, and the player's main interface.
 
-import "displays"	// ToDo: ensureImport
-import "animatedCharacter"
+import "miscUtil"
+ensureImport "displays"
+ensureImport "animatedCharacter"
 
 globals.Alicia = animatedCharacter.load("/usr/pics/Girl5")
 Alicia.setScale 0.3, false
