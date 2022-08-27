@@ -109,7 +109,11 @@ Transform.applyToSprite = function(sprite)
 	pw = self.world
 	sprite.x = pw.x
 	sprite.y = pw.y
-	sprite.scale = pw.scale
+	if self.hasIndex("flip") and self.flip then
+		sprite.scale = [-pw.scale, pw.scale]
+	else
+		sprite.scale = pw.scale
+	end if
 	sprite.rotation = pw.rotation
 end function
 

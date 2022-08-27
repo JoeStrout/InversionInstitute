@@ -19,4 +19,4 @@ Inversion Institute is written in (MiniScript)[https://miniscript.org].  Current
 
 <hr/>
 
-This project and its contents are all Copyright (©) 2022 Josph J. Strout.  All rights reserved.
+This project and its contents are all Copyright (©) 2022 Joseph J. Strout.  All rights reserved.

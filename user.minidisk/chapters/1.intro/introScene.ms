@@ -8,6 +8,8 @@ ensureImport "alicia"
 ensureImport "drawing"
 ensureImport "backgrounds"
 
+demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
+
 playSteps = []
 playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
@@ -52,7 +54,17 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+	Alicia.setLeftArm alicia.LeftArm.normal
 	drawing.drawSpeech "In the meantime, here's something fun to play with: Magic Ink.",
+		drawing.Speaker.Left, "Alicia"
+end function
+playSteps.push function
+	displays.vnBackground.drawImage backgrounds.lab
+	displays.vnBackground.drawImage demoTablet, 350, 200
+	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+	Alicia.setLeftArm alicia.LeftArm.showing
+	drawing.drawSpeech "You can draw lines and blobs with this ink, and then when you " +
+		"touch it, it lights up!  Or if it's already lit, it goes dark.  Kids love it!",
 		drawing.Speaker.Left, "Alicia"
 end function
 
@@ -63,8 +75,8 @@ playOneStep = function(curStep)
 	f
 end function
 
-play = function
-	curStep = 0
+play = function(startAtStep = 0)
+	curStep = startAtStep
 
 	displays.setupVN
 	Alicia.addSpritesToList displays.vnCharacters.sprites	// Alicia enters on left
@@ -89,4 +101,6 @@ play = function
 end function
 
 
-if locals == globals then play
+if locals == globals then
+	play 6
+end if

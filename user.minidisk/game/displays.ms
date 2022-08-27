@@ -16,12 +16,12 @@ setupVN = function
 	outer.vnBackground = display(7)
 	vnBackground.clear "#444444"
 	
-	display(6).mode = displayMode.sprite
-	outer.vnCharacters = display(6)
+	display(5).mode = displayMode.sprite
+	outer.vnCharacters = display(5)
 	vnCharacters.clear
 	
-	display(5).mode = displayMode.pixel
-	outer.vnSpeech = display(5)
+	display(4).mode = displayMode.pixel
+	outer.vnSpeech = display(4)
 	vnSpeech.clear color.clear
 	
 	text.clear

@@ -121,6 +121,7 @@ drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
 		if speaker == Speaker.Left then x = left
 		if speaker == Speaker.Right then x = right
 		nameBubbleImage.draw displays.vnSpeech, x - nameWidth/2-20, top-12, nameWidth+40, 50
+		globals.gfx = displays.vnSpeech
 		font.print name, x - nameWidth/2, top+16 + font.sizeOver/2, 1, "#FFFF88"
 	end if
 	
@@ -134,6 +135,7 @@ drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone
 	lbwh = drawSpeechBox(speaker, lines.len * font.lineHeight + 50, name)
 	y = lbwh[1] + 25 + font.lineHeight * lines.len + font.sizeOver
 	x = lbwh[0] + 25
+	globals.gfx = displays.vnSpeech
 	for line in lines
 		font.print line, x, y
 		y = y - font.lineHeight

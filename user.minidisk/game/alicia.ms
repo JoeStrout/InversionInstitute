@@ -52,6 +52,26 @@ Alicia.setExpression = function(eyebrows, eyes, mouth)
 	self.nonblinkingEyes = eyes
 end function
 
+RightArm = {}
+RightArm.normal = 0
+LeftArm = {}
+LeftArm.normal = 0
+LeftArm.showing = 1		// turned outward, as if showing something
+
+Alicia.setLeftArm = function(armMode)
+	arm = self.find("leftArm")
+	armImg = arm.find("leftArmImg")
+	if armMode == LeftArm.showing then
+		armImg.flip = true
+		arm.setXY 350, -310, false
+		arm.minRot = 40; arm.maxRot = 41
+	else
+		armImg.flip = false
+		arm.setXY 169, -453, false
+		arm.minRot = -5.691; arm.maxRot = 0	
+	end if
+end function
+
 blinkIdx = 0
 
 Alicia.animate = function
