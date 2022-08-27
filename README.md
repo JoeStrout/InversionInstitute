@@ -14,7 +14,7 @@ Check back frequently as the game develops!
 
 ## Toolchain
 
-Inversion Institute is written in (MiniScript)[https://miniscript.org].  Currently it runs in (Mini Micro)[https://miniscript.org/MiniMicro], but before we release to Steam, we'll probably port it over to (Soda)[https://github.com/JoeStrout/soda].
+Inversion Institute is written in [MiniScript](https://miniscript.org).  Currently it runs in [Mini Micro](https://miniscript.org/MiniMicro), but before we release to Steam, we'll probably port it over to [Soda](https://github.com/JoeStrout/soda).
 
 
 <hr/>
