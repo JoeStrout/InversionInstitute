@@ -1,5 +1,7 @@
 // Miscellaneous small helper functions that don't fit anywhere else.
 
+env.importPaths = [".", "/usr/game", "/usr/lib", "/sys/lib"]
+
 // ensureImport: check whether the given module has been imported already
 // (or is in the process of being imported).  If so, return immediately.
 // If not, then import that module into the global namespace.

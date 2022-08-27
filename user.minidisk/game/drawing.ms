@@ -1,5 +1,9 @@
 import "miscUtil"
 ensureImport "displays"
+ensureImport "bmfFonts"
+
+globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
+
 
 //----------------------------------------------------------------------
 // Image9Slice class: an image wrapper with margins that are not stretched,
@@ -99,6 +103,9 @@ Speaker.Right = 2
 speechBoxImage = Image9Slice.make(file.loadImage("/usr/pics/ui/SpeechBox.png"), 
 		120, 56, 120, 56)
 
+nameBubbleImage = Image9Slice.make(file.loadImage("/usr/pics/ui/NameBubble.png"), 
+		60, 20, 60, 20)
+
 drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
 	bottom = 50 + 30 * (speaker != Speaker.Player)
 	top = bottom + height
@@ -107,11 +114,22 @@ drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
 	left = middle - width/2
 	right = middle + width/2	
 	speechBoxImage.draw displays.vnSpeech, left, bottom, width, height
+	
+	if name then
+		nameWidth = font.width(name)
+		x = middle
+		if speaker == Speaker.Left then x = left
+		if speaker == Speaker.Right then x = right
+		nameBubbleImage.draw displays.vnSpeech, x - nameWidth/2-20, top-12, nameWidth+40, 50
+		font.print name, x - nameWidth/2, top+16 + font.sizeOver/2, 1, "#FFFF88"
+	end if
+	
 	return [left, bottom, width, height]
 end function
 
 
 drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone")
+	displays.vnSpeech.clear color.clear
 	lines = wrapLines(speech, 550)
 	lbwh = drawSpeechBox(speaker, lines.len * font.lineHeight + 50, name)
 	y = lbwh[1] + 25 + font.lineHeight * lines.len + font.sizeOver
