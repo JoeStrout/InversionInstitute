@@ -16,6 +16,7 @@ Check back frequently as the game develops!
 
 Inversion Institute is written in [MiniScript](https://miniscript.org).  Currently it runs in [Mini Micro](https://miniscript.org/MiniMicro), but before we release to Steam, we'll probably port it over to [Soda](https://github.com/JoeStrout/soda).
 
+The circuit simulation is based on the [Pixel Logic Circuit Simulator](https://github.com/JoeStrout/pixelLogic/) (which has a more generous license -- share and enjoy!).
 
 <hr/>
 
