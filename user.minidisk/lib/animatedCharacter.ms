@@ -68,9 +68,7 @@ load = function(dirPath)
 	return obj
 end function
 
-
-if locals ==  globals then
-	clear; gfx.clear color.clear
+test = function
 	display(6).mode = displayMode.sprite; display(6).clear
 	character = load("/usr/pics/Girl5")
 	character.setScale 0.3, false
@@ -78,8 +76,8 @@ if locals ==  globals then
 	character.debugDisplay
 	display(6).sprites.sort "z", false
 	
-	eyes = character.find("eyesImg")
-	eyeImages = [spriteSheets[1].Eyes1.image, spriteSheets[1].Eyes2.image, spriteSheets[1].Eyes3.image]
+	globals.eyes = character.find("eyesImg")
+	globals.eyeImages = [spriteSheets[1].Eyes1.image, spriteSheets[1].Eyes2.image, spriteSheets[1].Eyes3.image]
 	blinkIdx = 0
 	character.animate = function
 		super.animate
@@ -98,4 +96,9 @@ if locals ==  globals then
 		character.animate
 		yield
 	end while
+end function
+
+if locals ==  globals then
+	clear; gfx.clear color.clear
+	test
 end if
