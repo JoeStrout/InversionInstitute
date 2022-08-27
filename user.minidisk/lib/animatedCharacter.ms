@@ -34,6 +34,18 @@ CharPart.animate = function(updateNow = true)
 	if updateNow then self.update
 end function
 
+CharPart.addSpritesToList = function(spriteList)
+	sprites = []
+	toDo = [self]
+	while toDo
+		cp = toDo.pull
+		if cp.hasIndex("sprite") then sprites.push cp.sprite
+		if cp.children then toDo = toDo + cp.children
+	end while
+	sprites.sort "z", false
+	for s in sprites; spriteList.push s; end for
+end function
+
 makeObjFromMap = function(m, z=0)
 	noob = new CharPart
 	noob.init
