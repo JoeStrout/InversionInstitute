@@ -1,10 +1,13 @@
 // Circuit editor.  Based on /sys/demo/fatbits
 // (but heavily modified).
 
-import "listUtil"
-import "textUtil"
-import "mathUtil"
-import "qa"
+import "miscUtil"
+ensureImport "listUtil"
+ensureImport "textUtil"
+ensureImport "mathUtil"
+ensureImport "qa"
+ensureImport "displays"
+ensureImport "drawing"
 
 // Constants and global state variables
 kModeDraw = "DRAW"
@@ -34,39 +37,19 @@ picW = pic.width
 picH = pic.height
 resourceDir = "/sys/data/fatbits/"
 
+if not globals.hasIndex("context") then
+	context = {}
+	context.title = "Ch. 1: Introduction"
+end if
+
+
 // Prepare displays
-// text: display 1
-clear
-display(1).mode = displayMode.text
-text = display(1)
-text.backColor = color.clear
-text.clear
-// spriteDisp: used for UI buttons, etc.
-display(2).mode = displayMode.sprite
-spriteDisp = display(2)
-spriteDisp.clear
-// gfx: static overlay (drawing area grid, etc.)
-display(3).mode = displayMode.pixel
-gfx = display(3)
-gfx.clear
-// bkgnd: background color; masks off everything except paint area
-display(4).mode = displayMode.pixel
-bkgnd = display(4)
-bkgnd.clear "#929292", 970, 650
-bkgnd.scrollX = 5
-bkgnd.scrollY = 5
-// fatbits: scaled-up (fat) display of picture we're drawing
-display(5).mode = displayMode.pixel
-fatbits = display(5)
-fatbits.clear color.clear, picW, picH
-fatbits.scale = ps
-// backdrop: area that appears behind the fat-bits drawing (and preview area)
-display(6).mode = displayMode.pixel
-backdrop = display(6)
-backdrop.color = "#444444"
-// scratch: hidden drawing area
-display(7).mode = displayMode.pixel
-scratch = display(7)
+displays.setupEditorSim picW, picH, ps
+spriteDisp = displays.edSprite
+bkgnd = displays.edBackground
+fatbits = displays.edFatbits
+backdrop = displays.edBackdrop
+scratch = displays.edScratch
 
 // load brush sprites
 brushImages = [null]
@@ -224,6 +207,10 @@ Button.btnUpImg = file.loadImage(resourceDir + "toolButtonUp.png")
 Button.instances = []
 Button.toggles = false
 Button.isDown = false	// (for toggle buttons, which can be up or down)
+Button.iconUpTint = "#CCCCCC"
+Button.iconDownTint = color.white
+Button.iconPressedTint = color.white
+
 Button.init = function(imageName, left, top)
 	self.bgSprite = new Sprite
 	self.bgSprite.image = Tool.btnUpImg
@@ -246,15 +233,15 @@ Button.update = function(pressed=false)
 	if pressed then
 		self.bgSprite.image = Tool.btnDownImg
 		self.bgSprite.tint = "#666666"
-		self.iconSprite.tint = color.white
+		self.iconSprite.tint = self.iconPressedTint
 	else if self.isDown then
 		self.bgSprite.image = Tool.btnDownImg
 		self.bgSprite.tint = color.white
-		self.iconSprite.tint = color.white
+		self.iconSprite.tint = self.iconDownTint
 	else
 		self.bgSprite.image = Tool.btnUpImg
 		self.bgSprite.tint = color.white
-		self.iconSprite.tint = "#CCCCCCCC"
+		self.iconSprite.tint = self.iconUpTint
 	end if
 end function
 
@@ -346,7 +333,8 @@ prepareScreen = function
 	paintArea.grow(1,1).frame gfx, color.black, 4, -4
 	backdrop.clear color.black
 	drawGrid
-	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
+//	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
+	font.print context.title, 10, 640 - font.lineHeight
 end function
 drawGrid = function
 	// Select current image
@@ -395,7 +383,7 @@ makeTools = function
 	for i in tools.indexes
 		t = tools[i]
 		if t[0] == null then continue
-		Tool.make t[0], 788 + 40*(i%4), 56 + 40*floor(i/4), t[1]
+		Tool.make t[0], 770 + 40*(i%4), 56 + 40*floor(i/4), t[1]
 	end for
 end function
 makeTools
@@ -661,10 +649,10 @@ end function
 //--------------------------------------------------------------------------------
 // COLOR PALETTE
 palSelectionRing = new Sprite
-palSelectionRing.image = Image.create(22, 22, color.white)
+palSelectionRing.image = Image.create(22, 22, "#CCCCCC")
 spriteDisp.sprites.push palSelectionRing
 
-paletteArea = Rect.make(784, 408, 164, 44) 
+paletteArea = Rect.make(766, 408, 164, 44) 
 PalButton = new Sprite
 PalButton.image = Image.create(18, 18, color.white)
 PalButton.instances = []
@@ -714,6 +702,54 @@ makeDefaultPalette = function
 	end for
 end function
 makeDefaultPalette
+
+//--------------------------------------------------------------------------------
+// Mode Buttons
+
+ModeButton = new Button
+ModeButton.iconUpTint = color.black
+ModeButton.iconPressedTint = color.gray
+ModeButton.iconDownTint = color.white
+ModeButton.init = function(label, left, bottom)
+	self.bgSprite = new Sprite
+	self.bgSprite.image = Tool.btnUpImg
+	self.bgSprite.scale = [2, 0.5]
+	self.bgSprite.x = left + Tool.btnUpImg.width*2/2
+	self.bgSprite.y = bottom + Tool.btnUpImg.height*0.5/2
+	spriteDisp.sprites.push self.bgSprite
+	
+	scratch.clear color.clear
+	scratch.print label, 0, 0, color.white, "small"
+	labelImg = scratch.getImage(0, 0, 8*label.len, 14)
+	self.iconSprite = new Sprite
+	self.iconSprite.image = labelImg
+	self.iconSprite.x = self.bgSprite.x
+	self.iconSprite.y = self.bgSprite.y
+	self.iconSprite.tint = color.black
+	spriteDisp.sprites.push self.iconSprite
+	
+	self.bgSprite.addBounds
+	
+	Button.instances.push self
+end function
+
+exitButton = new ModeButton
+exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 20
+
+editModeButton = new ModeButton
+editModeButton.init "EDIT", paletteArea.midX - 80, paintArea.top + 20
+editModeButton.isDown = true; editModeButton.update
+editModeButton.handleClick = function
+	self.isDown = true
+	testModeButton.isDown = false; testModeButton.update
+end function
+testModeButton = new ModeButton
+testModeButton.init "TEST", paletteArea.midX, paintArea.top + 20
+testModeButton.handleClick = function
+	self.isDown = true
+	editModeButton.isDown = false; editModeButton.update
+end function
+
 
 //--------------------------------------------------------------------------------
 // MAIN PROGRAM
