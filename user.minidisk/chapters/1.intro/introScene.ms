@@ -122,5 +122,5 @@ end function
 
 
 if locals == globals then
-	play 6
+	play
 end if
