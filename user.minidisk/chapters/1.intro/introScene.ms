@@ -9,6 +9,22 @@ ensureImport "drawing"
 ensureImport "backgrounds"
 
 demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
+lineToHeartPix = new drawing.PixelDrawing
+display(6).mode = displayMode.pixel
+display(6).clear color.clear
+lineToHeartPix.load "lineToHeart.txt", display(6), 340, 100, 8
+lineToHeartPix.update = function
+	super.update
+	if self.curStep < 200 then return
+	step = self.curStep % 200
+	if step == 0 then
+		self.drawAll color.black
+	else if step == 100 then
+		self.drawAll
+	end if
+end function
+
+curDrawing = null
 
 playSteps = []
 playSteps.push function
@@ -55,12 +71,15 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Alicia.setLeftArm alicia.LeftArm.normal
+	display(6).clear color.clear
 	drawing.drawSpeech "In the meantime, here's something fun to play with: Magic Ink.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	displays.vnBackground.drawImage demoTablet, 350, 200
+	display(6).clear color.clear
+	outer.curDrawing = lineToHeartPix
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Alicia.setLeftArm alicia.LeftArm.showing
 	drawing.drawSpeech "You can draw lines and blobs with this ink, and then when you " +
@@ -85,6 +104,7 @@ play = function(startAtStep = 0)
 		playOneStep curStep
 		while true
 			Alicia.animate
+			if curDrawing then curDrawing.update
 			if key.available then
 				k = key.get.code
 				if (k == 17 or k == 19) and curStep > 0 then

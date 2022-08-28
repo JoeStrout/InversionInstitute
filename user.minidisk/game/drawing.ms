@@ -1,6 +1,8 @@
 import "miscUtil"
 ensureImport "displays"
 ensureImport "bmfFonts"
+ensureImport "qa"
+ensureImport "json"	// (used for PixelDrawing.load)
 
 globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
 
@@ -69,6 +71,51 @@ Image9Slice.draw = function(g, left, bottom, width, height)
 	g.drawImage self.image, 
 		nearRight, nearTop, self.rightMargin, self.topMargin,
 		srcNearRight, srcNearTop, self.rightMargin, self.topMargin	
+end function
+
+//----------------------------------------------------------------------
+// PixelDrawing: a bunch of pixels we draw one by one, in animated fashion,
+// as defined by a text file made with devUtil/makePixelAnim.
+
+PixelDrawing = {}
+PixelDrawing.curStep = -1
+PixelDrawing.nextStepTime = 0
+PixelDrawing.left = 300
+PixelDrawing.bottom = 200
+PixelDrawing.scale = 5
+PixelDrawing.gfx = gfx
+PixelDrawing.load = function(path, gfx, left, bottom, scale=5)
+	if gfx then self.gfx = gfx
+	self.left = left
+	self.bottom = bottom
+	self.scale = scale
+	lines = file.readLines(path)
+	qa.assert(lines)
+	self.steps = []
+	for line in lines
+		self.steps.push json.parse(line)
+	end for
+end function
+
+PixelDrawing.update = function
+	if time < self.nextStepTime then return
+	self.nextStepTime = time + 0.025
+	self.curStep = self.curStep + 1
+	if self.curStep >= self.steps.len then return
+	x = self.steps[self.curStep][0] * self.scale
+	y = self.steps[self.curStep][1] * self.scale
+	c = self.steps[self.curStep][2]	
+	self.gfx.fillRect self.left + x, self.bottom + y, self.scale, self.scale, c
+end function	
+
+PixelDrawing.drawAll = function(tint=null)
+	for p in self.steps
+		x = p[0] * self.scale
+		y = p[1] * self.scale
+		c = p[2]	
+		if tint then c = color.lerp(c, tint, 0.6)
+		self.gfx.fillRect self.left + x, self.bottom + y, self.scale, self.scale, c
+	end for
 end function
 
 //----------------------------------------------------------------------
