@@ -90,6 +90,37 @@ Sprite.addBounds = function(inset=0)
 	self.localBounds.height = self.image.height - inset*2
 end function
 
+pointsOnLine = function(pA, pB, manhattanJoin=true)
+	if pA == pB then return [pA]
+	dx = pB.x - pA.x; dy = pB.y - pA.y
+	result = []
+	if abs(dx) > abs(dy) then
+		// horizontal-ish line
+		y = pA.y; lastY = y
+		ystep = dy / abs(dx)
+		for x in range(pA.x, pB.x)
+			curY = round(y + 0.01)
+			if manhattanJoin and curY != lastY then result.push {"x":x, "y":lastY}
+			result.push {"x":x, "y":curY}
+			lastY = curY
+			y = y + ystep
+		end for
+	else
+		// vertical-ish line
+		x = pA.x; lastX = x
+		xstep = dx / abs(dy)
+		for y in range(pA.y, pB.y)
+			curX = round(x + 0.01)
+			if manhattanJoin and curX != lastX then result.push {"x":lastX, "y":y}
+			result.push {"x":curX, "y":y}
+			lastX = curX
+			x = x + xstep
+		end for
+	end if
+	return result
+end function
+
+//print pointsOnLine({"x":20, "y":0}, {"x":10, "y":5}); exit
 
 updatePaintScroll = function
 	hszX = (80/2) * previewArea.scale  // (half scrollbox size)
@@ -465,9 +496,13 @@ toolFuncs[kModeDraw] = function(pp, justDown)
 		// a pixel that's already the fore color; otherwise, draw mode.
 		pcolor = fatbits.pixel(pp.x, pp.y)
 		globals.drawErases = (pcolor == foreColor)
+		outer.lastPP = pp
 	end if
 	if drawErases then c = backColor else c = foreColor
-	setPaintPixel pp, c
+	for pos in pointsOnLine(lastPP, pp)
+		setPaintPixel pos, c
+	end for
+	outer.lastPP = pp
 end function
 
 toolFuncs[kModePaint] = function(pos, justDown)
@@ -528,9 +563,9 @@ toolFuncs[kModeLine] = function(pp, justDown)
 	end if
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
 	fatbits.drawImage picAtStart
-	startPos = posAtStart
-	curPos = pp
-	fatbits.line startPos.x, startPos.y, curPos.x, curPos.y, foreColor, 1
+	for pos in pointsOnLine(posAtStart, pp)
+		setPaintPixel pos, foreColor
+	end for
 end function
 
 toolFuncs[kModeDrawRect] = function(pp, justDown)
