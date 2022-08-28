@@ -29,8 +29,9 @@ foreColor = "#FFFFFFFF"
 backColor = "#000000FF"
 spriteBoundsColor = color.silver
 ps = 9	// "pixel size" (forgive the short name, but we use this a lot)
-picW = 64
-picH = 64
+pic = Image.create(80, 64, color.black)
+picW = pic.width
+picH = pic.height
 resourceDir = "/sys/data/fatbits/"
 
 // Prepare displays
@@ -122,13 +123,29 @@ end function
 
 //print pointsOnLine({"x":20, "y":0}, {"x":10, "y":5}); exit
 
+saveFromEditArea = function
+	pic = fatbits.getImage(0, 0, picW, picH)
+end function
+
+saveToDisk = function
+	// ToDo
+//	err = file.saveImage(self.path, self.image)
+//	if not err then
+//		dlog = textUtil.Dialog.make("Saved """ + file.name(self.path) + """",
+//		   self.path + char(13) + self.image.width + " x " + self.image.height + " pixels")
+//		dlog.okBtn.visible = false
+//		dlog.show 2
+//	else
+//		dlog = textUtil.Dialog.make("Unable to Save File", err)
+//		dlog.show
+//	end if
+end function
+
 updatePaintScroll = function
-	hszX = (80/2) * previewArea.scale  // (half scrollbox size)
-	hszY = (64/2) * previewArea.scale  // (half scrollbox size)
-	fatbits.scrollX = (previewArea.scrollbox.x-hszX - previewArea.left) / 
-		previewArea.scale * fatbits.scale - paintArea.left
-	fatbits.scrollY = (previewArea.scrollbox.y-hszY - previewArea.bottom) /
-		previewArea.scale * fatbits.scale - paintArea.bottom
+	// ToDo: redo scroll support, using scrollbars or a grabby-hand tool.
+	// For now, just hard-code it:
+	fatbits.scrollX = -paintArea.left
+	fatbits.scrollY = -paintArea.bottom
 end function
 
 //---------------------------------------------------------------------
@@ -329,12 +346,11 @@ prepareScreen = function
 	paintArea.grow(1,1).frame gfx, color.black, 4, -4
 	backdrop.clear color.black
 	drawGrid
-	previewArea.draw
 	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
 end function
 drawGrid = function
 	// Select current image
-	img = selectedTab.image
+	img = pic
 	// Calculate backdrop rectangle
 	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
 	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
@@ -642,265 +658,6 @@ toolFuncs[kModePasting] = function(pp, justDown)
 	end if
 end function
 
-
-//--------------------------------------------------------------------------------
-// TABS & FILE MANAGEMENT
-closeBtnClean = file.loadImage(resourceDir + "closeBtnWeak.png")
-closeBtnDirty = file.loadImage(resourceDir + "closeBtnStrong.png")
-CloseButton = new Sprite
-CloseButton.image = closeBtnClean
-CloseButton.y = 640 - 12
-CloseButton.x = 20
-CloseButton.update = function(dirty, curTab, pressed)
-	if self.localBounds == null then self.addBounds; yield
-	if dirty then
-		self.image = closeBtnDirty
-		if curTab then tint = "FF" else tint = "AA"
-	else
-		self.image = closeBtnClean
-		if curTab then tint = "AA" else tint = "66"
-	end if
-	if pressed then
-		if self.contains(mouse) then tint = "88" else tint = "EE"
-	else if self.contains(mouse) then
-		tint = "EE"
-	end if
-	self.tint = "#" + tint + tint + tint
-end function
-
-drawTab = function(x, width, title="", isSelected=false)
-	h = 25  // tab height
-	y = 640 - h - 1  // tab bottom
-	poly = [[x,y], [x+12,y+h], [x+width-24,y+h], [x+width-12,y+h], [x+width,y]]
-	// fill
-	if isSelected then c = "#666666" else c = "#444444"
-	gfx.fillPoly poly, c
-	// highlight at the top
-	if isSelected then c = "#888888" else c = "#666666"
-	gfx.line x+12, y+h-1, x+width-12, y+h-1, c
-	// frame
-	gfx.drawPoly poly, color.black, 2
-	// title
-	if title == "+" then
-		gfx.print "+", x + width/2 - 7, y + h/2 - 10, "#AAAAAA"
-	else
-		if isSelected then c = "#AAAAAA" else c = "#888888"
-		titleWidth = title.len * 9
-		gfx.print title, x + width/2 - titleWidth/2 + 8, y + h/2 - 5, c, "small"
-	end if
-end function
-OpenFile = {}
-OpenFile.path = ""
-OpenFile.tabX = null
-OpenFile.targetX = null
-OpenFile.tabWidth = 0
-OpenFile.tabTitle = ""
-OpenFile.srcRect = null
-OpenFile.closeBtn = null
-OpenFile.saveFromEditArea = function
-	self.image = fatbits.getImage(0, 0, self.image.width, self.image.height)
-end function
-OpenFile.loadToEditArea = function
-	globals.picW = self.image.width; globals.picH = self.image.height
-	fatbits.clear color.black, picW, picH
-	fatbits.scale = ps
-	fatbits.drawImage self.image
-	updatePaintScroll
-end function
-OpenFile.saveToDisk = function
-	if self == selectedTab then self.saveFromEditArea
-	err = file.saveImage(self.path, self.image)
-	if not err then
-		dlog = textUtil.Dialog.make("Saved """ + file.name(self.path) + """",
-		   self.path + char(13) + self.image.width + " x " + self.image.height + " pixels")
-		dlog.okBtn.visible = false
-		dlog.show 2
-	else
-		dlog = textUtil.Dialog.make("Unable to Save File", err)
-		dlog.show
-	end if
-end function
-OpenFile.close = function
-	tabIdx = tabs.indexOf(self)
-	// Choose the tab before it, or the first one if none left
-	if tabIdx == 0 then newIdx = 0 else newIdx = tabIdx - 1
-	// Remove the close button of the removed tab
-	sprIdx = spriteDisp.sprites.indexOf(self.closeBtn)
-	spriteDisp.sprites.remove sprIdx
-	// Remove the tab object
-	tabs.remove tabIdx
-	// Point to new tab
-	newTab = tabs[newIdx]
-	globals.selectedTab = newTab
-	// Repaint UI and switch
-	layoutTabs; drawTabs
-	switchToTab newTab
-end function
-OpenFile.confirmAndClose = function
-	dlog = textUtil.Dialog.make("Save changes to " + self.tabTitle + "?",
-	  "If you do not save, your changes will be lost.")
-	dlog.okBtn.caption = "Save"
-	dlog.cancelBtn.visible = true
-	dlog.altBtn.caption = "Don't Save"
-	dlog.altBtn.visible = true
-	choice = dlog.show
-	if choice == dlog.cancelBtn then return
-	if choice == dlog.okBtn then self.saveToDisk
-	self.close
-end function
-
-tabs = []
-specialNewTabTab = {"tabWidth":40, "tabTitle":"+", "tabX":null, "closeBtn":null}
-specialNewTabTab.saveFromEditArea = null
-specialNewTabTab.loadToEditArea = null
-tabs.push specialNewTabTab
-layoutTabs = function
-	x = 0
-	for t in tabs
-		t.targetX = x
-		t.tabX = t.targetX
-		if not t.tabWidth then t.tabWidth = t.tabTitle.len * 9 + 50
-		if t.tabTitle != "+" then
-			if t.closeBtn == null then
-				t.closeBtn = new CloseButton
-				spriteDisp.sprites.push t.closeBtn
-			end if
-			t.closeBtn.update
-			t.closeBtn.x = x + 20	
-		end if		
-		x = x + t.tabWidth - 12
-	end for
-end function
-selectedTab = tabs[0]
-
-drawTabs = function
-	h = 26
-	gfx.fillRect 0, 640-h, 960, h, "#929292"
-	gfx.line 0, 640-h, 960, 640-h, color.black, 2
-	for t in tabs
-		if t == selectedTab then break
-		drawTab t.tabX, t.tabWidth, t.tabTitle, false
-	end for
-	for i in range(tabs.len-1)
-		t = tabs[i]
-		drawTab t.tabX, t.tabWidth, t.tabTitle, t == selectedTab
-		if t == selectedTab then break
-	end for
-end function
-
-updateTabs = function
-	for t in tabs
-		if t.closeBtn == null then continue
-		t.closeBtn.update false, t == selectedTab, false
-	end for
-end function
-
-handleTabClick = function
-	// first handle clicks on a close button
-	for t in tabs
-		if t.closeBtn == null or not t.closeBtn.contains(mouse) then continue
-		while mouse.button
-			t.closeBtn.update false, t == selectedTab, true
-		end while
-		if t.closeBtn.contains(mouse) then
-			if t == selectedTab then t.saveFromEditArea
-			t.confirmAndClose
-		end if
-		return
-	end for
-	// then, handle click on a tab
-	for t in tabs
-		if mouse.x > t.tabX + t.tabWidth then continue
-		selectedTab.saveFromEditArea
-		globals.selectedTab = t
-		drawTabs
-		while mouse.button; end while
-		switchToTab t
-		return
-	end for
-end function
-
-switchToTab = function(tab)
-//	if tab == specialNewTabTab then
-//		setupUI.state = kStart
-//		setupUI.draw
-//	else
-//		setupUI.clear
-		previewArea.prepare tab.image
-		prepareScreen
-		tab.loadToEditArea
-//	end if
-end function
-
-addTabForImage = function(img, path)
-	tab = new OpenFile
-	tab.tabTitle = file.name(path) - ".png"
-	tab.path = path
-	tab.image = img
-	tabs.insert -2, tab
-	globals.selectedTab = tab
-	layoutTabs; drawTabs
-	switchToTab tab
-end function
-
-//--------------------------------------------------------------------------------
-// PREVIEW/SCROLL AREA
-
-// Here's how this works:
-// 1. Preview area is the full size of the source image, unless that is bigger
-// than 194x220, in which case it caps at that, and shrinks the image down to fit.
-// 2. If the image is bigger than 80x64, then we draw a representation (as a sprite?
-// of the current 80x64 editing area, scaled in the same way as the image.
-// 3. Clicking in the preview moves this editing area around, scrolling fatbits.
-
-previewArea = new Rect
-previewArea.scrollbox = null
-
-previewArea.prepare = function(img)
-	// limit preview area size to at most 194 x 220:
-	self.scale = mathUtil.clamp([194/img.width, 220/img.height].min)
-	self.width = img.width * self.scale
-	self.left = 851 - self.width/2
-	self.height = img.height * self.scale
-	self.bottom = 162 - self.height/2
-	// update scrollbox (indicating currently viewable part of the image)
-	spriteDisp.sprites.removeVal self.scrollbox
-	self.scrollbox = new Sprite
-	if img.width > 80 or img.height > 64 then
-		sz = 64 * self.scale
-		scratch.fillRect 0, 0, sz + 2, sz + 2, color.clear
-		scratch.drawRect 0, 0, sz + 2, sz + 2, color.yellow
-		scratch.drawRect 1, 1, sz, sz, color.black
-		self.scrollbox.image = scratch.getImage(0, 0, sz+2, sz+2)
-		spriteDisp.sprites.push self.scrollbox
-		self.scrollbox.x = self.left + sz/2
-		self.scrollbox.y = self.bottom + sz/2
-	end if
-	if img.width <= 80 then self.scrollbox.x = self.midX
-	if img.height <= 64 then self.scrollbox.y = self.midY
-end function
-
-previewArea.draw = function
-	if not self.hasIndex("scale") then; print "WTF?"; exit; end if
-	previewArea.fill gfx, backdrop.color
-	previewArea.frame gfx, color.black
-	img = selectedTab.image
-	gfx.drawImage img, previewArea.midX - img.width*self.scale/2, 
-		previewArea.midY - img.height*self.scale/2,
-		img.width * self.scale, img.height * self.scale//, 0, 0, img.width, img.height
-end function
-
-previewArea.handleClick = function
-	hsz = 32 * self.scale  // (half the size of our scrollbox)
-	while mouse.button
-		x = mathUtil.clamp(mouse.x - previewArea.left, hsz, self.width-hsz)
-		y = mathUtil.clamp(mouse.y - previewArea.bottom, hsz, self.height-hsz)
-		self.scrollbox.x = self.left + x
-		self.scrollbox.y = self.bottom + y
-		updatePaintScroll
-	end while
-end function
-
 //--------------------------------------------------------------------------------
 // COLOR PALETTE
 palSelectionRing = new Sprite
@@ -965,24 +722,22 @@ startPaintPos = null
 startPaintImg = null
 brushSize = 6
 setMode kModeDraw
-layoutTabs
-drawTabs
 
-addTabForImage Image.create(64,48), "/usr/foo.png"
 PalButton.selectMatchingColor foreColor
 
+prepareScreen
+fatbits.clear color.clear, picW, picH
+fatbits.scale = ps
+fatbits.drawImage pic
+updatePaintScroll
+
+
 handleClick = function(justDown)
-	if mouse.y > 640-26 then
-		handleTabClick
-		return
-	end if
-	if previewArea.contains(mouse) then return previewArea.handleClick
 	if not paintArea.contains(mouse) then return
 	pp = paintPixelAtXY(mouse)
 	tf = toolFuncs[mode]
 	tf pp, justDown
-	selectedTab.saveFromEditArea
-	previewArea.draw
+	saveFromEditArea
 end function
 
 showHelp = function
@@ -1008,7 +763,7 @@ handleKeys = function
 		copy
 		deleteSelection
 	end if
-	if k == "s" and selectedTab isa OpenFile then selectedTab.saveToDisk
+	if k == "s" then saveToDisk
 	if k == "?" or k == "/" then showHelp
 	if k == "q" then
 		d = textUtil.Dialog.make("Quit fatbits?", "Are you sure you want to quit?")
@@ -1024,7 +779,6 @@ end function
 mouseWasDown = mouse.button
 while true
 	yield
-	updateTabs
 	
 	pp = paintPixelAtXY(mouse)
 	gfx.fillRect 860, 0, 100, 20, color.clear
