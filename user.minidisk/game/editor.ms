@@ -447,7 +447,7 @@ end function
 
 deleteSelection = function
 	if mode == kModePasting then
-		fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+		fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 		fatbits.drawImage picAtStart, 0, 0
 		setMode kModeSelect
 	else if selection != null then
@@ -466,7 +466,7 @@ paste = function
 end function
 
 updatePaste = function(pp)
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart, 0, 0
 	fatbits.drawImage clip, pp.x - floor(clip.width/2), pp.y - floor(clip.height/2)
 end function
@@ -485,7 +485,7 @@ toolFuncs[kModeMove] = function(pp, justDown)
 	// Shift the data within the picture.
 	dx = pp.x - startPaintPos.x
 	dy = pp.y - startPaintPos.y
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage startPaintImg.getImage(-dx * (dx<0), -dy * (dy<0), 
 		picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
 end function
@@ -561,7 +561,7 @@ toolFuncs[kModeLine] = function(pp, justDown)
 		globals.posAtStart = pp
 		return
 	end if
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	for pos in pointsOnLine(posAtStart, pp)
 		setPaintPixel pos, foreColor
@@ -574,7 +574,7 @@ toolFuncs[kModeDrawRect] = function(pp, justDown)
 		globals.posAtStart = pp
 		return
 	end if
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
@@ -587,7 +587,7 @@ toolFuncs[kModeFillRect] = function(pp, justDown)
 		globals.posAtStart = pp
 		return
 	end if
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
@@ -600,7 +600,7 @@ toolFuncs[kModeDrawEllipse] = function(pp, justDown)
 		globals.posAtStart = pp
 		return
 	end if
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
@@ -613,7 +613,7 @@ toolFuncs[kModeFillEllipse] = function(pp, justDown)
 		globals.posAtStart = pp
 		return
 	end if
-	fatbits.fillRect 0, 0, picW+1, picH+1, color.clear
+	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
@@ -702,7 +702,7 @@ OpenFile.saveFromEditArea = function
 end function
 OpenFile.loadToEditArea = function
 	globals.picW = self.image.width; globals.picH = self.image.height
-	fatbits.clear color.clear, picW, picH
+	fatbits.clear color.black, picW, picH
 	fatbits.scale = ps
 	fatbits.drawImage self.image
 	updatePaintScroll
