@@ -2,7 +2,9 @@
 // based on: https://github.com/JoeStrout/pixelLogic/
 // ...and:   https://realhet.wordpress.com/2015/09/02/bitmap-logic-simulator/
 
-import "mathUtil"
+import "miscUtil"
+ensureImport "mathUtil"
+ensureImport "displays"
 
 min = function(a,b)
 	if b < a then return b else return a
@@ -33,24 +35,21 @@ setup = function(keepView=false)
 	outer.xrange = range(0, maxX)
 	outer.yrange = range(0, maxY)
 	
-	// We'll just draw the map in a Pixel display.  That makes it
-	// easy to load and save designs as images, and we can scale
-	// or scroll it as needed.
-	// (Only drawback to this: setting individual pixels may be
-	// slower than setting tile colors.  Need to test that.)
-	clear
-	gfx.clear color.black, mapW, mapH
-	gfx.drawImage circuitPic
 	if not keepView then
-		gfx.scale = max(1, floor(min(960/mapW, 640/mapH)))
-		gfx.scrollX = 480-mapW*gfx.scale/2
-		gfx.scrollY = 320-mapH*gfx.scale/2
+		displays.setupEditorSim
+		displays.simGfx.clear color.black, mapW, mapH
+		displays.simGfx.drawImage circuitPic
+		displays.simGfx.scale = max(1, floor(min(960/mapW, 640/mapH)))
+		displays.simGfx.scrollX = 480-mapW*displays.simGfx.scale/2
+		displays.simGfx.scrollY = 320-mapH*displays.simGfx.scale/2
 	end if
 	
 	outer.coordToNode = {}
 	outer.gates = []
 	outer.nodes = []
 	outer.toDo = []		// list of Nodes that need updating
+	outer.scaleIdx = scales.indexOf(displays.simGfx.scale)
+	if scaleIdx == null then outer.scaleIdx = 4
 end function
 
 // Node: represents a set of pixels that are logically all
@@ -89,9 +88,9 @@ Node.prepImage = function
 	self.sprite.origY = (minY + maxY + 1)/2
 	self.minX = minX; self.maxX = maxX
 	
-	self.sprite.scale = gfx.scale
-	self.sprite.x = self.sprite.origX * gfx.scale - gfx.scrollX
-	self.sprite.y = self.sprite.origY * gfx.scale - gfx.scrollY
+	self.sprite.scale = displays.simGfx.scale
+	self.sprite.x = self.sprite.origX * displays.simGfx.scale - displays.simGfx.scrollX
+	self.sprite.y = self.sprite.origY * displays.simGfx.scale - displays.simGfx.scrollY
 	display(4).sprites.push self.sprite
 	display(7).mode = displayMode.off
 end function
@@ -164,10 +163,10 @@ end function
 resetAlpha = function
 	for y in yrange
 		for x in xrange
-			c = gfx.pixel(x,y)
+			c = displays.simGfx.pixel(x,y)
 			if c == "#000000FF" then continue
 			if c[-2:] != "FF" then
-				gfx.setPixel x, y, c[:7] + "FF"
+				displays.simGfx.setPixel x, y, c[:7] + "FF"
 			end if
 		end for
 		print floor(100*y/maxY) + "%"; text.row = text.row+1
@@ -184,10 +183,10 @@ createNodeAt = function(x,y)
 	while toDo
 		pos = toDo.pop
 		x = pos[0]; y = pos[1]
-		c = gfx.pixel(x, y)
+		c = displays.simGfx.pixel(x, y)
 		if c == "#000000FF" or c[-2:] != "FF" then continue
 		
-		gfx.setPixel x, y, c[:7] + "F0"
+		displays.simGfx.setPixel x, y, c[:7] + "F0"
 		node.add x, y, c
 		
 		// push immediate neighbors
@@ -196,10 +195,10 @@ createNodeAt = function(x,y)
 		if y > 0 then toDo.push [x, y-1]
 		if y < maxY then toDo.push [x, y+1]	
 		// if our immediate neighbor is a crossing, push the other side
-		if x > 1 and gfx.pixel(x-1,y) == crossingColor then toDo.push [x-2, y]
-		if x < maxX-1 and gfx.pixel(x+1,y) == crossingColor then toDo.push [x+2, y]
-		if y > 1 and gfx.pixel(x,y-1) == crossingColor then toDo.push [x, y-2]
-		if y < maxY-1 and gfx.pixel(x,y+1) == crossingColor then toDo.push [x, y+2]	
+		if x > 1 and displays.simGfx.pixel(x-1,y) == crossingColor then toDo.push [x-2, y]
+		if x < maxX-1 and displays.simGfx.pixel(x+1,y) == crossingColor then toDo.push [x+2, y]
+		if y > 1 and displays.simGfx.pixel(x,y-1) == crossingColor then toDo.push [x, y-2]
+		if y < maxY-1 and displays.simGfx.pixel(x,y+1) == crossingColor then toDo.push [x, y+2]	
 	end while
 	return node
 end function
@@ -213,12 +212,12 @@ findGates = function
 	for y in range(1, maxY-1)
 		for x in range(1, maxX-1)
 			// gates always have a black pixel in the middle
-			if gfx.pixel(x,y) != "#000000FF" then continue
+			if displays.simGfx.pixel(x,y) != "#000000FF" then continue
 			// if we have that, check the pattern of surrounding pixels
 			pat = []
 			for j in range(y-1, y+1)
 				for i in range(x-1, x+1)
-					c = gfx.pixel(i,j)
+					c = displays.simGfx.pixel(i,j)
 					if c == "#000000FF" or c == crossingColor then pat.push "0" else pat.push "1"
 				end for				
 			end for
@@ -227,7 +226,7 @@ findGates = function
 			// print pat
 			if pat == "010101010" then  // crossing
 				result.push Gate.make(x, y, 0)
-				gfx.setPixel x, y, crossingColor				
+				displays.simGfx.setPixel x, y, crossingColor				
 			else if pat == "110101110" then  // NOT (East)
 				result.push Gate.make(x, y, 4)
 			else if pat == "111101010" then // NOT (North)
@@ -256,15 +255,16 @@ analyze = function
 	//resetAlpha				we'll instead just require opaque images for now
 	
 	// Find all the gates.
-	print "Finding gates"
+//	print "Finding gates"
 	outer.gates = findGates
+//	print "Found " + gates.len + " gates"
 	
 	// Create nodes.
-	print "Creating nodes"
+//	print "Creating nodes"
 	outer.nodes = []
 	for y in yrange
 		for x in xrange
-			c = gfx.pixel(x,y)
+			c = displays.simGfx.pixel(x,y)
 			if c == "#000000FF" then continue
 			if c[-2:] != "FF" then continue
 			
@@ -274,9 +274,11 @@ analyze = function
 		end for
 		print floor(100*y/maxY) + "%"; text.row = text.row+1
 	end for
+//	print "Found " + nodes.len + " nodes"
+	
 	// Then, take out all the crossing gates, and set them back to black.
 	// And for the NOT gates, hook up their inputs and outputs.
-	print "Cleaning up"
+//	print "Cleaning up"
 	if gates.len > 0 then
 		for i in range(gates.len - 1)
 			if i % 10 == 0 then
@@ -286,7 +288,7 @@ analyze = function
 			g = gates[i]
 			t = g.type
 			if t == 0 then
-				gfx.setPixel g.x, g.y, "#000000FF"
+				displays.simGfx.setPixel g.x, g.y, "#000000FF"
 				gates.remove i
 				continue
 			else if t == 1 then  // NOT from North to South
@@ -313,13 +315,11 @@ analyze = function
 end function
 
 scales = [0.1, 0.25, 0.5, 0.75] + range(1,32)
-scaleIdx = scales.indexOf(gfx.scale)
-if scaleIdx == null then scaleIdx = 4
 
 repositionSprites = function
-	scale = gfx.scale
-	sx = -gfx.scrollX
-	sy = -gfx.scrollY
+	scale = displays.simGfx.scale
+	sx = -displays.simGfx.scrollX
+	sy = -displays.simGfx.scrollY
 	for s in display(4).sprites
 		s.x = s.origX * scale + sx
 		s.y = s.origY * scale + sy
@@ -328,31 +328,31 @@ end function
 
 doZoom = function(clicks)
 	// get position of mouse in the PixelDisplay
-	mx = (mouse.x + gfx.scrollX) / gfx.scale
-	my = (mouse.y + gfx.scrollY) / gfx.scale
+	mx = (mouse.x + displays.simGfx.scrollX) / displays.simGfx.scale
+	my = (mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale
 	// adjust the scroll
 	outer.scaleIdx = mathUtil.clamp(scaleIdx + clicks,
 	0, scales.len-1)
-	gfx.scale = scales[scaleIdx]
+	displays.simGfx.scale = scales[scaleIdx]
 	// adjust scroll so mouse is still over mx, my
 	// (just solve the above for scroll -- yay, algebra!)
-	gfx.scrollX = mx * gfx.scale - mouse.x
-	gfx.scrollY = my * gfx.scale - mouse.y
+	displays.simGfx.scrollX = mx * displays.simGfx.scale - mouse.x
+	displays.simGfx.scrollY = my * displays.simGfx.scale - mouse.y
 	repositionSprites
 end function
 
 dragScroll = function
 	// get position of mouse in the PixelDisplay
-	mx = (mouse.x + gfx.scrollX) / gfx.scale
-	my = (mouse.y + gfx.scrollY) / gfx.scale
+	mx = (mouse.x + displays.simGfx.scrollX) / displays.simGfx.scale
+	my = (mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale
 	
 	// while right button down, keep adjusting it
 	// so the mouse is still over mx, my
 	while mouse.button(1)
 		// adjust scroll so mouse is still over mx, my
 		// (just solve the above for scroll -- yay, algebra!)
-		gfx.scrollX = mx * gfx.scale - mouse.x
-		gfx.scrollY = my * gfx.scale - mouse.y
+		displays.simGfx.scrollX = mx * displays.simGfx.scale - mouse.x
+		displays.simGfx.scrollY = my * displays.simGfx.scale - mouse.y
 		repositionSprites
 		yield
 	end while	
@@ -363,8 +363,8 @@ handleMouse = function
 	if zoom != 0 then doZoom zoom
 	if mouse.button(1) then dragScroll
 	if not mouse.button then return
-	node = nodeAtXY(floor((mouse.x + gfx.scrollX) / gfx.scale), 
-	floor((mouse.y + gfx.scrollY) / gfx.scale))
+	node = nodeAtXY(floor((mouse.x + displays.simGfx.scrollX) / displays.simGfx.scale), 
+	  floor((mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale))
 	if node != null then
 		node.setOn not node.on
 	end if

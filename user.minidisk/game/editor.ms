@@ -8,6 +8,7 @@ ensureImport "mathUtil"
 ensureImport "qa"
 ensureImport "displays"
 ensureImport "drawing"
+ensureImport "pixelLogicSim"; sim = pixelLogicSim
 
 // Constants and global state variables
 kModeDraw = "DRAW"
@@ -28,27 +29,30 @@ kModeLine = "DRAWLINE"
 kModeReplace = "REPLACE"
 kModePasting = "PASTING"
 
-foreColor = "#FFFFFFFF"
+foreColor = "#FFFFFFFF"		// current painting foreground and background colors
 backColor = "#000000FF"
 spriteBoundsColor = color.silver
 ps = 9	// "pixel size" (forgive the short name, but we use this a lot)
-pic = Image.create(80, 64, color.black)
-picW = pic.width
-picH = pic.height
+circuitPic = Image.create(80, 64, color.black)
+picW = circuitPic.width
+picH = circuitPic.height
 resourceDir = "/sys/data/fatbits/"
+
+testSprites = []		// UI sprites needed only in simulation mode
+editSprites = []	// UI sprites needed only in edit mode
+alwaysSprites = []	// UI sprites needed always
 
 if not globals.hasIndex("context") then
 	context = {}
 	context.title = "Ch. 1: Introduction"
 end if
 
-
 // Prepare displays
 displays.setupEditorSim picW, picH, ps
 spriteDisp = displays.edSprite
-bkgnd = displays.edBackground
 fatbits = displays.edFatbits
 backdrop = displays.edBackdrop
+bgColor = "#666666"
 scratch = displays.edScratch
 
 // load brush sprites
@@ -59,7 +63,7 @@ end for
 brushSprite = new Sprite
 brushSprite.image = brushImages[5]
 brushSprite.tint = "#00FFFF88"
-spriteDisp.sprites.push brushSprite
+editSprites.push brushSprite
 
 brushRowWidths = [null, [1], [2,2], [3,3,3], [2,4,4,2], [3,5,5,5,3], [4,6,6,6,6,4],
   [3,5,7,7,7,5,3], [4,6,8,8,8,8,6,4], [5,7,9,9,9,9,9,7,5], [4,8,8,10,10,10,10,8,8,4],
@@ -107,7 +111,7 @@ end function
 //print pointsOnLine({"x":20, "y":0}, {"x":10, "y":5}); exit
 
 saveFromEditArea = function
-	pic = fatbits.getImage(0, 0, picW, picH)
+	circuitPic = fatbits.getImage(0, 0, picW, picH)
 end function
 
 saveToDisk = function
@@ -211,18 +215,23 @@ Button.iconUpTint = "#CCCCCC"
 Button.iconDownTint = color.white
 Button.iconPressedTint = color.white
 
-Button.init = function(imageName, left, top)
+Button.init = function(imageName, left, top, forEditor=true)
 	self.bgSprite = new Sprite
 	self.bgSprite.image = Tool.btnUpImg
 	self.bgSprite.x = left + Tool.btnUpImg.width/2
 	self.bgSprite.y = 640 - top - Tool.btnUpImg.height/2
-	spriteDisp.sprites.push self.bgSprite
 	
 	self.iconSprite = new Sprite
 	self.iconSprite.image = file.loadImage(resourceDir + imageName + ".png")
 	self.iconSprite.x = self.bgSprite.x
 	self.iconSprite.y = self.bgSprite.y
-	spriteDisp.sprites.push self.iconSprite
+	if forEditor then
+		editSprites.push self.bgSprite
+		editSprites.push self.iconSprite
+	else
+		testSprites.push self.bgSprite
+		testSprites.push self.iconSprite
+	end if
 	
 	self.bgSprite.addBounds
 	
@@ -329,7 +338,8 @@ end function
 // screen layout
 paintArea = Rect.make(10, 10, 720, 576)
 prepareScreen = function
-	paintArea.offset(5,5).fill bkgnd, color.clear
+	gfx.fillRect 0, 0, gfx.width, gfx.height, bgColor
+	paintArea.offset(5,5).fill gfx, color.clear
 	paintArea.grow(1,1).frame gfx, color.black, 4, -4
 	backdrop.clear color.black
 	drawGrid
@@ -338,7 +348,7 @@ prepareScreen = function
 end function
 drawGrid = function
 	// Select current image
-	img = pic
+	img = circuitPic
 	// Calculate backdrop rectangle
 	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
 	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
@@ -650,7 +660,7 @@ end function
 // COLOR PALETTE
 palSelectionRing = new Sprite
 palSelectionRing.image = Image.create(22, 22, "#CCCCCC")
-spriteDisp.sprites.push palSelectionRing
+editSprites.push palSelectionRing
 
 paletteArea = Rect.make(766, 408, 164, 44) 
 PalButton = new Sprite
@@ -662,7 +672,7 @@ PalButton.make = function(c)
 	noob.tint = c
 	noob.index = PalButton.instances.len
 	PalButton.instances.push noob
-	spriteDisp.sprites.push noob
+	editSprites.push noob
 	noob.x = paletteArea.left + 12 + 20 * (noob.index % 8)
 	noob.y = paletteArea.top - 12 - 20 * floor(noob.index / 8)
 	noob.addBounds
@@ -704,7 +714,9 @@ end function
 makeDefaultPalette
 
 //--------------------------------------------------------------------------------
-// Mode Buttons
+// Mode Buttons & Mode Management
+
+testMode = false
 
 ModeButton = new Button
 ModeButton.iconUpTint = color.black
@@ -716,7 +728,7 @@ ModeButton.init = function(label, left, bottom)
 	self.bgSprite.scale = [2, 0.5]
 	self.bgSprite.x = left + Tool.btnUpImg.width*2/2
 	self.bgSprite.y = bottom + Tool.btnUpImg.height*0.5/2
-	spriteDisp.sprites.push self.bgSprite
+	alwaysSprites.push self.bgSprite
 	
 	scratch.clear color.clear
 	scratch.print label, 0, 0, color.white, "small"
@@ -726,7 +738,7 @@ ModeButton.init = function(label, left, bottom)
 	self.iconSprite.x = self.bgSprite.x
 	self.iconSprite.y = self.bgSprite.y
 	self.iconSprite.tint = color.black
-	spriteDisp.sprites.push self.iconSprite
+	alwaysSprites.push self.iconSprite
 	
 	self.bgSprite.addBounds
 	
@@ -735,19 +747,38 @@ end function
 
 exitButton = new ModeButton
 exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 20
+exitButton.handleClick = function
+	// for now:
+	text.row = 0; print; exit
+end function
 
 editModeButton = new ModeButton
 editModeButton.init "EDIT", paletteArea.midX - 80, paintArea.top + 20
 editModeButton.isDown = true; editModeButton.update
 editModeButton.handleClick = function
-	self.isDown = true
-	testModeButton.isDown = false; testModeButton.update
+	setTestMode false
 end function
 testModeButton = new ModeButton
 testModeButton.init "TEST", paletteArea.midX, paintArea.top + 20
 testModeButton.handleClick = function
-	self.isDown = true
-	editModeButton.isDown = false; editModeButton.update
+	setTestMode true
+end function
+
+setTestMode = function(enterTestMode = true)
+	outer.testMode = enterTestMode
+	editModeButton.isDown = not testMode; editModeButton.update
+	testModeButton.isDown = testMode; testModeButton.update
+	if testMode then
+		globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+		spriteDisp.sprites = alwaysSprites + testSprites
+		sim.setup true
+		sim.analyze
+		text.clear
+	else
+		displays.simSprite.clear
+		fatbits.drawImage circuitPic, 0, 0
+		spriteDisp.sprites = alwaysSprites + editSprites
+	end if
 end function
 
 
@@ -764,9 +795,9 @@ PalButton.selectMatchingColor foreColor
 prepareScreen
 fatbits.clear color.clear, picW, picH
 fatbits.scale = ps
-fatbits.drawImage pic
+fatbits.drawImage circuitPic
 updatePaintScroll
-
+setTestMode false
 
 handleClick = function(justDown)
 	if not paintArea.contains(mouse) then return
@@ -817,7 +848,7 @@ while true
 	yield
 	
 	pp = paintPixelAtXY(mouse)
-	gfx.fillRect 860, 0, 100, 20, color.clear
+	gfx.fillRect 860, 0, 100, 20, bgColor
 	brushSprite.x = -9999
 	if pp.x >= 0 and pp.y >= 0 and pp.x < picW and pp.y < picH then
 		gfx.print pp.x + "," + pp.y, 860, 3, color.silver, "small"
@@ -830,12 +861,18 @@ while true
 	
 	// check UI elements
 	for btn in Button.instances; btn.checkEvents; end for
-	PalButton.checkEventsForAll
 	
-	// then, update usage of tools (e.g. painting)
-	mouseIsDown = mouse.button
-	if mouseIsDown then handleClick not mouseWasDown
-	mouseWasDown = mouseIsDown
-	if key.available then handleKeys
-	if selection != null then drawSelection
+	if testMode then
+		// update simulation
+		sim.handleMouse
+		sim.simOneStep
+	else
+		// then, update usage of tools (e.g. painting)
+		PalButton.checkEventsForAll
+		mouseIsDown = mouse.button
+		if mouseIsDown then handleClick not mouseWasDown
+		mouseWasDown = mouseIsDown
+		if key.available then handleKeys
+		if selection != null then drawSelection
+	end if
 end while

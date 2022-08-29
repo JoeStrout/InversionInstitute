@@ -6,10 +6,11 @@ vnSpeech = null
 
 // Editor/Simulator layers:
 edSprite = null			// used for UI buttons, etc.
-edBackground = null		// masks off everything except paint area
 edFatbits = null		// scaled-up bits for painting in
 edBackdrop = null		// appears behind fat-bits drawing (not sure we actually need this!)
 edScratch = null		// temporary composition area
+simGfx = null			// usually, the same as edFatbits
+simSprite = null		// sprite layer for showing nodes on/off
 
 // Universal layers
 display(1).mode = displayMode.solidColor
@@ -43,7 +44,7 @@ setupEditorSim = function(picW=80, picH=64, scale=9)
 	text.backColor = color.clear
 	text.clear
 
-	// spriteDisp: used for UI buttons, etc.
+	// edSprite: used for UI buttons, etc.
 	display(2).mode = displayMode.sprite
 	outer.edSprite = display(2)
 	edSprite.clear
@@ -53,18 +54,17 @@ setupEditorSim = function(picW=80, picH=64, scale=9)
 	globals.gfx = display(3)
 	gfx.clear
 
-	// bkgnd: background color; masks off everything except paint area
-	display(4).mode = displayMode.pixel
-	outer.edBackground = display(4)
-	edBackground.clear "#929292", 970, 650
-	edBackground.scrollX = 5
-	edBackground.scrollY = 5
+	// simSprite: sprite layer for the simulation (used to show nodes on/off)
+	display(4).mode = displayMode.sprite
+	outer.simSprite = display(4)
+	simSprite.clear
 
 	// fatbits: scaled-up (fat) display of picture we're drawing
 	display(5).mode = displayMode.pixel
 	outer.edFatbits = display(5)
 	edFatbits.clear color.clear, picW, picH
 	edFatbits.scale = scale
+	outer.simGfx = edFatbits
 
 	// backdrop: area that appears behind the fat-bits drawing (and preview area)
 	display(6).mode = displayMode.pixel
