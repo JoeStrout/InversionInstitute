@@ -52,7 +52,7 @@ displays.setupEditorSim picW, picH, ps
 spriteDisp = displays.edSprite
 fatbits = displays.edFatbits
 backdrop = displays.edBackdrop
-bgColor = "#666666"
+bgColor = "#888888"
 scratch = displays.edScratch
 
 // load brush sprites
@@ -338,9 +338,11 @@ end function
 // screen layout
 paintArea = Rect.make(10, 10, 720, 576)
 prepareScreen = function
-	gfx.fillRect 0, 0, gfx.width, gfx.height, bgColor
-	paintArea.offset(5,5).fill gfx, color.clear
-	paintArea.grow(1,1).frame gfx, color.black, 4, -4
+	gfx.clear bgColor, 960+10, 640+10
+	gfx.scrollX = 5; gfx.scrollY = 5
+	area = paintArea.offset(gfx.scrollX, gfx.scrollY)
+	area.fill gfx, color.clear
+	area.grow(1,1).frame gfx, color.black, 4, -4
 	backdrop.clear color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
@@ -349,39 +351,39 @@ end function
 drawGrid = function
 	// Select current image
 	img = circuitPic
-	// Calculate backdrop rectangle
-	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
-	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
-	backdropRect = Rect.make(
-	    paintArea.midX - (maxWidth / 2)*ps,
-	    paintArea.midY - (maxHeight / 2)*ps,
-	    maxWidth * ps,
-	    maxHeight * ps)
-	// Fill backdrop area
-	backdropRect.fill(backdrop, backdrop.color)
+//	// Calculate backdrop rectangle
+//	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
+//	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
+//	backdropRect = Rect.make(
+//	    paintArea.midX - (maxWidth / 2)*ps,
+//	    paintArea.midY - (maxHeight / 2)*ps,
+//	    maxWidth * ps,
+//	    maxHeight * ps).offset(gfx.scrollX, gfx.scrollY)
+//	// Fill backdrop area
+//	backdropRect.fill backdrop, "#FF00FF"//backdrop.color
+
 	// Draw lines for individual "fat" pixels
 	gfx.color = "#88888866"
-	for i in range(1, paintArea.width/ps)
+	area = paintArea.offset(gfx.scrollX, gfx.scrollY)
+	for i in range(1, area.width/ps)
 		if i % 8 == 0 then continue
-		x = paintArea.left + i*ps
-		gfx.line x, paintArea.top, x, paintArea.bottom
+		x = area.left + i*ps
+		gfx.line x, area.top, x, area.bottom
 		if i <= 64 then
-			y = paintArea.bottom + i*ps
-			gfx.line paintArea.left, y, paintArea.right, y
+			y = area.bottom + i*ps
+			gfx.line area.left, y, area.right, y
 		end if
 	end for
 	// Draw 8x8 cell separators
 	gfx.color = "#777777AA"
 	for i in range(0, 80, 8)
-		x = paintArea.left + i*ps
-		gfx.line x, paintArea.top, x, paintArea.bottom
+		x = area.left + i*ps
+		gfx.line x, area.top, x, area.bottom
 		if i <= 64 then
-			y = paintArea.bottom + i*ps
-			gfx.line paintArea.left, y, paintArea.right, y
+			y = area.bottom + i*ps
+			gfx.line area.left, y, area.right, y
 		end if
 	end for
-	// Draw bounding box of fatbits area
-	backdropRect.frame(gfx, spriteBoundsColor)
 end  function
 
 makeTools = function
