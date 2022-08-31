@@ -9,7 +9,7 @@ ensureImport "gameData"
 
 prepare = function(chapterNum, chapterPath)
 	displays.setupVN
-	globals.curDrawing = null		// (something with an .update function)
+	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function
 		gameData.saveCircuitForChapter(chapterNum, circuitPic)
@@ -21,6 +21,7 @@ end function
 playOneStep = function(curStep)
 	f = playSteps[curStep]
 	f
+	if curDrawing then curDrawing.draw
 end function
 
 play = function(startAtStep = 0)

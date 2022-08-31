@@ -16,14 +16,37 @@ CrossingDwg.images.push CrossingDwg.images[0]
 CrossingDwg.images.push file.loadImage("Crossing2.png")
 CrossingDwg.curIndex = -1
 CrossingDwg.nextUpdateTime = 0
+CrossingDwg.draw = function
+	img = self.images[self.curIndex]
+	gfx.drawImage img, 592-img.width/2, 420-img.height/2
+end function
 CrossingDwg.update = function
 	if time > self.nextUpdateTime then
 		self.curIndex = (self.curIndex + 1) % self.images.len
-		img = self.images[self.curIndex]
-		gfx.drawImage img, 592-img.width/2, 420-img.height/2
+		self.draw
 		self.nextUpdateTime = time + 0.5 + 0.5*(self.curIndex == 1 or self.curIndex == 3)
 	end if
 end function
+
+GateDwg = {}
+GateDwg.editMode = file.loadImage("Gate0.png")
+GateDwg.images = []
+GateDwg.images.push file.loadImage("Gate1.png")
+GateDwg.images.push file.loadImage("Gate2.png")
+GateDwg.curIndex = -1
+GateDwg.nextUpdateTime = 0
+GateDwg.draw = function
+	img = self.images[self.curIndex]
+	gfx.drawImage img, 592-img.width/2, 420-img.height/2
+end function
+GateDwg.update = function
+	if time > self.nextUpdateTime then
+		self.curIndex = (self.curIndex + 1) % self.images.len
+		self.draw
+		self.nextUpdateTime = time + 1
+	end if
+end function
+
 
 scene.prepare 1, "/usr/chapters/1.intro"
 
@@ -78,6 +101,79 @@ if not sim.crossings then
 		sim.nodes = []
 		scene.switchToEditor
 	end function
+
+//----------------------------------------------------------------------
+// If player hasn't made any gates, educate them and send them back.
+else if not sim.gates then
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		display(6).clear color.clear
+		outer.curDrawing = null
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "In addition to crossings, there is just one special glyph " +
+			"which Master Leo worked into Magic Ink.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		displays.vnBackground.drawImage demoTablet, 350, 200
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
+		drawing.drawSpeech "This is called an Inversion Glyph. " +
+		"After the Inversion Institute, of course!",
+			drawing.Speaker.Left, "Alicia"
+		gfx.drawImage GateDwg.editMode, 592-GateDwg.editMode.width/2, 420-GateDwg.editMode.height/2
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		displays.vnBackground.drawImage demoTablet, 350, 200
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "An Inversion Glyph takes up a 3 by 3 square area, " +
+		"with the center and two adjacent corners dark.  Or, you can think " +
+		"of it as a little ""C"" shape followed by a dot.",
+			drawing.Speaker.Left, "Alicia"
+		gfx.drawImage GateDwg.editMode, 592-GateDwg.editMode.width/2, 420-GateDwg.editMode.height/2
+	end function
+
+	playSteps.push function
+		outer.curDrawing = null
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "I've painted the Inversion Glyph yellow here, but the color " +
+		"doesn't matter.  Also, you can paint them facing any direction.",
+			drawing.Speaker.Left, "Alicia"
+		gfx.drawImage GateDwg.editMode, 592-GateDwg.editMode.width/2, 420-GateDwg.editMode.height/2
+	end function
+	
+	playSteps.push function
+		outer.curDrawing = GateDwg
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "The magic of an Inversion Glyph is: once it dries, the ink on the " +
+		"""dot"" side of the glyph is always opposite the ""C"" part of the glyph. ",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "So when the ""C"" side is lit up, the ""dot"" side goes dark, " +
+		"and vice versa.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		drawing.drawSpeech "Try making some Inversion Glyphs.  Remember to test your drawing!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		sim.nodes = []
+		scene.switchToEditor
+	end function
+
+//----------------------------------------------------------------------
+// Player has made both gates and nodes -- done with chapter 1!
+else
 end if
 //----------------------------------------------------------------------
 
