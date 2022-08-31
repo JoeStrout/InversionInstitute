@@ -366,6 +366,7 @@ handleMouse = function
 	  floor((mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale))
 	if node != null then
 		node.setOn not node.on
+		if toDo.indexOf(node) == null then toDo.push node
 	end if
 	while mouse.button; yield; end while	
 end function

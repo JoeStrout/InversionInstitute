@@ -5,6 +5,7 @@
 import "miscUtil"
 ensureImport "grfon"
 ensureImport "qa"
+ensureImport "mapUtil"
 
 // Display name of the player, for use in dialogs etc.
 // (We might use some sanitized version of this as the game

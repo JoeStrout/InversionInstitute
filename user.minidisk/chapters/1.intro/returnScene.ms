@@ -2,6 +2,9 @@
 
 import "miscUtil"
 ensureImport "scene"
+ensureImport "gameData"
+
+if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
 
 if not globals.hasIndex("sim") then
 	displays.setupEditorSim
@@ -71,9 +74,13 @@ scene.prepare 1, "/usr/chapters/1.intro"
 //		drawing.Speaker.Left, "Alicia"	
 //end function
 
+if sim.crossings then gameData.data.ch1.knowsCrossings = true
+if sim.gates then gameData.data.ch1.knowsGates = true
+gameData.writeToDisk
+
 //----------------------------------------------------------------------
 // If player hasn't made any crossings, educate them and send them back.
-if not sim.crossings then
+if not gameData.data.ch1.get("knowsCrossings") then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
@@ -117,7 +124,7 @@ if not sim.crossings then
 
 //----------------------------------------------------------------------
 // If player hasn't made any gates, educate them and send them back.
-else if not sim.gates then
+else if not gameData.data.ch1.get("knowsGates") then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
@@ -218,6 +225,8 @@ else
 
 	playSteps.push function
 		scene.playSunset
+		gameData.data.curChapter = 2
+		gameData.writeToDisk
 		text.row = 0; exit // FOR NOW!
 	end function
 
