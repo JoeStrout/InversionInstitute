@@ -2,12 +2,10 @@
 ## or, "Things to Do List"
 
 ### Editor
-- fix screen trash left behind when using the selection tool
 - shift editor paint area up a bit, leaving room for tool help below
 - add editor functions **F**lip and **R**otate (with help) when pasting
 - make Line tool create crossings when Shift key is held
 - add support for "objectives" supplied by the chapter scene
-- fix eyedropper tool, which doesn't fully select the chosen color
 
 ### Cut Scenes
 - add fade in/out when transitioning to/from cut scenes

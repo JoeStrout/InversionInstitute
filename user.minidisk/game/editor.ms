@@ -447,7 +447,7 @@ drawSelection = function
 		if time % 1 > 0.9 then gfx.color = color.black else gfx.color = "#FF00FF"
 		left = xAtPaintPixel({"x":selection.left}) - floor(ps/2)
 		botm = yAtPaintPixel({"y":selection.bottom}) - floor(ps/2)
-		gfx.drawRect left, botm, selection.width * ps + 1, selection.height * ps + 1
+		gfx.drawRect left + gfx.scrollX, botm + gfx.scrollY, selection.width * ps + 1, selection.height * ps + 1
 	end if
 end function
 
@@ -699,6 +699,7 @@ end function
 
 PalButton.selectMatchingColor = function(c)
 	if c.len < 9 then c = c + "FF"
+	globals.foreColor = c
 	for btn in PalButton.instances
 		if btn.tint == c then
 			palSelectionRing.x = btn.x
