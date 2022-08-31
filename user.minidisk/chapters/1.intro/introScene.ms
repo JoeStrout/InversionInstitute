@@ -3,10 +3,9 @@
 // finally introducing the digital circuits.
 
 import "miscUtil"
-ensureImport "displays"
-ensureImport "alicia"
-ensureImport "drawing"
-ensureImport "backgrounds"
+ensureImport "scene"
+
+scene.prepare 1, "/usr/chapters/1.intro"
 
 demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 lineToHeartPix = new drawing.PixelDrawing
@@ -24,9 +23,6 @@ lineToHeartPix.update = function
 	end if
 end function
 
-curDrawing = null
-
-playSteps = []
 playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	displays.vnBackground.drawImage backgrounds.castle
@@ -86,41 +82,25 @@ playSteps.push function
 		"touch it, it lights up!  Or if it's already lit, it goes dark.  Kids love it!",
 		drawing.Speaker.Left, "Alicia"
 end function
-
-
-
-playOneStep = function(curStep)
-	f = playSteps[curStep]
-	f
+playSteps.push function
+	displays.vnBackground.drawImage backgrounds.lab
+	displays.vnBackground.drawImage demoTablet, 350, 200
+	outer.curDrawing = null
+	lineToHeartPix.drawAll
+	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
+	Alicia.setLeftArm alicia.LeftArm.normal
+	drawing.drawSpeech "Here, why don't you play with this for a while. " +
+		"I need to go see Master Leo.",
+		drawing.Speaker.Left, "Alicia"
 end function
-
-play = function(startAtStep = 0)
-	curStep = startAtStep
-
-	displays.setupVN
-	Alicia.addSpritesToList displays.vnCharacters.sprites	// Alicia enters on left
-
-	while curStep < playSteps.len
-		playOneStep curStep
-		while true
-			Alicia.animate
-			if curDrawing then curDrawing.update
-			if key.available then
-				k = key.get.code
-				if (k == 17 or k == 19) and curStep > 0 then
-					curStep = curStep - 1
-					break
-				else if k == 18 or k == 20 or k == 32 or k == 10 or k == 13 then
-					curStep = curStep + 1
-					break
-				end if
-			end if
-			yield
-		end while	
-	end while
+playSteps.push function
+	globals.circuitPic = gameData.loadCircuitForChapter(1)
+	if circuitPic == null then
+		globals.circuitPic = Image.create(80, 64, color.black)
+	end if
+	scene.switchToEditor
 end function
-
 
 if locals == globals then
-	play
+	scene.play
 end if

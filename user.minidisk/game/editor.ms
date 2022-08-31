@@ -33,7 +33,9 @@ foreColor = "#FFFFFFFF"		// current painting foreground and background colors
 backColor = "#000000FF"
 spriteBoundsColor = color.silver
 ps = 9	// "pixel size" (forgive the short name, but we use this a lot)
-circuitPic = Image.create(80, 64, color.black)
+if not globals.hasIndex("circuitPic") or not circuitPic isa Image then
+	circuitPic = Image.create(80, 64, color.black)
+end if
 picW = circuitPic.width
 picH = circuitPic.height
 resourceDir = "/sys/data/fatbits/"
@@ -750,8 +752,12 @@ end function
 exitButton = new ModeButton
 exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 20
 exitButton.handleClick = function
-	// for now:
-	text.row = 0; print; exit
+	globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+	if globals.hasIndex("returnFunc") then
+		returnFunc
+	else
+		text.row = 0; print; exit
+	end if
 end function
 
 editModeButton = new ModeButton

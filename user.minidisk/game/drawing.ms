@@ -12,7 +12,7 @@ globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
 // and a middle that is stretched when drawn to any size.
 //----------------------------------------------------------------------
 
-Image9Slice = {}
+globals.Image9Slice = {}
 Image9Slice.image = null		// (an Image instance)
 Image9Slice.leftMargin = 0
 Image9Slice.bottomMargin = 0
@@ -30,46 +30,48 @@ Image9Slice.make = function(image, left=12, bottom=12, right=12, top=12)
 end function
 
 Image9Slice.draw = function(g, left, bottom, width, height)
-	midH = height - self.bottomMargin - self.topMargin
-	srcH = self.image.height - self.bottomMargin - self.topMargin
-	nearTop = bottom + height - self.topMargin
+	topH = min(self.topMargin, height/2)
+	botH = min(self.bottomMargin, height/2)
+	midH = height - topH - botH
+	srcMidH = self.image.height - self.bottomMargin - self.topMargin
+	nearTop = bottom + height - topH
 	srcNearTop = self.image.height - self.topMargin
 	midW = width - self.leftMargin - self.rightMargin
 	srcW = self.image.width - self.leftMargin - self.rightMargin
 	nearRight = left + width - self.rightMargin
 	srcNearRight = self.image.width - self.rightMargin
-	
+		
 	// left side (bottom, middle, top)
 	g.drawImage self.image, 
-		left, bottom, self.leftMargin, self.bottomMargin,
+		left, bottom, self.leftMargin, botH,
 		0, 0, self.leftMargin, self.bottomMargin
 	g.drawImage self.image, 
 		left, bottom + self.bottomMargin, self.leftMargin, midH,
-		0, self.bottomMargin, self.leftMargin, srcH
+		0, self.bottomMargin, self.leftMargin, srcMidH
 	g.drawImage self.image, 
-		left, nearTop, self.leftMargin, self.topMargin,
+		left, nearTop, self.leftMargin, topH,
 		0, srcNearTop, self.leftMargin, self.topMargin
 	
 	// center section (bottom, middle, top)
 	g.drawImage self.image, 
-		left + self.leftMargin, bottom, midW, self.bottomMargin,
+		left + self.leftMargin, bottom, midW, botH,
 		self.leftMargin, 0, srcW, self.bottomMargin
 	g.drawImage self.image, 
 		left + self.leftMargin, bottom + self.bottomMargin, midW, midH,
-		self.leftMargin, self.bottomMargin, srcW, srcH
+		self.leftMargin, self.bottomMargin, srcW, srcMidH
 	g.drawImage self.image, 
-		left + self.leftMargin, nearTop, midW, self.topMargin,
+		left + self.leftMargin, nearTop, midW, topH,
 		self.leftMargin, srcNearTop, srcW, self.topMargin
 	
 	// right section (bottom, middle, top)
 	g.drawImage self.image, 
-		nearRight, bottom, self.rightMargin, self.bottomMargin,
+		nearRight, bottom, self.rightMargin, botH,
 		srcNearRight, 0, self.rightMargin, self.bottomMargin
 	g.drawImage self.image, 
 		nearRight, bottom + self.bottomMargin, self.rightMargin, midH,
-		srcNearRight, self.bottomMargin, self.rightMargin, srcH
+		srcNearRight, self.bottomMargin, self.rightMargin, srcMidH
 	g.drawImage self.image, 
-		nearRight, nearTop, self.rightMargin, self.topMargin,
+		nearRight, nearTop, self.rightMargin, topH,
 		srcNearRight, srcNearTop, self.rightMargin, self.topMargin	
 end function
 
@@ -175,7 +177,6 @@ drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
 	return [left, bottom, width, height]
 end function
 
-
 drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone")
 	displays.vnSpeech.clear color.clear
 	lines = wrapLines(speech, 550)
@@ -191,5 +192,8 @@ end function
 
 if locals == globals then
 	displays.setupVN
-	drawSpeechBox Speaker.Left
+	//drawSpeechBox Speaker.Left
+	drawSpeech "Hello world!  This is a speech box with several lines of text " +
+	"in it.  They should wrap automatically, and the speech bubble should adjust " +
+	"as needed to fit."
 end if

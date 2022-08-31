@@ -14,12 +14,12 @@ globals.ensureImport = function(moduleName)
 end function
 
 // Get the maximum of two values
-max = function(a,b)
+globals.max = function(a,b)
 	if a > b then return a else return b
 end function
 
 // Get the minimum of two values
-min = function(a,b)
+globals.min = function(a,b)
 	if a < b then return a else return b
 end function
 

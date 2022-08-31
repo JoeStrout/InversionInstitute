@@ -24,6 +24,10 @@ setupVN = function
 	outer.vnBackground = display(7)
 	vnBackground.clear "#444444"
 	
+	display(6).mode = displayMode.pixel
+	globals.gfx = display(6)
+	gfx.clear color.clear
+	
 	display(5).mode = displayMode.sprite
 	outer.vnCharacters = display(5)
 	vnCharacters.clear
@@ -31,6 +35,11 @@ setupVN = function
 	display(4).mode = displayMode.pixel
 	outer.vnSpeech = display(4)
 	vnSpeech.clear color.clear
+	
+	display(3).mode = displayMode.off
+	display(2).mode = displayMode.off
+	display(1).mode = displayMode.text
+	globals.text = display(1)
 	
 	text.clear
 end function
