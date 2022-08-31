@@ -3,10 +3,23 @@
 import "miscUtil"
 ensureImport "scene"
 
+if not globals.hasIndex("sim") then
+	displays.setupEditorSim
+	display(0).mode = displayMode.solidColor; display(0).color = color.black
+	import "pixelLogicSim"; sim = pixelLogicSim
+	circuitPic = gameData.loadCircuitForChapter(1)
+	if circuitPic == null then
+		circuitPic = Image.create(80, 64, color.black)
+	end if
+	displays.simGfx.drawImage circuitPic
+end if
+
 if not sim.nodes then
 	sim.setup true
 	sim.analyze
 end if
+
+display(0).mode = displayMode.off
 
 CrossingDwg = {}
 CrossingDwg.images = []
@@ -50,24 +63,24 @@ end function
 
 scene.prepare 1, "/usr/chapters/1.intro"
 
-playSteps.push function
-	displays.vnBackground.drawImage backgrounds.lab
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-	drawing.drawSpeech "Did you have fun with that Magic Ink?",
-		drawing.Speaker.Left, "Alicia"
-end function
-
-// Just for debugging:
-playSteps.push function
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "I see you made " + sim.nodes.len + " nodes, " + 
-			sim.crossings.len + " crossings, and " + sim.gates.len + " gates.",
-		drawing.Speaker.Left, "Alicia"	
-end function
+//// Just for debugging:
+//playSteps.push function
+//	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+//	drawing.drawSpeech "I see you made " + sim.nodes.len + " nodes, " + 
+//			sim.crossings.len + " crossings, and " + sim.gates.len + " gates.",
+//		drawing.Speaker.Left, "Alicia"	
+//end function
 
 //----------------------------------------------------------------------
 // If player hasn't made any crossings, educate them and send them back.
 if not sim.crossings then
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		drawing.drawSpeech "Did you have fun with that Magic Ink?",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		display(6).clear color.clear
@@ -105,6 +118,13 @@ if not sim.crossings then
 //----------------------------------------------------------------------
 // If player hasn't made any gates, educate them and send them back.
 else if not sim.gates then
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		drawing.drawSpeech "Looks like you've got the hang of crossings!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		display(6).clear color.clear
@@ -174,6 +194,33 @@ else if not sim.gates then
 //----------------------------------------------------------------------
 // Player has made both gates and nodes -- done with chapter 1!
 else
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		drawing.drawSpeech "Looks like you've mastered both crossings and Inversion Glyphs!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "They don't have much practical use, but they are fun to play with.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "It's been a long day.  Let's get you settled in, and tomorrow " +
+		"we'll try to find something for you to do around here.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		scene.playSunset
+		text.row = 0; exit // FOR NOW!
+	end function
+
 end if
 //----------------------------------------------------------------------
 

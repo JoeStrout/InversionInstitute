@@ -12,7 +12,8 @@ lineToHeartPix = new drawing.PixelDrawing
 display(6).mode = displayMode.pixel
 display(6).clear color.clear
 lineToHeartPix.load "lineToHeart.txt", display(6), 340, 100, 8
-lineToHeartPixe.draw = function
+lineToHeartPix.draw = function
+	step = self.curStep % 200
 	if step == 0 then
 		self.drawAll color.black
 	else if step == 100 then
@@ -22,7 +23,6 @@ end function
 lineToHeartPix.update = function
 	super.update
 	if self.curStep < 200 then return
-	step = self.curStep % 200
 	self.draw
 end function
 
@@ -105,5 +105,5 @@ playSteps.push function
 end function
 
 if locals == globals then
-	scene.play 6
+	scene.play
 end if

@@ -57,3 +57,23 @@ switchToEditor = function
 	text.color = color.silver
 	run
 end function
+
+playSunset = function
+	clear
+	sprDisp = display(4)
+	night = new Sprite
+	night.image = backgrounds.castleNight
+	night.x = 480; night.y = 320
+	sprDisp.sprites.push night
+	eve = new Sprite
+	eve.image = backgrounds.castleEvening
+	eve.x = 480; eve.y = 320
+	sprDisp.sprites.push eve
+	wait 1
+	for alpha in range(255, 0)
+		eve.tint = color.rgba(255,255,255, alpha)
+		yield
+	end for
+	wait 1
+end function	
+
