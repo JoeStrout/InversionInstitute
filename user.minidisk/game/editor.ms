@@ -752,7 +752,7 @@ end function
 exitButton = new ModeButton
 exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 20
 exitButton.handleClick = function
-	globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 	if globals.hasIndex("returnFunc") then
 		returnFunc
 	else

@@ -6,13 +6,9 @@ import "miscUtil"
 ensureImport "mathUtil"
 ensureImport "displays"
 
-min = function(a,b)
-	if b < a then return b else return a
-end function
-
-max = function(a,b)
-	if b > a then return b else return a
-end function
+nodes = []			// list of Node objects
+gates = []			// list of Gate objects
+crossings = []		// list of [x,y] coordinates
 
 filePath = null
 if (not locals.hasIndex("circuitPic") and
@@ -226,7 +222,8 @@ findGates = function
 			// print pat
 			if pat == "010101010" then  // crossing
 				result.push Gate.make(x, y, 0)
-				displays.simGfx.setPixel x, y, crossingColor				
+				displays.simGfx.setPixel x, y, crossingColor
+				crossings.push [x,y]
 			else if pat == "110101110" then  // NOT (East)
 				result.push Gate.make(x, y, 4)
 			else if pat == "111101010" then // NOT (North)
@@ -254,14 +251,16 @@ analyze = function
 	//print "Resetting alpha" ...actually, let's don't
 	//resetAlpha				we'll instead just require opaque images for now
 	
+	outer.crossings = []		// list of [x,y] coordinates
+	
 	// Find all the gates.
 //	print "Finding gates"
-	outer.gates = findGates
+	outer.gates = findGates		// list of Gate objects
 //	print "Found " + gates.len + " gates"
 	
 	// Create nodes.
 //	print "Creating nodes"
-	outer.nodes = []
+	outer.nodes = []			// list of Node objects
 	for y in yrange
 		for x in xrange
 			c = displays.simGfx.pixel(x,y)

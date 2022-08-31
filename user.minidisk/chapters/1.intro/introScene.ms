@@ -102,5 +102,5 @@ playSteps.push function
 end function
 
 if locals == globals then
-	scene.play
+	scene.play 6
 end if
