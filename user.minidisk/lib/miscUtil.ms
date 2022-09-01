@@ -7,10 +7,11 @@ env.importPaths = [".", "/usr/game", "/usr/lib", "/sys/lib"]
 // If not, then import that module into the global namespace.
 globals.ensureImport = function(moduleName)
 	if globals.hasIndex(moduleName) then return
-	//print "ensureImport(" + moduleName + ") called from " + stackTrace[1]
+//	print "ensureImport(" + moduleName + ") called from " + stackTrace[1]
 	globals[moduleName] = "PENDING"	// (module is being imported now)
 	import moduleName
 	globals[moduleName] = locals[moduleName]
+//	print "Done importing " + moduleName
 end function
 
 // Get the maximum of two values

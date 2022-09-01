@@ -6,7 +6,6 @@ ensureImport "json"	// (used for PixelDrawing.load)
 
 globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
 
-
 //----------------------------------------------------------------------
 // Image9Slice class: an image wrapper with margins that are not stretched,
 // and a middle that is stretched when drawn to any size.
@@ -124,7 +123,9 @@ end function
 
 // Wrap a long text into multiple lines, breaking on words,
 // as needed to fit within the given width.  Return a list of strings.
-wrapLines = function(s, width=550)
+wrapLines = function(s="", width=550, font=null)
+	if not s then return [""]
+	if not font then font = globals.font
 	result = []
 	while true
 		lenToFit = font.lenToFit(s, width)
@@ -141,6 +142,16 @@ wrapLines = function(s, width=550)
 		s = s[lenToFit+1:].trimLeft
 	end while
 	return result
+end function
+
+// Extend the font class to draw wrapped text, and return the next Y.
+bmfFonts.Font.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
+	lines = wrapLines(s, wrapWidth, self)
+	for line in lines
+		self.print line, x, y, 1, tint
+		y = y - self.lineHeight
+	end for
+	return y
 end function
 
 // Enum for which speaker a speech box is coming from
@@ -184,10 +195,11 @@ drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone
 	y = lbwh[1] + 25 + font.lineHeight * lines.len + font.sizeOver
 	x = lbwh[0] + 25
 	globals.gfx = displays.vnSpeech
-	for line in lines
-		font.print line, x, y
-		y = y - font.lineHeight
-	end for
+	font.printWrapped speech, x, y, 550
+//	for line in lines
+//		font.print line, x, y
+//		y = y - font.lineHeight
+//	end for
 end function
 
 if locals == globals then

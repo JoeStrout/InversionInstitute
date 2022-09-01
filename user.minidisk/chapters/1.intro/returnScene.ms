@@ -4,7 +4,7 @@ import "miscUtil"
 ensureImport "scene"
 ensureImport "gameData"
 
-if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
+if not gameData.data.hasIndex("ch1") or not gameData.data.ch1 then gameData.data.ch1 = {}
 
 if not globals.hasIndex("sim") then
 	displays.setupEditorSim
@@ -21,6 +21,8 @@ if not sim.nodes then
 	sim.setup true
 	sim.analyze
 end if
+
+demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 
 display(0).mode = displayMode.off
 
@@ -66,6 +68,43 @@ end function
 
 scene.prepare 1, "/usr/chapters/1.intro"
 
+globals.context = {}
+context.title = "Ch. 1: Introduction"
+objectivesDrawn = false
+wasInTestMode = false
+context.update = function
+	if testMode and not wasInTestMode then
+		if sim.crossings then gameData.data.ch1.didCrossings = true
+		if sim.gates then gameData.data.ch1.didGates = true
+		gameData.writeToDisk
+		outer.objectivesDrawn = false
+	end if
+	outer.wasInTestMode = testMode
+	if not outer.objectivesDrawn then
+		objectives.erase
+		objectives.print "Play around with the tools above.  Make some doodles.  Have fun!"
+		if gameData.data.ch1.get("didCrossings") then
+			objectives.print
+			objectives.print "☑ make some crossings"
+		else if gameData.data.ch1.get("taughtCrossings") then
+			objectives.print
+			objectives.print "☐ make some crossings"
+		end if 
+		if gameData.data.ch1.get("didGates") then
+			objectives.print
+			objectives.print "☑ make Inversion Glyphs"
+		else if gameData.data.ch1.get("taughtGates") then
+			objectives.print
+			objectives.print "☐ make Inversion Glyphs"
+		end if 
+		objectives.print
+		objectives.print "Then press the TEST button, and click your drawing to see what happens."
+		objectives.print
+		objectives.print "Press EXIT when done."
+		outer.objectivesDrawn = true
+	end if
+end function
+
 //// Just for debugging:
 //playSteps.push function
 //	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
@@ -74,13 +113,13 @@ scene.prepare 1, "/usr/chapters/1.intro"
 //		drawing.Speaker.Left, "Alicia"	
 //end function
 
-if sim.crossings then gameData.data.ch1.knowsCrossings = true
-if sim.gates then gameData.data.ch1.knowsGates = true
+if sim.crossings then gameData.data.ch1.didCrossings = true
+if sim.gates then gameData.data.ch1.didGates = true
 gameData.writeToDisk
 
 //----------------------------------------------------------------------
 // If player hasn't made any crossings, educate them and send them back.
-if not gameData.data.ch1.get("knowsCrossings") then
+if not gameData.data.ch1.get("didCrossings") then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
@@ -109,6 +148,7 @@ if not gameData.data.ch1.get("knowsCrossings") then
 		 "Then the left side will be fully connected to the right, and " +
 		 "the top side will be connected to the bottom.",
 			drawing.Speaker.Left, "Alicia"
+		gameData.data.ch1.taughtCrossings = true
 	end function
 	
 	playSteps.push function
@@ -124,7 +164,7 @@ if not gameData.data.ch1.get("knowsCrossings") then
 
 //----------------------------------------------------------------------
 // If player hasn't made any gates, educate them and send them back.
-else if not gameData.data.ch1.get("knowsGates") then
+else if not gameData.data.ch1.get("didGates") then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
@@ -185,6 +225,7 @@ else if not gameData.data.ch1.get("knowsGates") then
 		drawing.drawSpeech "So when the ""C"" side is lit up, the ""dot"" side goes dark, " +
 		"and vice versa.",
 			drawing.Speaker.Left, "Alicia"
+		gameData.data.ch1.taughtGates = true
 	end function
 
 	playSteps.push function

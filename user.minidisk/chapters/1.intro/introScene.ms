@@ -4,8 +4,10 @@
 
 import "miscUtil"
 ensureImport "scene"
+ensureImport "objectives"
 
 scene.prepare 1, "/usr/chapters/1.intro"
+if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
 
 demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 lineToHeartPix = new drawing.PixelDrawing
@@ -101,6 +103,20 @@ playSteps.push function
 	if circuitPic == null then
 		globals.circuitPic = Image.create(80, 64, color.black)
 	end if
+	globals.context = {}
+	context.title = "Ch. 1: Introduction"
+	objectivesDrawn = false
+	context.update = function
+		if not outer.objectivesDrawn then
+			objectives.erase
+			objectives.print "Play around with the tools above.  Make some doodles.  Have fun!"
+			objectives.print
+			objectives.print "Then press the TEST button, and click your drawing to see what happens."
+			objectives.print
+			objectives.print "Press EXIT when done."
+			outer.objectivesDrawn = true
+		end if
+	end function
 	scene.switchToEditor
 end function
 
