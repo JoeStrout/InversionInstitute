@@ -17,3 +17,9 @@
 - fix Georgia font to eliminate dark shadow on anti-aliasing pixels
 - prepare additional fonts (small, italic, etc.) as needed
 
+
+### Script Notes
+1. Introduction: meet Alicia; learn about crossings and not gates).
+1. End of Recess: help a teacher signal his children to come back inside.  (Use a double-not gate to make a signal diode.)
+1. Oarsworthy's Children: Alicia tells of Ms. Oarsworthy, who needs the night light to light up when either of her children request it, but neither should be able to turn it off if the other wants it on. (Two diodes feeding an OR gate.)
+1. 

@@ -7,5 +7,6 @@ ensureImport "bmfFonts"
 ensureImport "backgrounds"
 
 // ...Then drop right into scene 1!
-cd "/usr/chapters/1.intro"
+// (Or whatever scene we are currently working on.)
+cd "/usr/chapters/2.diode"
 load "introScene"; run
