@@ -200,6 +200,16 @@ Button.make = function(imageName, left, top, toggles=false)
 	return btn
 end function
 
+Button.hide = function
+	// hacky, but it works:
+	self.bgSprite.y = self.bgSprite.y + 10000
+	self.iconSprite.y = self.iconSprite.y + 10000
+end function
+Button.unhide = function
+	self.bgSprite.y = self.bgSprite.y % 10000
+	self.iconSprite.y = self.iconSprite.y % 10000
+end function
+
 Button.handleClick = function
 	if self.toggles then
 		self.isDown = not self.isDown
@@ -711,6 +721,12 @@ testModeButton.init "TEST", paletteArea.midX, paintArea.top + 20
 testModeButton.handleClick = function
 	setTestMode true
 end function
+checkButton = new ModeButton
+checkButton.init "CHECK", paletteArea.midX, 20
+checkButton.handleClick = function
+	if context.hasIndex("check") then context.check
+end function
+checkButton.hide
 
 setTestMode = function(enterTestMode = true)
 	outer.testMode = enterTestMode
@@ -722,10 +738,12 @@ setTestMode = function(enterTestMode = true)
 		sim.setup true
 		sim.analyze
 		text.clear
+		if context.hasIndex("check") then checkButton.unhide else checkButton.hide
 	else
 		displays.simSprite.clear
 		fatbits.drawImage circuitPic, 0, 0
 		spriteDisp.sprites = alwaysSprites + editSprites
+		checkButton.hide
 	end if
 end function
 

@@ -26,8 +26,17 @@ erase = function(drawTitle = true)
 	outer.cursorY = y - 30
 end function
 
-print = function(s)
-	outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width - 8, textColor)
+print = function(s, color=null)
+	if color == null then color = textColor
+	outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width - 8, color)
+end function
+
+printErr = function(s)
+	print s, "#AA0000"
+end function
+
+printSuccess = function(s)
+	print s, "#00FF00"
 end function
 
 if locals == globals then

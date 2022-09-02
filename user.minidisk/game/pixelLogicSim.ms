@@ -102,10 +102,11 @@ Node.containsXY = function(x, y)
 	k = y * mapW + x
 	return coordToNode.hasIndex(k) and coordToNode[k] == self
 end function
-Node.setOn = function(nowOn)
+Node.setOn = function(nowOn, updateSelf=true)
 	if nowOn == self.on then return
 	self.on = nowOn
 	self.draw
+	if updateSelf and toDo.indexOf(self) == null then toDo.push self
 	for n in self.outputs
 		if toDo.indexOf(n) == null then toDo.push n
 	end for
@@ -308,7 +309,7 @@ analyze = function
 		end for
 	end if
 	for n in nodes
-		n.setOn false
+		n.setOn false, false
 	end for
 	//	outer.toDo = nodes[:]
 end function
@@ -366,7 +367,6 @@ handleMouse = function
 	  floor((mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale))
 	if node != null then
 		node.setOn not node.on
-		if toDo.indexOf(node) == null then toDo.push node
 	end if
 	while mouse.button; yield; end while	
 end function
@@ -394,6 +394,13 @@ simOneStep = function
 		stepsLeft = stepsLeft - 1
 		n.update
 	end while
+end function
+
+simulate = function(steps=10)
+	for i in range(1, steps)
+		self.simOneStep
+		yield
+	end for
 end function
 
 singleStep = false
