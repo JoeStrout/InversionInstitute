@@ -8,5 +8,5 @@ ensureImport "backgrounds"
 
 // ...Then drop right into scene 1!
 // (Or whatever scene we are currently working on.)
-cd "/usr/chapters/2.diode"
+cd "/usr/chapters/3.or"
 load "introScene"; run

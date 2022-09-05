@@ -129,7 +129,7 @@ wrapLines = function(s="", width=550, font=null)
 	result = []
 	while true
 		lenToFit = font.lenToFit(s, width)
-		if lenToFit >= s.len then
+		if lenToFit+1 >= s.len then
 			result.push s
 			break
 		end if

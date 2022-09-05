@@ -1,4 +1,4 @@
-// Intro scene the "signal diode" task, in which we must help a teacher
+// Intro scene for the "signal diode" task, in which we must help a teacher
 // recall his unruly students at the end of recess.
 
 import "miscUtil"
