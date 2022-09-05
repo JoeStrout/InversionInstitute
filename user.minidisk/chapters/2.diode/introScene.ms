@@ -5,11 +5,10 @@ import "miscUtil"
 ensureImport "scene"
 ensureImport "objectives"
 import "findErrors"
+import "context"
 
 scene.prepare 2, "/usr/chapters/2.diode"
 if not gameData.data.hasIndex("ch2") or not gameData.data.ch2 then gameData.data.ch2 = {}
-
-
 
 //demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 
@@ -74,45 +73,8 @@ playSteps.push function
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
-	globals.circuitPic = gameData.loadCircuitForChapter(2)
-	if circuitPic == null then
-		globals.circuitPic = file.loadImage("start.png")
-	end if
-	globals.context = {}
-	context.title = "Ch. 2: Recess is Over"
-	drawObjs = function
-		objectives.erase
-		objectives.print "Connect the control pad (A) to the sign (B) in such a way " +
-		"that the sign can ONLY be controlled from A; tapping the sign should not work."
-		objectives.print
-		objectives.print "B should be on whenever A is on, and B should be off when A is off."
-		objectives.print
-		objectives.print "A on  → B on"
-		objectives.print "A off → B off"
-		objectives.print
-		objectives.print "(Remember to TEST your design, and press EXIT when done.)"	
-	end function
 	context.objectivesDrawn = false
 	context.checkDrawn = false
-	context.update = function
-		if not context.objectivesDrawn or (context.checkDrawn and not testMode) then
-			drawObjs
-			context.objectivesDrawn = true
-			context.checkDrawn = false
-		end if
-	end function
-	context.check = function
-		err = findErrors.check	
-		drawObjs
-		objectives.print
-		if not err then
-			objectives.printSuccess "Success!"
-		else
-			objectives.printErr "Not quite! " + err
-		end if
-		context.checkDrawn = true
-		return not err
-	end function
 	scene.switchToEditor
 end function
 
