@@ -3,12 +3,15 @@
 import "miscUtil"
 ensureImport "displays"
 ensureImport "alicia"
+ensureImport "baab"
 ensureImport "drawing"
 ensureImport "backgrounds"
 ensureImport "gameData"
 
 prepare = function(chapterNum, chapterPath)
 	displays.setupVN
+	alicia.present = true
+	baab.present = false
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function
@@ -28,8 +31,12 @@ play = function(startAtStep = 0)
 	curStep = startAtStep
 
 	displays.setupVN
-	Alicia.addSpritesToList displays.vnCharacters.sprites	// Alicia enters on left
-
+	if Alicia.present then
+		Alicia.addSpritesToList displays.vnCharacters.sprites
+	else
+		// ToDo: exit Alicia.
+	end if
+	
 	while curStep < playSteps.len
 		playOneStep curStep
 		while true

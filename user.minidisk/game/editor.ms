@@ -285,7 +285,7 @@ Tool.handleClick = function
 	setMode self.mode
 end function
 
-modesWithSize = [kModeErase, kModePaint, kModeLighten, kModeDarken, kModeBlur]
+modesWithSize = [kModeErase, kModePaint]
 setMode = function(newMode)
 	globals.mode = newMode
 	globals.drawErases = false
@@ -308,7 +308,7 @@ prepareScreen = function
 	backdrop.clear color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
-	font.print context.title, 10, 640 + font.sizeOver
+	font.print context.title, 10, 642 + font.sizeOver
 	objectives.area = Rect.make(750,10, 208,410)
 	outer.helpArea = Rect.make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
 end function
@@ -527,16 +527,6 @@ toolFuncs[kModeFill] = function(pos, justDown)
 	end while
 end function
 
-toolFuncs[kModeReplace] = function(pp, justDown)
-	if not justDown then return
-	fromColor = fatbits.pixel(pp.x, pp.y)
-	for y in range(0, picH)
-		for x in range(0, picW)
-			if fatbits.pixel(x, y) == fromColor then fatbits.setPixel x,y, foreColor
-		end for
-	end for
-end function
-
 toolFuncs[kModeEyedrop] = function(pp, justDown)
 	c = fatbits.pixel(pp.x, pp.y)
 	PalButton.selectMatchingColor c
@@ -667,7 +657,7 @@ PalButton.checkEventsForAll = function
 end function
 
 PalButton.selectMatchingColor = function(c)
-	if c.len < 9 then c = c + "FF"
+	c = c[:7] + "FF"
 	globals.foreColor = c
 	for btn in PalButton.instances
 		if btn.tint == c then
@@ -690,7 +680,7 @@ makeDefaultPalette
 //--------------------------------------------------------------------------------
 // Mode Buttons & Mode Management
 
-testMode = false
+testMode = -1
 
 ModeButton = new Button
 ModeButton.iconUpTint = color.black
@@ -749,6 +739,7 @@ end function
 checkButton.hide
 
 setTestMode = function(enterTestMode = true)
+	if testMode == enterTestMode then return	// (already in the correct mode)
 	outer.testMode = enterTestMode
 	editModeButton.isDown = not testMode; editModeButton.update
 	testModeButton.isDown = testMode; testModeButton.update
@@ -759,11 +750,13 @@ setTestMode = function(enterTestMode = true)
 		sim.analyze
 		text.clear
 		if context.hasIndex("check") then checkButton.unhide else checkButton.hide
+		drawHelp "Click any ink to toggle it on or off."
 	else
 		displays.simSprite.clear
 		fatbits.drawImage circuitPic, 0, 0
 		spriteDisp.sprites = alwaysSprites + editSprites
 		checkButton.hide
+		setMode mode
 	end if
 end function
 
@@ -774,7 +767,6 @@ end function
 startPaintPos = null
 startPaintImg = null
 brushSize = 6
-setMode kModeDraw
 
 PalButton.selectMatchingColor foreColor
 

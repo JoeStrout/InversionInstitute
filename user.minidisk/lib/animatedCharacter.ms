@@ -76,6 +76,7 @@ load = function(dirPath)
 	hierData = file.readLines(dirPath + "/Hierarchy.grfon").join(char(13))
 	hierarchy = grfon.parse(hierData)
 	obj = makeObjFromMap(hierarchy)
+	obj.present = true
 	//pprint obj
 	return obj
 end function

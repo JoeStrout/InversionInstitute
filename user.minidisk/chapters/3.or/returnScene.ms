@@ -30,7 +30,7 @@ display(0).mode = displayMode.off
 
 scene.prepare 3, "/usr/chapters/3.or"
 if not errors then
-	gameData.data.ch3.didDiode = true
+	gameData.data.ch3.done = true
 	gameData.writeToDisk
 end if
 

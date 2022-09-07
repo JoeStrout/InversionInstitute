@@ -8,5 +8,5 @@ ensureImport "backgrounds"
 
 // ...Then drop right into scene 1!
 // (Or whatever scene we are currently working on.)
-cd "/usr/chapters/3.or"
+cd "/usr/chapters/4.bitDisplay"
 load "introScene"; run

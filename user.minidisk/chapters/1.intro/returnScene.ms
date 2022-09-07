@@ -242,6 +242,8 @@ else if not gameData.data.ch1.get("didGates") then
 //----------------------------------------------------------------------
 // Player has made both gates and nodes -- done with chapter 1!
 else
+	gameData.data.ch1.done = true
+	gameData.writeToDisk
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
