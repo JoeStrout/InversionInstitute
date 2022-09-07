@@ -1,11 +1,11 @@
-globals.circuitPic = gameData.loadCircuitForChapter(4)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
-
 number = 4
 folderName = "4.bitDisplay"
 title = "Ch. 4: 0/1 Display"
+
+globals.circuitPic = gameData.loadCircuitForChapter(number)
+if circuitPic == null then
+	globals.circuitPic = file.loadImage("start.png")
+end if
 
 drawObjs = function
 	objectives.erase

@@ -30,19 +30,23 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
+Baab.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.normal
-		drawing.drawSpeech "Still working on that zero/one display?",
-			drawing.Speaker.Left, "Alicia"
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
+		drawing.drawSpeech "Hmm, that doesn't seem right.",
+			drawing.Speaker.Right, "Baab"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		drawing.drawSpeech "Well, please keep at it. If anyone can figure it out, you can!",
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
+		// ToDo: get player's pronouns, and adjust accordingly
+		drawing.drawSpeech "Don't worry Baab, I know he can do it!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 	
@@ -61,22 +65,18 @@ else
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-		drawing.drawSpeech "Thank you, that looks perfect!",
-			drawing.Speaker.Left, "Alicia"
-	end function
-
-	playSteps.push function
-		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		drawing.drawSpeech "This proves that Ink signals can be thought of as 0 and 1.  And displayed that way, too!",
-			drawing.Speaker.Left, "Alicia"
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
+		drawing.drawSpeech "Hey thanks, that looks great!",
+			drawing.Speaker.Right, "Baab"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		drawing.drawSpeech "I'll start thinking about what we can do with that.",
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
+		// ToDo: get player's pronouns, and adjust accordingly
+		drawing.drawSpeech "I told you he could do it.",
 			drawing.Speaker.Left, "Alicia"
 	end function
 

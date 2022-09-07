@@ -1,18 +1,26 @@
 check = function
-	nodeI = sim.nodeAtXY(4, 25)
-	if not nodeI then return "Expected node I not found."
-	nodeC = sim.nodeAtXY(67, 35)
-	if not nodeC then return "Expected node C not found."
-	node1 = sim.nodeAtXY(76, 35)
-	if not node1 then return "expected node 1 not found."
+	nodeA = sim.nodeAtXY(4, 44)
+	if not nodeA then return "Expected node A not found."
+	nodeB = sim.nodeAtXY(4, 23)
+	if not nodeB then return "Expected node B not found."
+	nodeG = sim.nodeAtXY(76, 34)
+	if not nodeG then return "expected node G not found."
 
-	nodeI.setOn false
+	nodeA.setOn false; nodeB.setOn false
 	sim.simulate
-	if not nodeC.on or not node1.on then return "Display doesn't show 0 when I is off."
+	if nodeG.on then return "G should be off when A and B are off."
 
-	nodeI.setOn true
+	nodeA.setOn true; nodeB.setOn false
 	sim.simulate
-	if nodeC.on or not node1.on then return "Display doesn't show 1 when I is on."
+	if nodeG.on then return "G should be off when B is off."
+
+	nodeA.setOn false; nodeB.setOn true
+	sim.simulate
+	if nodeG.on then return "G should be off when A is off."
+
+	nodeA.setOn true; nodeB.setOn true
+	sim.simulate
+	if not nodeG.on then return "G should be on when A and B are on."
 	
 	return ""
 end function

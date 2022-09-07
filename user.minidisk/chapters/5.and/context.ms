@@ -1,11 +1,11 @@
-globals.circuitPic = gameData.loadCircuitForChapter(4)
+number = 5
+folderName = "5.and"
+title = "Ch. 5: Andi's Gate"
+
+globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
-
-number = 4
-folderName = "5.and"
-title = "Ch. 5: Andi's Gate"
 
 drawObjs = function
 	objectives.erase

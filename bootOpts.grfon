@@ -1,0 +1,6 @@
+startupChime: false
+welcome: false
+queryCmd: false
+controlC: true	// for now -- change for release!
+hasBezel: false
+ignorePrefs: true
