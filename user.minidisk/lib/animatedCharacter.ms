@@ -34,7 +34,16 @@ CharPart.animate = function(updateNow = true)
 	if updateNow then self.update
 end function
 
-CharPart.addSpritesToList = function(spriteList)
+CharPart.setAnimLength = function(newLength, recurse=true)
+	self.animLength = newLength
+	if recurse then
+		for c in self.children
+			c.setAnimLength newLength, true
+		end for
+	end if
+end function
+
+CharPart.allSprites = function
 	sprites = []
 	toDo = [self]
 	while toDo
@@ -42,8 +51,20 @@ CharPart.addSpritesToList = function(spriteList)
 		if cp.hasIndex("sprite") then sprites.push cp.sprite
 		if cp.children then toDo = toDo + cp.children
 	end while
+	return sprites
+end function
+
+CharPart.addSpritesToList = function(spriteList)
+	sprites = self.allSprites
 	sprites.sort "z", false
 	for s in sprites; spriteList.push s; end for
+end function
+
+CharPart.removeSpritesFromList = function(spriteList)
+	for spr in self.allSprites
+		idx = spriteList.indexOf(spr)
+		if idx != null then spriteList.remove idx
+	end for
 end function
 
 makeObjFromMap = function(m, z=0)
@@ -98,10 +119,12 @@ test = function
 		if blinkIdx < 0 then
 			eyes.sprite.image = eyeImages[0]
 			outer.blinkIdx = round(120 + 300*rnd)
-		else if blinkIdx == 3 or blinkIdx == 4 then
-			eyes.sprite.image = eyeImages[1]
-		else if blinkIdx < 3 then
-			eyes.sprite.image = eyeImages[2]
+		else if blinkIdx >= 8 and blinkIdx < 12 then
+			eyes.sprite.image = eyeImages[1]	// half-closed
+		else if blinkIdx >= 4 and blinkIdx < 8 then
+			eyes.sprite.image = eyeImages[2]	// closed
+		else if blinkIdx < 4 then
+			eyes.sprite.image = eyeImages[1]	// half-closed
 		end if
 	end function
 	

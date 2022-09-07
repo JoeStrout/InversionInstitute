@@ -7,8 +7,9 @@ ensureImport "objectives"
 import "findErrors"
 import "context"
 
-scene.prepare 4, "/usr/chapters/4.bitDisplay"
-if not gameData.data.hasIndex("ch4") or not gameData.data.ch4 then gameData.data.ch4 = {}
+scene.prepare context.number, "/usr/chapters/" + context.folderName
+ch = "ch" + context.number
+if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch] = {}
 
 //demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 

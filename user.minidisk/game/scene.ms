@@ -8,10 +8,12 @@ ensureImport "drawing"
 ensureImport "backgrounds"
 ensureImport "gameData"
 
+characters = [Alicia, Baab]
+
 prepare = function(chapterNum, chapterPath)
 	displays.setupVN
-	alicia.present = true
-	baab.present = false
+	Alicia.present = true
+	Baab.present = false
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function
@@ -24,6 +26,15 @@ end function
 playOneStep = function(curStep)
 	f = playSteps[curStep]
 	f
+	for character in characters
+		if character.present and not character.onStage then
+			character.addSpritesToList displays.vnCharacters.sprites
+			character.onStage = true
+		else if character.onStage and not character.present then
+			character.removeSpritesFromList displays.vnCharacters.sprites
+			character.onStage = false
+		end if
+	end for
 	if curDrawing then curDrawing.draw
 end function
 
@@ -31,16 +42,21 @@ play = function(startAtStep = 0)
 	curStep = startAtStep
 
 	displays.setupVN
-	if Alicia.present then
-		Alicia.addSpritesToList displays.vnCharacters.sprites
-	else
-		// ToDo: exit Alicia.
-	end if
+	for character in characters
+		if character.present then
+			character.addSpritesToList displays.vnCharacters.sprites
+			character.onStage = true
+		else
+			character.onStage = false
+		end if
+	end for
 	
 	while curStep < playSteps.len
 		playOneStep curStep
 		while true
-			Alicia.animate
+			for character in characters
+				character.animate
+			end for
 			if curDrawing then curDrawing.update
 			if key.available then
 				k = key.get.code

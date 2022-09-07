@@ -767,6 +767,7 @@ end function
 startPaintPos = null
 startPaintImg = null
 brushSize = 6
+mode = null
 
 PalButton.selectMatchingColor foreColor
 

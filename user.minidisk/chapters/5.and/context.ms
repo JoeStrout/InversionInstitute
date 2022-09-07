@@ -4,13 +4,13 @@ if circuitPic == null then
 end if
 
 number = 4
-folderName = "4.bitDisplay"
-title = "Ch. 4: 0/1 Display"
+folderName = "5.and"
+title = "Ch. 5: Andi's Gate"
 
 drawObjs = function
 	objectives.erase
-	objectives.print "Hook up the input (I) so that the display looks like a 0 when " +
-	"the input is off, and a 1 when the input is on."
+	objectives.print "Connect the two inputs (A and B) to the output (G) such that " +
+	"G is on only when both A and B are on."
 	objectives.print
 end function
 
