@@ -12,24 +12,35 @@ ensureImport "drawing"
 ensureImport "objectives"
 ensureImport "pixelLogicSim"; sim = pixelLogicSim
 
+modeHelp = {}
+
 // Constants and global state variables
 kModeDraw = "DRAW"
+modeHelp[kModeDraw] = "Click or drag to draw or erase."
 kModeErase = "ERASE"
+modeHelp[kModeErase] = "Click or drag to erase a circular area."
 kModeSelect = "SELECT"
+modeHelp[kModeSelect] = "Click and drag to select an area, then: [X] cut, [C] copy, [V] paste."
 kModeMove = "MOVE"
+modeHelp[kModeMove] = "Click and drag to reposition the ink within the canvas."
 kModeFill = "FILL"
+modeHelp[kModeFill] = "Click to fill with the selected color."
 kModeEyedrop = "EYEDROP"
+modeHelp[kModeEyedrop] = "Click to switch to the clicked color.  (Shortcut: hold Alt.)"
 kModePaint = "PAINT"
-kModeLighten = "LIGHTEN"
-kModeDarken = "DARKEN"
-kModeBlur = "BLUR"
+modeHelp[kModePaint] = "Click or drag to paint a circular area."
 kModeDrawRect = "DRAWRECT"
+modeHelp[kModeDrawRect] = "Click and drag to draw a rectangular outline."
 kModeFillRect = "FILLRECT"
+modeHelp[kModeFillRect] = "Click and drag to draw a filled rectangle."
 kModeDrawEllipse = "DRAWELLIPSE"
+modeHelp[kModeDrawEllipse] = "Click and drag to draw a round outline."
 kModeFillEllipse = "FILLELLIPSE"
+modeHelp[kModeFillEllipse] = "Click and drag to draw a filled ellipse."
 kModeLine = "DRAWLINE"
-kModeReplace = "REPLACE"
+modeHelp[kModeLine] = "Click and drag to draw a straight line."  // ToDo: [Shift] to make crossings.
 kModePasting = "PASTING"
+modeHelp[kModePasting] = "Click to apply the copied ink at the desired position." // ToDo: [R]otate and [F]lip.
 
 foreColor = "#FFFFFFFF"		// current painting foreground and background colors
 backColor = "#000000FF"
@@ -41,6 +52,7 @@ end if
 picW = circuitPic.width
 picH = circuitPic.height
 resourceDir = "/sys/data/fatbits/"
+helpFont = objectives.smallFont
 
 testSprites = []		// UI sprites needed only in simulation mode
 editSprites = []	// UI sprites needed only in edit mode
@@ -281,11 +293,12 @@ setMode = function(newMode)
 	for tool in Tool.instances
 		tool.update
 	end for
+	drawHelp modeHelp.get(mode)
 end function
 
 //---------------------------------------------------------------------
 // screen layout
-paintArea = Rect.make(10, 10, 720, 576)
+paintArea = Rect.make(10, 24, 720, 576)
 prepareScreen = function
 	gfx.clear bgColor, 960+10, 640+10
 	gfx.scrollX = 5; gfx.scrollY = 5
@@ -295,8 +308,9 @@ prepareScreen = function
 	backdrop.clear color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
-	font.print context.title, 10, 640 - font.lineHeight
-	objectives.area = Rect.make(750,10, 208,390)
+	font.print context.title, 10, 640 + font.sizeOver
+	objectives.area = Rect.make(750,10, 208,410)
+	outer.helpArea = Rect.make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
 end function
 
 drawGrid = function
@@ -337,16 +351,21 @@ drawGrid = function
 	end for
 end  function
 
+drawHelp = function(helpStr)
+	helpArea.fill gfx, bgColor
+	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY, 1, color.silver
+end function
+
 makeTools = function
 	tools = [
 	["Pencil", kModeDraw], ["Erase", kModeErase], ["Move", kModeMove], ["Select", kModeSelect],
-	["Brush", kModePaint], ["Fill", kModeFill], 
-	["Line", kModeLine], ["DrawRect", kModeDrawRect], ["DrawEllipse", kModeDrawEllipse], 
-	["Eyedropper", kModeEyedrop], ["FillRect", kModeFillRect], ["FillEllipse", kModeFillEllipse]]
+	["Brush", kModePaint], ["Fill", kModeFill],  ["Eyedropper", kModeEyedrop], ["Line", kModeLine], 
+	["DrawRect", kModeDrawRect], ["DrawEllipse", kModeDrawEllipse], 
+	["FillRect", kModeFillRect], ["FillEllipse", kModeFillEllipse]]
 	for i in tools.indexes
 		t = tools[i]
 		if t[0] == null then continue
-		Tool.make t[0], 770 + 40*(i%4), 56 + 40*floor(i/4), t[1]
+		Tool.make t[0], 770 + 40*(i%4), 40 + 40*floor(i/4), t[1]
 	end for
 end function
 makeTools
@@ -430,6 +449,7 @@ paste = function
 	end if
 	globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 	globals.mode = kModePasting
+	drawHelp modeHelp[kModePasting]
 end function
 
 updatePaste = function(pp)
@@ -604,7 +624,7 @@ end function
 
 toolFuncs[kModePasting] = function(pp, justDown)
 	if justDown then
-		globals.mode = kModeSelect
+		setMode kModeSelect
 		globals.selectionAnchor = pp
 	end if
 end function
@@ -615,7 +635,7 @@ palSelectionRing = new Sprite
 palSelectionRing.image = Image.create(22, 22, "#CCCCCC")
 editSprites.push palSelectionRing
 
-paletteArea = Rect.make(766, 408, 164, 44) 
+paletteArea = Rect.make(766, 424, 164, 44) 
 PalButton = new Sprite
 PalButton.image = Image.create(18, 18, color.white)
 PalButton.instances = []
@@ -700,7 +720,7 @@ ModeButton.init = function(label, left, bottom)
 end function
 
 exitButton = new ModeButton
-exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 20
+exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 14
 exitButton.handleClick = function
 	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 	if globals.hasIndex("returnFunc") then
@@ -711,13 +731,13 @@ exitButton.handleClick = function
 end function
 
 editModeButton = new ModeButton
-editModeButton.init "EDIT", paletteArea.midX - 80, paintArea.top + 20
+editModeButton.init "EDIT", paletteArea.midX - 80, paintArea.top + 14
 editModeButton.isDown = true; editModeButton.update
 editModeButton.handleClick = function
 	setTestMode false
 end function
 testModeButton = new ModeButton
-testModeButton.init "TEST", paletteArea.midX, paintArea.top + 20
+testModeButton.init "TEST", paletteArea.midX, paintArea.top + 14
 testModeButton.handleClick = function
 	setTestMode true
 end function
@@ -810,6 +830,7 @@ handleKeys = function
 end function
 
 mouseWasDown = mouse.button
+setMode kModeDraw
 while true
 	yield
 	
