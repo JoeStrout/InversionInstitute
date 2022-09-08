@@ -268,9 +268,10 @@ else
 
 	playSteps.push function
 		scene.playSunset
+		scene.playSunrise
 		gameData.data.curChapter = 2
 		gameData.writeToDisk
-		text.row = 0; exit // FOR NOW!
+		toc.startChapter
 	end function
 
 end if

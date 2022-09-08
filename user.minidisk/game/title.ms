@@ -38,7 +38,7 @@ end for
 ensureImport "drawing"
 ensureImport "gameData"
 ensureImport "json"
-ensureImport "button"
+import "button"
 button.sprites = displays.tiSprite.sprites
 
 bigFont = bmfFonts.Font.load("/usr/fonts/ArialBlack18.bmf")
@@ -51,36 +51,12 @@ welcomeMsg = welcomeMsg + ", " + gameData.playerName + "!"
 bigFont.printCentered welcomeMsg, 480+2, 450-2, 1, color.black
 bigFont.printCentered welcomeMsg, 480, 450, 1, "#76D6FF"
 
-// load chapter metadata
-chapters = []
-for folder in file.children("/usr/chapters")
-	f = file.open("/usr/chapters/" + folder + "/context.ms", "r")
-	if f == null or f isa string then continue
-	data = {"number":null, "folderName":null, "title":null}
-	while not f.atEnd
-		parts = f.readLine.split(" = ")
-		if parts.len != 2 then continue
-		if parts[0] == "number" then data.number = val(parts[1])
-		if parts[0] == "folderName" then data.folderName = json.parse(parts[1])
-		if parts[0] == "title" then data.title = json.parse(parts[1])
-		if data.number and data.folderName and data.title then
-			data.done = gameData.get("ch" + data.number + ".done")
-			chapters.push data
-			break
-		end if
-	end while
-	f.close	
-end for
-chapters.sort "number"
-for i in chapters.indexes
-	ch = chapters[i]
-	if ch == chapters[0] then
-		ch.locked = false
-	else
-		ch.locked = not chapters[i-1].done
-	end if
-	if ch.locked then ch.title = "(locked)"
-end for
+if globals.hasIndex("toc") then
+	toc.recheckLocks
+else
+	ensureImport "toc"
+end if
+chapters = toc.chapters
 
 smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
 
@@ -91,9 +67,7 @@ ChapterButton.action = function
 		// No way José!
 		return
 	end if
-	cd "/usr/chapters/" + self.chapter.folderName
-	load "introScene"
-	run
+	toc.startChapter self.chapter.number
 end function
 
 ChapterButton.make = function(data)
@@ -103,14 +77,18 @@ ChapterButton.make = function(data)
 	globals.gfx = displays.tiScratch
 	gfx.clear "#00000066", w, h
 	gfx.drawRect 0, 0, w, h, color.black
+	title = data.title
 	if data.done then textColor = color.silver else textColor = color.yellow
-	if data.locked then textColor = color.gray
+	if data.locked then
+		textColor = color.gray
+		title = "(locked)"
+	end if
 	smallFont.printRight data.number + ".", 32, 12, 1, textColor
 	tw = w - 34
-	if smallFont.width(data.title) <= tw then
-		smallFont.print data.title, w - tw, 12, 1, textColor
+	if smallFont.width(title) <= tw then
+		smallFont.print title, w - tw, 12, 1, textColor
 	else
-		lines = drawing.wrapLines(data.title, tw, smallFont)
+		lines = drawing.wrapLines(title, tw, smallFont)
 		smallFont.print lines[0], w - tw, 21, 1, textColor
 		smallFont.print lines[1], w - tw, 5, 1, textColor
 	end if

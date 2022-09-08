@@ -23,6 +23,10 @@ fadeInOut.color = color.clear
 
 // Function to set up displays for Visual Novel mode
 setupVN = function
+	display(1).mode = displayMode.solidColor
+	outer.fadeInOut = display(1)
+	fadeInOut.color = color.clear
+
 	display(7).mode = displayMode.pixel
 	outer.vnBackground = display(7)
 	vnBackground.clear "#444444"

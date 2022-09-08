@@ -81,10 +81,10 @@ else
 	end function
 
 	playSteps.push function
-		scene.playSunset
+//		scene.playSunset
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		text.row = 0; exit // FOR NOW!
+		toc.startChapter
 	end function
 
 end if

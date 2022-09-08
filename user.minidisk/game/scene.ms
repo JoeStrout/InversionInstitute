@@ -65,6 +65,9 @@ play = function(startAtStep = 0)
 				else if k == 18 or k == 20 or k == 32 or k == 10 or k == 13 then
 					curStep = curStep + 1
 					break
+				else if k == 27 then
+					load "/usr/game/title"
+					run
 				end if
 			end if
 			if mouse.button then
@@ -85,9 +88,10 @@ switchToEditor = function
 	run
 end function
 
-playSunset = function
-	clear
-	sprDisp = display(4)
+playSunRiseOrSet = function(startAlpha, endAlpha)
+	display(1).mode = displayMode.sprite
+	sprDisp = display(1)
+	sprDisp.clear
 	
 	night = new Sprite
 	night.image = backgrounds.castleNight
@@ -97,13 +101,23 @@ playSunset = function
 	eve = new Sprite
 	eve.image = backgrounds.castleEvening
 	eve.x = 480; eve.y = 320
+	eve.tint = color.rgba(255,255,255, startAlpha)
 	sprDisp.sprites.push eve
 
 	wait 1
-	for alpha in range(255, 0)
+	for alpha in range(startAlpha, endAlpha)
 		eve.tint = color.rgba(255,255,255, alpha)
+		if key.available and key.get.code == 27 then toc.returnToTitle
 		yield
 	end for
 	wait 1
+end function
+
+playSunset = function
+	playSunRiseOrSet 255, 0
+end function	
+
+playSunrise = function
+	playSunRiseOrSet 0, 255
 end function	
 
