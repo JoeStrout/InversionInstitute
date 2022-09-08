@@ -12,6 +12,9 @@ edScratch = null		// temporary composition area
 simGfx = null			// usually, the same as edFatbits
 simSprite = null		// sprite layer for showing nodes on/off
 
+// Title screen layers:
+tiSprite = null			// used for all sprites
+
 // Universal layers
 display(1).mode = displayMode.solidColor
 fadeInOut = display(1)
@@ -83,6 +86,14 @@ setupEditorSim = function(picW=80, picH=64, scale=9)
 	// scratch: hidden drawing area
 	display(7).mode = displayMode.pixel
 	outer.edScratch = display(7)
+end function
+
+// Set up displays for the title screen
+setupTitle = function
+	clear
+	
+	outer.tiSprite = display(4)
+	tiSprite.clear
 end function
 
 if locals == globals then setupVN

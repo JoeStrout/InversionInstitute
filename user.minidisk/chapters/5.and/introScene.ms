@@ -20,7 +20,7 @@ playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Alicia.setLeftArm alicia.LeftArm.normal
 	Baab.present = false
-	drawing.drawSpeech "I'd like to introduce you to someone today.",
+	drawing.drawSpeech I'd like to introduce you to someone today.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
@@ -28,7 +28,7 @@ playSteps.push function
 	Baab.present = true
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 	Alicia.setLeftArm alicia.LeftArm.showing
-	drawing.drawSpeech "This is Baab.  Spelled with two ""A""s.",
+	drawing.drawSpeech gameData.playerName + ", this is Baab.  Spelled with two ""A""s.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

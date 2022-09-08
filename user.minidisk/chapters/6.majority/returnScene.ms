@@ -67,7 +67,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "You've done it again!",
+		drawing.drawSpeech "You've done it again, " + gameData.playerName + "!",
 			drawing.Speaker.Right, "Baab"
 	end function
 

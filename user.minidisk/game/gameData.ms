@@ -11,6 +11,10 @@ ensureImport "mapUtil"
 // (We might use some sanitized version of this as the game
 // folder name, too.)
 playerName = "Player"
+pronoun = {}
+pronoun.he = "he"		// subjective
+pronoun.him = "him"		// objective
+pronoun.his = "his"		// possessive
 
 // Path to the folder containing all the saved games.
 // ToDo: get /usr2 mapped to the user library folder,

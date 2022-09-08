@@ -76,8 +76,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "I told you he could do it.",
+		drawing.drawSpeech "I told you " + gameData.pronoun.he + " could do it.",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
