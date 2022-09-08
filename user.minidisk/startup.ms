@@ -6,8 +6,7 @@ ensureImport "drawing"
 ensureImport "bmfFonts"
 ensureImport "backgrounds"
 
-// ...Then drop right into scene 1!
-// (Or whatever scene we are currently working on.)
 text.color = color.black
-cd "/usr/chapters/6.majority"
-load "introScene"; run
+cd "/usr/game"
+load "title"
+run

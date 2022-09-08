@@ -10,7 +10,7 @@ end if
 drawObjs = function
 	objectives.erase
 	objectives.print "Connect the two inputs (F and C) to the light (L) such that " +
-	"the light is on whenever either input is on."
+	"the light is on whenever either (or both) of the inputs is on."
 	objectives.print
 end function
 

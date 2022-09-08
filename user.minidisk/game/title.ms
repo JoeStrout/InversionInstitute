@@ -38,6 +38,8 @@ end for
 ensureImport "drawing"
 ensureImport "gameData"
 ensureImport "json"
+ensureImport "button"
+button.sprites = displays.tiSprite.sprites
 
 bigFont = bmfFonts.Font.load("/usr/fonts/ArialBlack18.bmf")
 //smallFont = bmfFonts.Font.load("/usr/fonts/Arial14Bold.bmf")
@@ -82,7 +84,19 @@ end for
 
 smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
 
-makeChapterButton = function(data)
+ChapterButton = new Button
+ChapterButton.chapter = null  // fill in with a chapter data map from above
+ChapterButton.action = function
+	if self.chapter.locked then
+		// No way José!
+		return
+	end if
+	cd "/usr/chapters/" + self.chapter.folderName
+	load "introScene"
+	run
+end function
+
+ChapterButton.make = function(data)
 	w = 220
 	h = 40
 	oldGfx = gfx
@@ -101,23 +115,29 @@ makeChapterButton = function(data)
 		smallFont.print lines[1], w - tw, 5, 1, textColor
 	end if
 	gfx = oldGfx
-	sp = new Sprite
-	sp.image = displays.tiScratch.getImage
-	sp.localBounds = new Bounds
-	sp.localBounds.width = w
-	sp.localBounds.height = h
+	sp = new ChapterButton
+	sp.chapter = data
+	sp.init displays.tiScratch.getImage
 	return sp
 end function
 
+// create chapter buttons
 x = 20
 y = 370
 for ch in chapters
-	btn = makeChapterButton(ch)
+	btn = ChapterButton.make(ch)
 	btn.x = x + btn.image.width/2; btn.y = y
-	sprites.push btn
 	y = y - 48
 	if y < 30 then
 		x = x + 232
 		y = 370
 	end if
 end for
+
+// main loop
+while true
+	Button.updateAll
+	yield
+end while
+
+
