@@ -1,6 +1,6 @@
 number = 6
 folderName = "6.majority"
-title = "Ch. 6: Majority Rule"
+title = "Majority Rule"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then

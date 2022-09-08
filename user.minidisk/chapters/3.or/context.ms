@@ -1,9 +1,11 @@
+number = 3
+folderName = "3.or"
+title = "Mrs. Oarley's Children"
+
 globals.circuitPic = gameData.loadCircuitForChapter(3)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
-
-title = "Ch. 3: Mrs. Oarley's Children"
 
 drawObjs = function
 	objectives.erase

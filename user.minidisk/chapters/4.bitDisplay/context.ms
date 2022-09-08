@@ -1,6 +1,6 @@
 number = 4
 folderName = "4.bitDisplay"
-title = "Ch. 4: 0/1 Display"
+title = "0/1 Display"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then

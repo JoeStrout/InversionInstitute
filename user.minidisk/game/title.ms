@@ -35,3 +35,89 @@ for t in range(0, 1, 0.15)
 	yield
 end for
 
+ensureImport "drawing"
+ensureImport "gameData"
+ensureImport "json"
+
+bigFont = bmfFonts.Font.load("/usr/fonts/ArialBlack18.bmf")
+//smallFont = bmfFonts.Font.load("/usr/fonts/Arial14Bold.bmf")
+smallFont = bmfFonts.Font.load("/usr/fonts/minimicro-pro-16.bmf")
+
+welcomeMsg = "Welcome"
+if gameData.get("ch1.done") then welcomeMsg = welcomeMsg + " back"
+welcomeMsg = welcomeMsg + ", " + gameData.playerName + "!"
+bigFont.printCentered welcomeMsg, 480+2, 450-2, 1, color.black
+bigFont.printCentered welcomeMsg, 480, 450, 1, "#76D6FF"
+
+// load chapter metadata
+chapters = []
+for folder in file.children("/usr/chapters")
+	f = file.open("/usr/chapters/" + folder + "/context.ms", "r")
+	if f == null or f isa string then continue
+	data = {"number":null, "folderName":null, "title":null}
+	while not f.atEnd
+		parts = f.readLine.split(" = ")
+		if parts.len != 2 then continue
+		if parts[0] == "number" then data.number = val(parts[1])
+		if parts[0] == "folderName" then data.folderName = json.parse(parts[1])
+		if parts[0] == "title" then data.title = json.parse(parts[1])
+		if data.number and data.folderName and data.title then
+			data.done = gameData.get("ch" + data.number + ".done")
+			chapters.push data
+			break
+		end if
+	end while
+	f.close	
+end for
+chapters.sort "number"
+for i in chapters.indexes
+	ch = chapters[i]
+	if ch == chapters[0] then
+		ch.locked = false
+	else
+		ch.locked = not chapters[i-1].done
+	end if
+	if ch.locked then ch.title = "(locked)"
+end for
+
+smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
+
+makeChapterButton = function(data)
+	w = 220
+	h = 40
+	oldGfx = gfx
+	globals.gfx = displays.tiScratch
+	gfx.clear "#00000066", w, h
+	gfx.drawRect 0, 0, w, h, color.black
+	if data.done then textColor = color.silver else textColor = color.yellow
+	if data.locked then textColor = color.gray
+	smallFont.printRight data.number + ".", 32, 12, 1, textColor
+	tw = w - 34
+	if smallFont.width(data.title) <= tw then
+		smallFont.print data.title, w - tw, 12, 1, textColor
+	else
+		lines = drawing.wrapLines(data.title, tw, smallFont)
+		smallFont.print lines[0], w - tw, 21, 1, textColor
+		smallFont.print lines[1], w - tw, 5, 1, textColor
+	end if
+	gfx = oldGfx
+	sp = new Sprite
+	sp.image = displays.tiScratch.getImage
+	sp.localBounds = new Bounds
+	sp.localBounds.width = w
+	sp.localBounds.height = h
+	return sp
+end function
+
+x = 20
+y = 370
+for ch in chapters
+	btn = makeChapterButton(ch)
+	btn.x = x + btn.image.width/2; btn.y = y
+	sprites.push btn
+	y = y - 48
+	if y < 30 then
+		x = x + 232
+		y = 370
+	end if
+end for

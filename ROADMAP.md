@@ -15,6 +15,7 @@
 
 ### General
 - prepare additional fonts (small, italic, etc.) as needed
+- further improve the minimicro-pro fonts (shorten width of `'`, etc.)
 - get main program to move through the chapters as they are completed
 
 ### Script Notes

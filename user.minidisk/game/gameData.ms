@@ -31,6 +31,17 @@ if not file.exists(gameFolder) then file.makedir(gameFolder)
 // simple types (including small maps) within it.
 data = {}
 
+// get: helper method to look up foo.bar.baz in the `data` map,
+// returning null if any part of the path isn't found.
+get = function(dotPath)
+	m = data
+	for part in dotPath.split(".")
+		if not m.hasIndex(part) then return null
+		m = m[part]
+	end for
+	return m
+end function
+
 clearData = function
 	outer.data = {}
 	data.playerName = playerName

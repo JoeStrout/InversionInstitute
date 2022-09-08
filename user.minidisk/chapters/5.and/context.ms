@@ -1,6 +1,6 @@
 number = 5
 folderName = "5.and"
-title = "Ch. 5: Andi's Gate"
+title = "Andi's Gate"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then

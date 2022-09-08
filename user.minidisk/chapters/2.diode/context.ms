@@ -1,9 +1,11 @@
+number = 2
+folderName = "2.diode"
+title = "Recess is Over"
+
 globals.circuitPic = gameData.loadCircuitForChapter(2)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
-
-title = "Ch. 2: Recess is Over"
 
 drawObjs = function
 	objectives.erase

@@ -92,8 +92,20 @@ end function
 setupTitle = function
 	clear
 	
-	outer.tiSprite = display(4)
+	display(7).mode = displayMode.pixel
+	outer.tiScratch = display(7)
+	tiScratch.clear color.clear
+	
+	display(6).mode = displayMode.solidColor
+	display(6).color = color.black
+	
+	display(5).mode = displayMode.sprite
+	outer.tiSprite = display(5)
 	tiSprite.clear
+	
+	display(4).mode = displayMode.pixel
+	globals.gfx = display(4)
+	gfx.clear color.clear
 end function
 
 if locals == globals then setupVN
