@@ -30,6 +30,7 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
+Alicia.present = true
 
 if errors then
 	playSteps.push function

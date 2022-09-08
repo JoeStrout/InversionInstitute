@@ -31,6 +31,7 @@ display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
 Baab.present = true
+Alicia.present = true
 
 if errors then
 	playSteps.push function

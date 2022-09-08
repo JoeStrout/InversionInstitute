@@ -13,6 +13,8 @@ if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch
 
 //demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
 
+Alicia.present = true
+
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal

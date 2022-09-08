@@ -8,5 +8,6 @@ ensureImport "backgrounds"
 
 // ...Then drop right into scene 1!
 // (Or whatever scene we are currently working on.)
-cd "/usr/chapters/5.and"
+text.color = color.black
+cd "/usr/chapters/6.majority"
 load "introScene"; run

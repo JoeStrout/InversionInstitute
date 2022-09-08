@@ -10,7 +10,7 @@ import "context"
 scene.prepare 3, "/usr/chapters/3.or"
 if not gameData.data.hasIndex("ch3") or not gameData.data.ch3 then gameData.data.ch3 = {}
 
-//demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
+Alicia.present = true
 
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab

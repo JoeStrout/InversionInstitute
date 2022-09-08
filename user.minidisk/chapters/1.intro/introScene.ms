@@ -28,6 +28,8 @@ lineToHeartPix.update = function
 	self.draw
 end function
 
+Alicia.present = true
+
 playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	displays.vnBackground.drawImage backgrounds.castle

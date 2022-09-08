@@ -9,11 +9,10 @@ ensureImport "backgrounds"
 ensureImport "gameData"
 
 characters = [Alicia, Baab]
+for c in characters; c.present = false; end for
 
 prepare = function(chapterNum, chapterPath)
 	displays.setupVN
-	Alicia.present = true
-	Baab.present = false
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function
