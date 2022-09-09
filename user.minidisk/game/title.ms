@@ -52,7 +52,7 @@ bigFont.printCentered welcomeMsg, 480+2, 450-2, 1, color.black
 bigFont.printCentered welcomeMsg, 480, 450, 1, "#76D6FF"
 
 if globals.hasIndex("toc") then
-	toc.recheckLocks
+	toc.reload
 else
 	ensureImport "toc"
 end if

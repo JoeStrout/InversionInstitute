@@ -308,7 +308,7 @@ prepareScreen = function
 	backdrop.clear color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
-	font.print context.title, 10, 642 + font.sizeOver
+	font.print "Ch." + context.number + ": " + context.title, 10, 642 + font.sizeOver
 	objectives.area = Rect.make(750,10, 208,410)
 	outer.helpArea = Rect.make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
 end function

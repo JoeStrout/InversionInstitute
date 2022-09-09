@@ -13,10 +13,13 @@
 ### Simulator
 - two coupled not-gates initially oscillate, until some external input (or mouse click) sets one of them; they are balanced in an unstable state because of the perfectly regular update pattern we use.  Need to find some way to break that symmetry.
 
+### Title Screen
+- add an Options panel that lets you change your name and pronouns
+
 ### General
 - prepare additional fonts (small, italic, etc.) as needed
 - further improve the minimicro-pro fonts (shorten width of `'`, etc.)
-- get main program to move through the chapters as they are completed
+- add sound effects and background music
 
 ### Script Notes
 1. Introduction: meet Alicia; learn about crossings and not gates).

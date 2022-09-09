@@ -1,4 +1,4 @@
-// Return scene for Chapter 2.
+// Return scene for Chapter 4.
 
 import "miscUtil"
 ensureImport "scene"
@@ -82,10 +82,18 @@ else
 	end function
 
 	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
+		drawing.drawSpeech "You've had a very productive day!  I'll see you again tomorrow.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
 		scene.playSunset
+		scene.playSunrise
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		text.row = 0; exit // FOR NOW!
+		toc.startChapter
 	end function
 
 end if

@@ -7,27 +7,29 @@ chapters = []		// ordered list of chapters
 chapterByNum = {}	// map from chapter number to chapter
 
 // load chapter metadata
-for folder in file.children("/usr/chapters")
-	f = file.open("/usr/chapters/" + folder + "/context.ms", "r")
-	if f == null or f isa string then continue
-	data = {"number":null, "folderName":null, "title":null}
-	while not f.atEnd
-		parts = f.readLine.split(" = ")
-		if parts.len != 2 then continue
-		if parts[0] == "number" then data.number = val(parts[1])
-		if parts[0] == "folderName" then data.folderName = json.parse(parts[1])
-		if parts[0] == "title" then data.title = json.parse(parts[1])
-		if data.number and data.folderName and data.title then
-			data.done = gameData.get("ch" + data.number + ".done")
-			chapters.push data
-			chapterByNum[data.number] = data
-			break
-		end if
-	end while
-	f.close	
-end for
-chapters.sort "number"
-recheckLocks = function
+reload = function
+	outer.chapters = []
+	outer.chapterByNum = {}
+	for folder in file.children("/usr/chapters")
+		f = file.open("/usr/chapters/" + folder + "/context.ms", "r")
+		if f == null or f isa string then continue
+		data = {"number":null, "folderName":null, "title":null}
+		while not f.atEnd
+			parts = f.readLine.split(" = ")
+			if parts.len != 2 then continue
+			if parts[0] == "number" then data.number = val(parts[1])
+			if parts[0] == "folderName" then data.folderName = json.parse(parts[1])
+			if parts[0] == "title" then data.title = json.parse(parts[1])
+			if data.number and data.folderName and data.title then
+				data.done = gameData.get("ch" + data.number + ".done")
+				chapters.push data
+				chapterByNum[data.number] = data
+				break
+			end if
+		end while
+		f.close	
+	end for
+	chapters.sort "number"
 	for i in chapters.indexes
 		ch = chapters[i]
 		if ch == chapters[0] then
@@ -37,7 +39,7 @@ recheckLocks = function
 		end if
 	end for
 end function
-recheckLocks
+reload
 
 startChapter = function(chapterNum)
 	if chapterNum == null then chapterNum = gameData.data.curChapter
