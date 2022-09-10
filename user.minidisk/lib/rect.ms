@@ -25,6 +25,15 @@ Rect.make = function(left, bottom, width, height)
 	return r
 end function
 
+Rect.makeFromCenter = function(midX, midY, width, height)
+	r = new Rect
+	r.left = midX - width/2
+	r.bottom = midY - height/2
+	r.width = width
+	r.height = height
+	return r
+end function
+
 Rect.fromPoints = function(p0, p1)
 	r = new Rect
 	if p0.x < p1.x then

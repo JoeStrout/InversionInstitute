@@ -429,9 +429,15 @@ deselect = function
 	drawGrid
 end function
 
+grabSelection = function(andClear = false)
+	result = fatbits.getImage(selection.left, selection.bottom, selection.width, selection.height)
+	if andClear then selection.fill fatbits, backColor
+	return result
+end function
+
 copy = function
 	if selection == null then return
-	globals.clip = fatbits.getImage(selection.left, selection.bottom, selection.width, selection.height)
+	globals.clip = grabSelection
 	drawGrid
 end function
 
@@ -453,79 +459,101 @@ paste = function
 	end if
 	globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 	globals.mode = kModePasting
+	globals.pasted = clip
+	globals.clipMouseOffset = {"x": floor(clip.width/2), "y": floor(clip.height/2)}
 	drawHelp modeHelp[kModePasting]
 end function
 
 updatePaste = function(pp)
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart, 0, 0
-	fatbits.drawImage clip, pp.x - floor(clip.width/2), pp.y - floor(clip.height/2)
+	fatbits.drawImage pasted, pp.x - clipMouseOffset.x, pp.y - clipMouseOffset.y
 end function
 
 flipClip = function
-	if globals.mode != kModePasting then return
+	img = null
+	if mode == kModePasting then img = pasted
+	if mode == kModeSelect then img = grabSelection		
+	if img == null then return
+	
 	if key.pressed("left shift") or key.pressed("right shift") then
 		// flip vertically
-		xrange = range(0, clip.width-1)
-		for y in range(0, floor(clip.height/2)-1)
-			y2 = clip.height - 1 - y
+		xrange = range(0, img.width-1)
+		for y in range(0, floor(img.height/2)-1)
+			y2 = img.height - 1 - y
 			for x in xrange
-				c = clip.pixel(x,y)
-				clip.setPixel x,y, clip.pixel(x,y2)
-				clip.setPixel x,y2, c
+				c = img.pixel(x,y)
+				img.setPixel x,y, img.pixel(x,y2)
+				img.setPixel x,y2, c
 			end for
 		end for
 	else
-		// flip horizontall
-		yrange = range(0, clip.height-1)
-		for x in range(0, floor(clip.width/2)-1)
-			x2 = clip.width - 1 - x
+		// flip horizontally
+		yrange = range(0, img.height-1)
+		for x in range(0, floor(img.width/2)-1)
+			x2 = img.width - 1 - x
 			for y in yrange
-				c = clip.pixel(x,y)
-				clip.setPixel x,y, clip.pixel(x2,y)
-				clip.setPixel x2,y, c
+				c = img.pixel(x,y)
+				img.setPixel x,y, img.pixel(x2,y)
+				img.setPixel x2,y, c
 			end for
 		end for
 	end if
+	
+	if mode == kModeSelect then fatbits.drawImage img, selection.left, selection.bottom
 end function
 
 rotateClip = function
-	if globals.mode != kModePasting then return
-	result = Image.create(clip.height, clip.width)
-	xrange = range(0, clip.width-1)
+	img = null
+	if mode == kModePasting then img = pasted
+	if mode == kModeSelect then img = grabSelection(true)	
+	if img == null then return
+
+	result = Image.create(img.height, img.width)
+	xrange = range(0, img.width-1)
 	if key.pressed("left shift") or key.pressed("right shift") then
 		// rotate left
-		for y in range(0, clip.height-1)
+		for y in range(0, img.height-1)
 			for x in xrange
-				result.setPixel clip.height-y, x, clip.pixel(x,y)
+				result.setPixel img.height-y, x, img.pixel(x,y)
 			end for
 		end for
 	else
 		// rotate right
-		for y in range(0, clip.height-1)
+		for y in range(0, img.height-1)
 			for x in xrange
-				result.setPixel y, clip.width-x, clip.pixel(x,y)
+				result.setPixel y, img.width-x, img.pixel(x,y)
 			end for
 		end for
 	end if
-	globals.clip = result
+	
+	if mode == kModeSelect then
+		// rotate the selection so that the center stays the same
+		left = round(selection.midX - selection.height/2)
+		bottom = round(selection.midY - selection.width/2)
+		drawGrid
+		globals.selection = Rect.make(left, bottom, selection.height, selection.width)
+		fatbits.drawImage result, selection.left, selection.bottom
+	else
+		globals.pasted = result
+	end if
 end function
 
 makeClipTransparent = function
 	if globals.mode != kModePasting then return
-	xrange = range(0, clip.width-1)
+	xrange = range(0, pasted.width-1)
 	if key.pressed("left shift") or key.pressed("right shift") then
 		// make NON-transparent
-		for y in range(0, clip.height-1)
+		for y in range(0, pasted.height-1)
 			for x in xrange
-				if clip.pixel(x,y) == "#00000000" then clip.setPixel x,y, "#000000FF"
+				if pasted.pixel(x,y) == "#00000000" then pasted.setPixel x,y, "#000000FF"
 			end for
 		end for
 	else
 		// make transparent
-		for y in range(0, clip.height-1)
+		for y in range(0, pasted.height-1)
 			for x in xrange
-				if clip.pixel(x,y) == "#000000FF" then clip.setPixel x,y, "#00000000"
+				if pasted.pixel(x,y) == "#000000FF" then pasted.setPixel x,y, "#00000000"
 			end for
 		end for
 	end if
@@ -684,7 +712,21 @@ toolFuncs[kModeFillEllipse] = function(pp, justDown)
 end function
 
 toolFuncs[kModeSelect] = function(pp, justDown)
-	if justDown then globals.selectionAnchor = pp
+	if justDown then
+		if selection and selection.contains(pp) then
+			// drag the existing selection
+			left = selection.left; bottom = selection.bottom
+			savedClip = clip
+			copy; deleteSelection; paste
+			clipMouseOffset.x = pp.x - left
+			clipMouseOffset.y = pp.y - bottom
+			globals.clip = savedClip
+			return
+		else
+			// start a new selection
+			globals.selectionAnchor = pp
+		end if
+	end if
 	if pp == selectionAnchor then
 		deselect
 	else
@@ -699,10 +741,10 @@ toolFuncs[kModeSelect] = function(pp, justDown)
 end function
 
 toolFuncs[kModePasting] = function(pp, justDown)
-	if justDown then
-		setMode kModeSelect
-		globals.selectionAnchor = pp
-	end if
+//	if justDown then
+//		setMode kModeSelect
+//		globals.selectionAnchor = pp
+//	end if
 end function
 
 //--------------------------------------------------------------------------------
@@ -872,6 +914,14 @@ handleClick = function(justDown)
 	saveFromEditArea
 end function
 
+handleMouseUp = function
+	// The only case where we do something special on mouse-up is
+	// while pasting a selection:
+	if mode == kModePasting then
+		setMode kModeSelect
+	end if
+end function
+
 showHelp = function
 	lines = []
 	lines.push "Alt - Color Picker      "
@@ -936,7 +986,11 @@ while true
 		// then, update usage of tools (e.g. painting)
 		PalButton.checkEventsForAll
 		mouseIsDown = mouse.button
-		if mouseIsDown then handleClick not mouseWasDown
+		if mouseIsDown then
+			handleClick not mouseWasDown
+		else if mouseWasDown then
+			handleMouseUp
+		end if
 		mouseWasDown = mouseIsDown
 		if key.available then handleKeys
 		if selection != null then drawSelection
