@@ -38,7 +38,7 @@ modeHelp[kModeDrawEllipse] = "Click and drag to draw a round outline."
 kModeFillEllipse = "FILLELLIPSE"
 modeHelp[kModeFillEllipse] = "Click and drag to draw a filled ellipse."
 kModeLine = "DRAWLINE"
-modeHelp[kModeLine] = "Click and drag to draw a straight line."  // ToDo: [Shift] to make crossings.
+modeHelp[kModeLine] = "Click and drag to draw a straight line; [Shift] make crossings."
 kModePasting = "PASTING"
 modeHelp[kModePasting] = "Click to drop; [R] rotate, [F] flip, [T] transparent."
 
@@ -613,9 +613,22 @@ toolFuncs[kModeLine] = function(pp, justDown)
 	end if
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
-	for pos in pointsOnLine(posAtStart, pp)
-		setPaintPixel pos, foreColor
-	end for
+	if key.pressed("left shift") or key.pressed("right shift") then
+		// crossing mode -- try to make crossings
+		// (but for now, just make black any existing non-black pixel)
+		for pos in pointsOnLine(posAtStart, pp)
+			if fatbits.pixel(pos.x, pos.y) == "#000000FF" then
+				setPaintPixel pos, foreColor
+			else
+				setPaintPixel pos, "#000000FF"
+			end if
+		end for
+	else
+		// standard mode (overwrite whatever's there)
+		for pos in pointsOnLine(posAtStart, pp)
+			setPaintPixel pos, foreColor
+		end for
+	end if
 end function
 
 toolFuncs[kModeDrawRect] = function(pp, justDown)
