@@ -40,7 +40,7 @@ modeHelp[kModeFillEllipse] = "Click and drag to draw a filled ellipse."
 kModeLine = "DRAWLINE"
 modeHelp[kModeLine] = "Click and drag to draw a straight line."  // ToDo: [Shift] to make crossings.
 kModePasting = "PASTING"
-modeHelp[kModePasting] = "Click to apply the copied ink at the desired position." // ToDo: [R]otate and [F]lip.
+modeHelp[kModePasting] = "Click to drop; [R] rotate, [F] flip, [T] transparent."
 
 foreColor = "#FFFFFFFF"		// current painting foreground and background colors
 backColor = "#000000FF"
@@ -462,6 +462,75 @@ updatePaste = function(pp)
 	fatbits.drawImage clip, pp.x - floor(clip.width/2), pp.y - floor(clip.height/2)
 end function
 
+flipClip = function
+	if globals.mode != kModePasting then return
+	if key.pressed("left shift") or key.pressed("right shift") then
+		// flip vertically
+		xrange = range(0, clip.width-1)
+		for y in range(0, floor(clip.height/2)-1)
+			y2 = clip.height - 1 - y
+			for x in xrange
+				c = clip.pixel(x,y)
+				clip.setPixel x,y, clip.pixel(x,y2)
+				clip.setPixel x,y2, c
+			end for
+		end for
+	else
+		// flip horizontall
+		yrange = range(0, clip.height-1)
+		for x in range(0, floor(clip.width/2)-1)
+			x2 = clip.width - 1 - x
+			for y in yrange
+				c = clip.pixel(x,y)
+				clip.setPixel x,y, clip.pixel(x2,y)
+				clip.setPixel x2,y, c
+			end for
+		end for
+	end if
+end function
+
+rotateClip = function
+	if globals.mode != kModePasting then return
+	result = Image.create(clip.height, clip.width)
+	xrange = range(0, clip.width-1)
+	if key.pressed("left shift") or key.pressed("right shift") then
+		// rotate left
+		for y in range(0, clip.height-1)
+			for x in xrange
+				result.setPixel clip.height-y, x, clip.pixel(x,y)
+			end for
+		end for
+	else
+		// rotate right
+		for y in range(0, clip.height-1)
+			for x in xrange
+				result.setPixel y, clip.width-x, clip.pixel(x,y)
+			end for
+		end for
+	end if
+	globals.clip = result
+end function
+
+makeClipTransparent = function
+	if globals.mode != kModePasting then return
+	xrange = range(0, clip.width-1)
+	if key.pressed("left shift") or key.pressed("right shift") then
+		// make NON-transparent
+		for y in range(0, clip.height-1)
+			for x in xrange
+				if clip.pixel(x,y) == "#00000000" then clip.setPixel x,y, "#000000FF"
+			end for
+		end for
+	else
+		// make transparent
+		for y in range(0, clip.height-1)
+			for x in xrange
+				if clip.pixel(x,y) == "#000000FF" then clip.setPixel x,y, "#00000000"
+			end for
+		end for
+	end if
+end function
+
 //--------------------------------------------------------------------------------
 // TOOL FUNCTIONS
 
@@ -809,10 +878,10 @@ handleKeys = function
 	if k == "c" then copy
 	if k == "v" then paste
 	if k.code == 8 or k.code == 127 then deleteSelection
-	if k == "x" then
-		copy
-		deleteSelection
-	end if
+	if k == "x" then; copy; deleteSelection; end if
+	if k == "f" then flipClip
+	if k == "r" then rotateClip
+	if k == "t" then makeClipTransparent
 	if k == "s" then saveToDisk
 	if k == "?" or k == "/" then showHelp
 	if k == "q" then
