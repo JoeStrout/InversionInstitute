@@ -29,17 +29,17 @@ Rect.fromPoints = function(p0, p1)
 	r = new Rect
 	if p0.x < p1.x then
 		r.left = p0.x
-		r.width = p1.x - p0.x
+		r.width = p1.x - p0.x + 1
 	else
 		r.left = p1.x
-		r.width = p0.x - p1.x
+		r.width = p0.x - p1.x + 1
 	end if
 	if p0.y < p1.y then
 		r.bottom = p0.y
-		r.height = p1.y - p0.y
+		r.height = p1.y - p0.y + 1
 	else
 		r.bottom = p1.y
-		r.height = p0.y - p1.y
+		r.height = p0.y - p1.y + 1
 	end if
 	return r
 end function
