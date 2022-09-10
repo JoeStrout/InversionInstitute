@@ -2,10 +2,8 @@
 ## or, "Things to Do List"
 
 ### Editor
-- add editor functions **F**lip and **R**otate (with help) when pasting
-- make Line tool create crossings when Shift key is held
 - add work boundaries/margins, which the user can drag in to get a more compact space (determining position on the world-result histogram)
-- when you have a selection, clicking and dragging within that selection should automatically cut+paste (and start a drag)
+- make zoom (scroll wheel) either work, or disable it entirely
 
 ### Cut Scenes
 - add fade in/out when transitioning to/from cut scenes
