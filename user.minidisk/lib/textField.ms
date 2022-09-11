@@ -26,6 +26,8 @@ TextField.mouseWasDown = false
 TextField.cursorVisible = false
 TextField.cursorStartTime = 0
 
+TextField.mouseUpTime = 0
+
 focusedField = null
 
 // If set, this will be used to keep the drawing within the display bounds
@@ -73,7 +75,9 @@ TextField.select = function(startPos=0, endPos=-1)
 	if endPos < 0 then endPos = self.text.len + endPos + 1
 	self.selStart = startPos
 	self.selEnd = endPos
+	self.selAnchor = null
 	self.recomputeSelRect
+	self.draw
 end function
 
 TextField.setSelText = function(s="")
@@ -89,6 +93,8 @@ end function
 
 TextField.handleKey = function(k)
 	code = k.code
+	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
+	text.row = 25; print code + "  ctrl:" + ctrl + "   "
 	if k >= " " and code != 127 then
 		self.setSelText k
 	else if code == 8 then		// backspace
@@ -101,18 +107,18 @@ TextField.handleKey = function(k)
 			if self.selEnd <= self.text.len then self.selEnd = self.selEnd + 1
 		end if
 		self.setSelText ""
+	else if code == 19 or (code == 17 and ctrl) then		// up arrow or ctrl+left
+		if self.selAnchor == null then self.selAnchor = self.selStart
+		self.shiftSelection 0 - self.selAnchor
+	else if code == 20 or (code == 18 and ctrl) then		// down arrow or ctrl+right
+		if self.selAnchor == null then self.selAnchor = self.selEnd
+		self.shiftSelection self.text.len - self.selAnchor
 	else if code == 17 then		// left arrow
 		self.shiftSelection -1
 	else if code == 18 then		// right arrow
 		self.shiftSelection 1
-	else if code == 19 or code == 1 then		// up arrow or ^A
-		self.selStart = 0
-		self.selEnd = 0
-		self.recomputeSelRect; self.draw
-	else if code == 20 or code == 5 then		// down arrow or ^E
-		self.selStart = self.text.len
-		self.selEnd = self.selStart
-		self.recomputeSelRect; self.draw
+	else if code == 1 then		// ^A
+		self.select 0, -1
 	else
 		//print "Unknown key code: " + code
 	end if
@@ -131,9 +137,15 @@ TextField.setFocus = function
 end function
 
 TextField.handleMouse = function(firstDown)
-	// ensure we have the focus on mouse-down
-	if firstDown and not self.hasFocus then self.setFocus
+	if firstDown then
+		// ensure we have the focus on mouse-down
+		if not self.hasFocus then self.setFocus
 
+		// check for double-click
+		self.byWord = false
+		if time < self.mouseUpTime + 0.3 then self.byWord = true
+	end if
+	
 	// find the closest offset to the position clicked
 	besti = null
 	bestDiff = 0
@@ -162,6 +174,17 @@ TextField.handleMouse = function(firstDown)
 		self.selEnd = self.selStart
 		self.selAnchor = self.selStart
 	end if
+	
+	// if in word mode, then extend to whole words
+	if self.byWord then
+		while self.selStart > 0 and not self.isWordStart(self.selStart)
+			self.selStart = self.selStart - 1
+		end while
+		while self.selEnd < self.text.len and not self.isWordEnd(self.selEnd)
+			self.selEnd = self.selEnd + 1
+		end while
+	end if	
+	
 	self.recomputeSelRect
 	self.draw
 end function
@@ -171,6 +194,8 @@ TextField.update = function
 	if mouseIsDown then
 		if not self.mouseWasDown and self.bounds.contains(mouse) then self.handleMouse(true)
 		if self.mouseWasDown and self.hasFocus then self.handleMouse(false)
+	else if self.mouseWasDown then
+		self.mouseUpTime = time
 	end if
 	self.mouseWasDown = mouseIsDown
 	
@@ -186,6 +211,28 @@ end function
 
 //--------------------------------------------------
 // Internal-use methods
+
+isWordChar = function(c)
+	return (c >= "A" and c <= "Z") or
+	  (c >= "a" and c <= "z") or
+	  (c >= "0" and c <= "9") or
+	  c > 127
+end function
+
+TextField.isWordStart = function(pos)
+	if pos == 0 or pos >= self.text.len then return true
+	w = self.text[pos]
+	p = self.text[pos-1]
+	return isWordChar(w) and not isWordChar(p)
+end function
+
+TextField.isWordEnd = function(pos)
+	if pos == 0 or pos >= self.text.len then return true
+	if pos == self.text.len - 1 then return false
+	w = self.text[pos]
+	p = self.text[pos-1]
+	return not isWordChar(w) and isWordChar(p)
+end function
 
 TextField.drawCursor = function(visible)
 	self.cursorVisible = visible
@@ -209,16 +256,16 @@ TextField.shiftSelection = function(delta)
 		if delta < 0 then
 			if self.selAnchor == self.selEnd then
 				if self.selStart <= 0 then return
-				self.selStart = self.selStart - 1
+				self.selStart = self.selStart + delta
 			else
-				self.selEnd = self.selEnd - 1
+				self.selEnd = self.selEnd + delta
 			end if
 		else
 			if self.selAnchor == self.selStart then
 				if self.selEnd >= self.text.len then return
-				self.selEnd = self.selEnd + 1
+				self.selEnd = self.selEnd + delta
 			else
-				self.selStart = self.selStart + 1
+				self.selStart = self.selStart + delta
 			end if
 		end if
 	else if self.selEnd > self.selStart then
@@ -229,6 +276,7 @@ TextField.shiftSelection = function(delta)
 		else
 			self.selEnd = self.selStart
 		end if
+		self.selAnchor = null
 	else
 		// without shift key or an extended selection:
 		// move the cursor
@@ -236,6 +284,7 @@ TextField.shiftSelection = function(delta)
 		if self.selStart >= self.text.len and delta > 0 then return
 		self.selStart = self.selStart + delta
 		self.selEnd = self.selEnd + delta
+		self.selAnchor = null
 	end if
 	self.recomputeSelRect
 	self.draw
