@@ -28,6 +28,7 @@ TextField.cursorStartTime = 0
 
 TextField.mouseUpTime = 0
 
+instances = []
 focusedField = null
 
 // If set, this will be used to keep the drawing within the display bounds
@@ -40,7 +41,14 @@ scratchGfx = null
 
 TextField.init = function(boundsRect)
 	if boundsRect then self.bounds = boundsRect
-	self.gfx = gfx	
+	self.gfx = gfx
+	instances.push self
+end function
+
+TextField.close = function
+	if self.hasFocus then self.loseFocus
+	idx = instances.indexOf(self)
+	if idx >= 0 then instances.remove idx
 end function
 
 TextField.draw = function
@@ -94,7 +102,7 @@ end function
 TextField.handleKey = function(k)
 	code = k.code
 	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
-	text.row = 25; print code + "  ctrl:" + ctrl + "   "
+//	text.row = 25; print code + "  ctrl:" + ctrl + "   "
 	if k >= " " and code != 127 then
 		self.setSelText k
 	else if code == 8 then		// backspace
@@ -119,6 +127,8 @@ TextField.handleKey = function(k)
 		self.shiftSelection 1
 	else if code == 1 then		// ^A
 		self.select 0, -1
+	else if code == 9 then		// tab
+		self.focusNext key.pressed("left shift") or key.pressed("right shift")
 	else
 		//print "Unknown key code: " + code
 	end if
@@ -134,6 +144,7 @@ TextField.setFocus = function
 	if focusedField then focusedField.loseFocus
 	self.hasFocus = true
 	outer.focusedField = self
+	self.draw
 end function
 
 TextField.handleMouse = function(firstDown)
@@ -207,6 +218,16 @@ TextField.update = function
 		showCursor = (time - self.cursorStartTime) % 1 < 0.7
 		if showCursor != self.cursorVisible then self.drawCursor showCursor
 	end if
+end function
+
+TextField.focusNext = function(orActuallyPrevious=false)
+	idx = instances.indexOf(self)
+	if orActuallyPrevious then
+		idx = (idx + instances.len - 1) % instances.len
+	else
+		idx = (idx + 1) % instances.len
+	end if
+	instances[idx].setFocus
 end function
 
 //--------------------------------------------------
@@ -333,6 +354,8 @@ demo = function
 	field2.text = "Second Field"
 	field2.select -1
 	field2.draw
+	
+	field.setFocus
 
 	while not key.pressed("escape")
 		field.update
