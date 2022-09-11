@@ -28,6 +28,11 @@ TextField.cursorStartTime = 0
 
 focusedField = null
 
+// If set, this will be used to keep the drawing within the display bounds
+// (it should generally be screen-sized; must be at least big enough to
+// contain all fields at their standard position):
+scratchGfx = null
+
 //--------------------------------------------------
 // Public methods
 
@@ -37,7 +42,8 @@ TextField.init = function(boundsRect)
 end function
 
 TextField.draw = function
-	oldGfx = self.gfx
+	oldGfx = gfx
+	if scratchGfx then globals.gfx = scratchGfx else globals.gfx = self.gfx
 	self.bounds.fill gfx, self.backColor
 	self.bounds.frame gfx, self.borderColor
 	if self.selRect and self.selRect.width > 1 then
@@ -53,7 +59,13 @@ TextField.draw = function
 		y = self.bounds.midY + self.font.sizeOver * 0.4
 		self.font.print self.text, x, y, 1, self.textColor
 	end if
+	if scratchGfx then
+		self.gfx.drawImage scratchGfx.getImage(
+		  self.bounds.left, self.bounds.bottom, self.bounds.width, self.bounds.height),
+		  self.bounds.left, self.bounds.bottom
+	end if
 	self.cursorVisible = false
+	globals.gfx = oldGfx
 end function
 
 TextField.select = function(startPos=0, endPos=-1)
@@ -176,12 +188,13 @@ end function
 // Internal-use methods
 
 TextField.drawCursor = function(visible)
+	self.cursorVisible = visible
+	if self.selRect.right > self.bounds.right then return
 	if visible then
 		self.selRect.fill self.gfx, self.cursorColor
 	else
 		self.selRect.fill self.gfx, self.backColor
 	end if
-	self.cursorVisible = visible
 end function
 
 // Apply a left (-1) or right (1) arrow to the current selection,
@@ -252,6 +265,11 @@ end function
 
 demo = function
 	clear
+	display(6).mode = displayMode.solidColor
+	display(6).color = "#000044"
+	display(7).mode = displayMode.pixel
+	outer.scratchGfx = display(7)
+	
 	outer.field = new TextField
 	field.init
 	field.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
