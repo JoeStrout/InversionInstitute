@@ -7,6 +7,7 @@ ensureImport "baab"
 ensureImport "drawing"
 ensureImport "backgrounds"
 ensureImport "gameData"
+ensureImport "music"
 
 characters = [Alicia, Baab]
 for c in characters; c.present = false; end for
@@ -20,6 +21,7 @@ prepare = function(chapterNum, chapterPath)
 		cd chapterPath
 		load "returnScene"; run
 	end function
+	music.playNovel
 end function
 
 playOneStep = function(curStep)
@@ -75,12 +77,14 @@ play = function(startAtStep = 0)
 				curStep = curStep + 1
 				break
 			end if
+			music.update
 			yield
 		end while	
 	end while
 end function
 
 switchToEditor = function
+	music.playEditor
 	text.color = color.clear
 	cd "/usr/game"
 	load "editor"
@@ -108,6 +112,7 @@ playSunRiseOrSet = function(startAlpha, endAlpha)
 	for alpha in range(startAlpha, endAlpha)
 		eve.tint = color.rgba(255,255,255, alpha)
 		if key.available and key.get.code == 27 then toc.returnToTitle
+		music.update
 		yield
 	end for
 	wait 1

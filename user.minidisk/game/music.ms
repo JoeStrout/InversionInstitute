@@ -11,9 +11,22 @@ fadingOut = null
 fadeVolume = 0
 
 sounds = {}
+paths = {}
 sounds.title = null
+paths.title = "/usr/music/oh-joyous-day.ogg"
 sounds.novel = null
+paths.novel = "/usr/music/the-forest.ogg"
 sounds.editor = null
+paths.editor = "/usr/music/sky-meditation.ogg"
+
+preloadAll = function
+	for name in paths.indexes
+		if not sounds[name] then
+			sounds[name] = file.loadSound(paths[name])
+			sounds[name].loop = true
+		end if
+	end for
+end function
 
 stop = function
 	if curPlaying then curPlaying.stop
@@ -32,37 +45,31 @@ fadeOut = function
 	end if
 end function
 
-playSong = function(sound)
+playSong = function(soundOrName)
+	if soundOrName isa string then
+		if not sounds[soundOrName] then
+			sounds[soundOrName] = file.loadSound(paths[soundOrName])
+			qa.assert sounds[soundOrName]
+			sounds[soundOrName].loop = true
+		end if
+		soundOrName = sounds[soundOrName]
+	end if
 	fadeOut
-	outer.curPlaying = sound
+	outer.curPlaying = soundOrName
 	curPlaying.play fullVolume
 end function
 
+
 playTitle = function
-	if not sounds.title then
-		sounds.title = file.loadSound("/usr/music/oh-joyous-day.ogg")
-		sounds.title.loop = true
-		qa.assert sounds.title
-	end if
-	playSong sounds.title
+	playSong "title"
 end function
 
 playNovel = function
-	if not sounds.novel then
-		sounds.novel = file.loadSound("/usr/music/the-forest.ogg")
-		sounds.novel.loop = true
-		qa.assert sounds.novel
-	end if
-	playSong sounds.novel
+	playSong "novel"
 end function
 
 playEditor = function
-	if not sounds.editor then
-		sounds.editor = file.loadSound("/usr/music/sky-meditation.ogg")
-		sounds.editor.loop = true
-		qa.assert sounds.editor
-	end if
-	playSong sounds.editor
+	playSong "editor"
 end function
 
 update = function(dt=0.016)

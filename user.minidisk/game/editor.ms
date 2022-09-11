@@ -11,6 +11,7 @@ ensureImport "displays"
 ensureImport "drawing"
 ensureImport "objectives"
 ensureImport "pixelLogicSim"; sim = pixelLogicSim
+ensureImport "music"
 
 modeHelp = {}
 
@@ -64,6 +65,7 @@ if not globals.hasIndex("context") then
 	context.update = null		// (called every time through main loop)
 end if
 context.objectivesDrawn = false		
+if not globals.hasIndex("clip") then clip = null
 
 // Prepare displays
 displays.setupEditorSim picW, picH, ps
@@ -962,6 +964,7 @@ mouseWasDown = mouse.button
 setMode kModeDraw
 while true
 	yield
+	music.update
 	
 	pp = paintPixelAtXY(mouse)
 	gfx.fillRect 860, 0, 100, 20, bgColor

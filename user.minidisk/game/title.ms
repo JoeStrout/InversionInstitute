@@ -4,6 +4,7 @@ import "miscUtil"
 ensureImport "backgrounds"
 ensureImport "displays"
 ensureImport "mathUtil"
+ensureImport "music"
 
 displays.setupTitle
 sprites = displays.tiSprite.sprites
@@ -17,6 +18,8 @@ sprites.push night
 //eve.image = backgrounds.castleEvening
 //eve.x = 480; eve.y = 320
 //sprites.push eve
+
+music.playTitle
 
 title = new Sprite
 title.image = file.loadImage("/usr/pics/ui/title.png")
@@ -34,6 +37,8 @@ for t in range(0, 1, 0.15)
 	title.scale = mathUtil.lerp(0.4, 0.5, t)
 	yield
 end for
+
+music.preloadAll
 
 ensureImport "drawing"
 ensureImport "gameData"
@@ -115,6 +120,7 @@ end for
 // main loop
 while true
 	Button.updateAll
+	music.update
 	yield
 end while
 
