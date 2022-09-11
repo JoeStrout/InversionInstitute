@@ -4,7 +4,7 @@ import "miscUtil"
 ensureImport "qa"
 ensureImport "mathUtil"
 
-fullVolume = 1
+fullVolume = 0.5
 
 curPlaying = null
 fadingOut = null
