@@ -9,10 +9,9 @@
 - add fade in/out when transitioning to/from cut scenes
 
 ### Simulator
-- two coupled not-gates initially oscillate, until some external input (or mouse click) sets one of them; they are balanced in an unstable state because of the perfectly regular update pattern we use.  Need to find some way to break that symmetry.
 
 ### Title Screen
-- add an Options panel that lets you change your name and pronouns
+- add an Options panel that lets you change your name and pronouns, and maybe audio settings
 
 ### General
 - prepare additional fonts (small, italic, etc.) as needed
