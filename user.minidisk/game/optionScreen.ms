@@ -4,6 +4,14 @@ import "miscUtil"
 ensureImport "mathUtil"
 ensureImport "textField"
 ensureImport "drawing"
+ensureImport "button"
+
+pronounLabels = ["he/him", "she/her", "they/them", "other"]
+pronouns = {}
+pronouns[pronounLabels[0]] = ["he", "him", "his", "his"]
+pronouns[pronounLabels[1]] = ["she", "her", "her", "hers"]
+pronouns[pronounLabels[2]] = ["they", "them", "their", "theirs"]
+pronouns[pronounLabels[3]] = [""] * 4
 
 setup = function
 	clear
@@ -12,23 +20,27 @@ setup = function
 	display(6).color = "#000066"
 	display(5).mode = displayMode.sprite
 
-	outer.spriteDisp = display(5)
-	spriteDisp.clear
+	outer.bgSprites = display(5)
+	bgSprites.clear
 
 	display(4).mode = displayMode.pixel
 	globals.gfx = display(4)
 	gfx.clear color.clear
+	
+	display(2).mode = displayMode.sprite
+	outer.uiSprites = display(2)
+	uiSprites.clear
 	
 	outer.circuitBg = new Sprite
 	circuitBg.image = file.loadImage("/usr/pics/Backgrounds/circuitPattern.png")
 	circuitBg.scale = 8
 	circuitBg.tint = "#FFFFFF33"
 	circuitBg.x = 480; circuitBg.y = 320
-	spriteDisp.sprites.push circuitBg
+	bgSprites.sprites.push circuitBg
 	
 	font.printCentered "Game Options", 480, 600, 2, color.yellow
 	x = 400; y = 500
-	font.printRight "Player Name", x, y
+	font.printRight "Player Name:", x, y
 	outer.nameField = new TextField
 	nameField.init
 	nameField.bounds = Rect.make(x+20, y-16, 160, 50)
@@ -37,10 +49,30 @@ setup = function
 	nameField.select
 	nameField.draw
 	
-	x = 320; y = 400
-	font.printRight "Pronouns", x, y
+	x = 200; y = 400
+	font.printRight "Pronouns:", x-20, y
+
+	button.sprites = uiSprites.sprites
+	for opt in pronounLabels
+		btn = drawing.makeButton(opt, 150)
+		btn.x = x + btn.image.width/2
+		btn.y = y + 10
+		btn.pronouns = pronouns[opt]
+		btn.action = function
+			for i in range(3)
+				if self.pronouns[i] then pronounFields[i].setText self.pronouns[i], true
+			end for
+			if not self.pronouns[i] then
+				pronounFields[0].setFocus
+			end if
+			updateExample
+		end function
+		x = x + btn.image.width + 16
+	end for
+	
+	x = 250; y = 320
 	outer.pronounFields = []
-	for pron in ["he", "him", "his", "his"]
+	for pron in pronouns[pronounLabels[0]]
 		fld = new TextField
 		fld.init
 		fld.bounds = Rect.make(x+20, y-16, 100, 50)
@@ -51,7 +83,8 @@ setup = function
 		outer.pronounFields.push fld
 		x = x + 120
 	end for
-	font.printRight "Example:", 380-20, 350 - 20
+	
+	font.printRight "Example:", 380-20, 280 - 20
 	updateExample
 	
 	for fld in textField.instances
@@ -61,12 +94,8 @@ setup = function
 	nameField.setFocus
 end function
 
-cleanUp = function
-	nameField.close
-end function
-
 updateExample = function
-	box = Rect.make(380, 350-100, 320, 100)
+	box = Rect.make(380, 280-100, 320, 100)
 	box.fill gfx, color.clear
 //	box.frame gfx, color.aqua
 	s = "If you see " + nameField.text + ", tell " + pronounFields[1].text +
@@ -74,6 +103,11 @@ updateExample = function
 	 " game because it is " + pronounFields[3].text + "."
 	font.printWrapped s, box.left + 4, box.top - 20, box.width - 16
 end function
+
+cleanUp = function
+	nameField.close
+end function
+
 
 shiftBg = function
 	extraWidth = circuitBg.image.width * circuitBg.scale - 960
@@ -89,6 +123,7 @@ doMainLoop = function
 		yield
 		shiftBg
 		TextField.updateAll
+		Button.updateAll
 	end while
 	cleanUp
 	key.clear

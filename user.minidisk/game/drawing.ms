@@ -6,6 +6,10 @@ ensureImport "json"	// (used for PixelDrawing.load)
 
 globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
 
+button9slice = null
+
+scratchGfx = null
+
 //----------------------------------------------------------------------
 // Image9Slice class: an image wrapper with margins that are not stretched,
 // and a middle that is stretched when drawn to any size.
@@ -202,10 +206,40 @@ drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone
 //	end for
 end function
 
+drawButton = function(left, bottom, width, height, caption="", font=null, tint="")
+	if button9slice == null then
+		src = file.loadImage("/usr/pics/ui/button.png")
+		hm = src.width/2 - 4
+		vm = src.height/2 - 4
+		outer.button9slice = Image9Slice.make(src, hm, vm, hm, vm)
+	end if
+	button9slice.draw gfx, left, bottom, width, height
+	if not caption then return
+	if not font then font = globals.font
+	if not tint then tint = color.white
+	font.printCentered caption, left + width/2, bottom+height/2 - font.lineHeight*0.3, 1, tint
+end function
+
+makeButton = function(caption, width)
+	ensureImport "button"
+	if not scratchGfx then outer.scratchGfx = new PixelDisplay
+	scratchGfx.clear color.clear, width, 64
+
+	oldGfx = gfx; globals.gfx = scratchGfx
+	drawButton 0, 0, width, 64, caption
+	img = scratchGfx.getImage
+	globals.gfx = oldGfx
+
+	result = new Button
+	result.init img
+	return result
+end function
+
 if locals == globals then
 	displays.setupVN
 	//drawSpeechBox Speaker.Left
 	drawSpeech "Hello world!  This is a speech box with several lines of text " +
 	"in it.  They should wrap automatically, and the speech bubble should adjust " +
 	"as needed to fit."
+	drawButton 100, 500, 120, 64, "Button"
 end if

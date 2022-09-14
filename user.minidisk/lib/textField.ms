@@ -25,6 +25,7 @@ TextField.selAnchor = null	// selection position "anchored" for use with shift-a
 TextField.mouseWasDown = false
 TextField.cursorVisible = false
 TextField.cursorStartTime = 0
+TextField.byWord = false
 
 TextField.mouseUpTime = 0
 TextField.onChange = null	// callback invoked whenever the text changes
@@ -87,6 +88,16 @@ TextField.select = function(startPos=0, endPos=-1)
 	self.selAnchor = null
 	self.recomputeSelRect
 	self.draw
+end function
+
+TextField.setText = function(s="", selectAll = false)
+	self.text = s
+	self.recomputeOffsets
+	if selectAll then
+		self.select
+	else
+		self.select -1, -1
+	end if
 end function
 
 TextField.setSelText = function(s="")
@@ -153,6 +164,12 @@ end function
 
 TextField.handleMouse = function(firstDown)
 	if firstDown then
+		if not self.bounds.contains(mouse) then
+			// click outside bounds; lose focus
+			if self.hasFocus then self.loseFocus
+			return
+		end if
+		
 		// ensure we have the focus on mouse-down
 		if not self.hasFocus then self.setFocus
 
@@ -160,6 +177,7 @@ TextField.handleMouse = function(firstDown)
 		self.byWord = false
 		if time < self.mouseUpTime + 0.3 then self.byWord = true
 	end if
+	if not self.hasFocus then return
 	
 	// find the closest offset to the position clicked
 	besti = null
@@ -207,7 +225,7 @@ end function
 TextField.update = function
 	mouseIsDown = mouse.button
 	if mouseIsDown then
-		if not self.mouseWasDown and self.bounds.contains(mouse) then self.handleMouse(true)
+		if not self.mouseWasDown and (self.bounds.contains(mouse) or self.hasFocus) then self.handleMouse(true)
 		if self.mouseWasDown and self.hasFocus then self.handleMouse(false)
 	else if self.mouseWasDown then
 		self.mouseUpTime = time
@@ -277,7 +295,7 @@ end function
 
 TextField.nextSelPos = function(selPos, delta, byWord=false)
 	selPos = mathUtil.clamp(selPos + delta, 0, self.text.len)
-	if byWord then
+	if byWord == true then
 		if delta > 0 then
 			while selPos < self.text.len and not self.isWordEnd(selPos)
 				selPos = selPos + 1
@@ -285,7 +303,8 @@ TextField.nextSelPos = function(selPos, delta, byWord=false)
 		else
 			while selPos > 0 and not self.isWordStart(selPos)
 				selPos = selPos - 1
-		end while
+			end while
+		end if
 	end if
 	return selPos
 end function
