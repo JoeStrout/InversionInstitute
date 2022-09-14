@@ -10,11 +10,13 @@
 
 ### Simulator
 
-### Title Screen
-- add an Options panel that lets you change your name and pronouns, and maybe audio settings
+### Title & Options
+- make a 48-point (or larger?) font for use as the Game Options title
+
 
 ### General
 - prepare additional fonts (small, italic, etc.) as needed
+- improve or replace Georgia-24 font
 - further improve the minimicro-pro fonts (shorten width of `'`, etc.)
 - add sound effects and background music
 

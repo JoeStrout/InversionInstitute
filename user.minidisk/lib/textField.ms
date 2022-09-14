@@ -27,6 +27,7 @@ TextField.cursorVisible = false
 TextField.cursorStartTime = 0
 
 TextField.mouseUpTime = 0
+TextField.onChange = null	// callback invoked whenever the text changes
 
 instances = []
 focusedField = null
@@ -34,7 +35,7 @@ focusedField = null
 // If set, this will be used to keep the drawing within the display bounds
 // (it should generally be screen-sized; must be at least big enough to
 // contain all fields at their standard position):
-scratchGfx = null
+scratchGfx = new PixelDisplay
 
 //--------------------------------------------------
 // Public methods
@@ -97,6 +98,7 @@ TextField.setSelText = function(s="")
 	self.recomputeOffsets
 	self.recomputeSelRect
 	self.draw
+	self.onChange
 end function	
 
 TextField.handleKey = function(k)
@@ -115,22 +117,24 @@ TextField.handleKey = function(k)
 			if self.selEnd <= self.text.len then self.selEnd = self.selEnd + 1
 		end if
 		self.setSelText ""
-	else if code == 19 or (code == 17 and ctrl) then		// up arrow or ctrl+left
+	else if code == 19 or (code == 1 and not ctrl) then		// up arrow or Home
 		if self.selAnchor == null then self.selAnchor = self.selStart
 		self.shiftSelection 0 - self.selAnchor
-	else if code == 20 or (code == 18 and ctrl) then		// down arrow or ctrl+right
+	else if code == 20 or code == 5 then		// down arrow or End
 		if self.selAnchor == null then self.selAnchor = self.selEnd
 		self.shiftSelection self.text.len - self.selAnchor
 	else if code == 17 then		// left arrow
 		self.shiftSelection -1
 	else if code == 18 then		// right arrow
 		self.shiftSelection 1
-	else if code == 1 then		// ^A
-		self.select 0, -1
+	else if code == 1 and ctrl then		// ^A (select all)
+		self.select
 	else if code == 9 then		// tab
 		self.focusNext key.pressed("left shift") or key.pressed("right shift")
+	else if code == 25 then		// shift-tab
+		self.focusNext true
 	else
-		//print "Unknown key code: " + code
+//		print "Unknown key code: " + code
 	end if
 end function
 
@@ -214,7 +218,7 @@ TextField.update = function
 
 	if key.available then self.handleKey key.get
 
-	if self.selStart == self.selEnd then
+	if self.selStart == self.selEnd and self.hasFocus then
 		showCursor = (time - self.cursorStartTime) % 1 < 0.7
 		if showCursor != self.cursorVisible then self.drawCursor showCursor
 	end if
@@ -228,6 +232,12 @@ TextField.focusNext = function(orActuallyPrevious=false)
 		idx = (idx + 1) % instances.len
 	end if
 	instances[idx].setFocus
+end function
+
+TextField.updateAll = function
+	for inst in instances
+		inst.update
+	end for
 end function
 
 //--------------------------------------------------
@@ -265,9 +275,24 @@ TextField.drawCursor = function(visible)
 	end if
 end function
 
+TextField.nextSelPos = function(selPos, delta, byWord=false)
+	selPos = mathUtil.clamp(selPos + delta, 0, self.text.len)
+	if byWord then
+		if delta > 0 then
+			while selPos < self.text.len and not self.isWordEnd(selPos)
+				selPos = selPos + 1
+			end while
+		else
+			while selPos > 0 and not self.isWordStart(selPos)
+				selPos = selPos - 1
+		end while
+	end if
+	return selPos
+end function
+
 // Apply a left (-1) or right (1) arrow to the current selection,
 // taking into account whether the shift key is pressed.
-TextField.shiftSelection = function(delta)
+TextField.shiftSelection = function(delta, byWord=false)
 	shift = key.pressed("left shift") or key.pressed("right shift")
 	if shift then
 		// with shift key: extend from the anchor
@@ -277,16 +302,16 @@ TextField.shiftSelection = function(delta)
 		if delta < 0 then
 			if self.selAnchor == self.selEnd then
 				if self.selStart <= 0 then return
-				self.selStart = self.selStart + delta
+				self.selStart = self.nextSelPos(self.selStart, delta, byWord)
 			else
-				self.selEnd = self.selEnd + delta
+				self.selEnd = self.nextSelPos(self.selEnd, delta, byWord)
 			end if
 		else
 			if self.selAnchor == self.selStart then
 				if self.selEnd >= self.text.len then return
-				self.selEnd = self.selEnd + delta
+				self.selEnd = self.nextSelPos(self.selEnd, delta, byWord)
 			else
-				self.selStart = self.selStart + delta
+				self.selStart = self.nextSelPos(self.selStart, delta, byWord)
 			end if
 		end if
 	else if self.selEnd > self.selStart then
@@ -303,8 +328,9 @@ TextField.shiftSelection = function(delta)
 		// move the cursor
 		if self.selStart == 0 and delta < 0 then return
 		if self.selStart >= self.text.len and delta > 0 then return
-		self.selStart = self.selStart + delta
-		self.selEnd = self.selEnd + delta
+		self.selStart = self.nextSelPos(self.selStart, delta, byWord)
+
+		self.selEnd = self.selStart
 		self.selAnchor = null
 	end if
 	self.recomputeSelRect
