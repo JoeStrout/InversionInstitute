@@ -258,6 +258,12 @@ TextField.updateAll = function
 	end for
 end function
 
+TextField.closeAll = function
+	for inst in instances[:]
+		inst.close
+	end for
+end function
+	
 //--------------------------------------------------
 // Internal-use methods
 

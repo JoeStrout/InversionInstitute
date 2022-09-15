@@ -58,15 +58,7 @@ setup = function
 		btn.x = x + btn.image.width/2
 		btn.y = y + 10
 		btn.pronouns = pronouns[opt]
-		btn.action = function
-			for i in range(3)
-				if self.pronouns[i] then pronounFields[i].setText self.pronouns[i], true
-			end for
-			if not self.pronouns[i] then
-				pronounFields[0].setFocus
-			end if
-			updateExample
-		end function
+		btn.action = @pronounAction
 		x = x + btn.image.width + 16
 	end for
 	
@@ -80,7 +72,7 @@ setup = function
 		fld.text = pron
 		fld.select
 		fld.draw
-		outer.pronounFields.push fld
+		pronounFields.push fld
 		x = x + 120
 	end for
 	
@@ -91,7 +83,20 @@ setup = function
 		fld.onChange = @updateExample
 	end for
 	
+	backBtn = Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
+	backBtn.action = @cleanUp
+	
 	nameField.setFocus
+end function
+
+pronounAction = function
+	for i in range(3)
+		if self.pronouns[i] then pronounFields[i].setText self.pronouns[i], true
+	end for
+	if not self.pronouns[i] then
+		pronounFields[0].setFocus
+	end if
+	updateExample
 end function
 
 updateExample = function
@@ -105,7 +110,10 @@ updateExample = function
 end function
 
 cleanUp = function
-	nameField.close
+	TextField.closeAll
+	uiSprites.sprites = []
+	bgSprites.sprites = []
+	outer.done = true
 end function
 
 
@@ -119,7 +127,8 @@ shiftBg = function
 end function
 
 doMainLoop = function
-	while not key.pressed("escape")
+	outer.done = false
+	while not key.pressed("escape") and not done
 		yield
 		shiftBg
 		TextField.updateAll

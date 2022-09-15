@@ -54,6 +54,10 @@ playSong = function(soundOrName)
 		end if
 		soundOrName = sounds[soundOrName]
 	end if
+	if soundOrName == outer.curPlaying then
+		// we're already playing this one.  Just keep it up.
+		return
+	end if
 	fadeOut
 	outer.curPlaying = soundOrName
 	curPlaying.play fullVolume

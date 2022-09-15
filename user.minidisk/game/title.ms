@@ -117,6 +117,14 @@ for ch in chapters
 	end if
 end for
 
+// create other UI
+optsBtn = Button.make(file.loadImage("/usr/pics/ui/optionsButton.png"), 960-90, 600)
+optsBtn.action = function
+	ensureImport "optionScreen"
+	optionScreen.present
+	run
+end function
+
 // main loop
 while true
 	Button.updateAll
