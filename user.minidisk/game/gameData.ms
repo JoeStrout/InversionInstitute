@@ -12,9 +12,10 @@ ensureImport "mapUtil"
 // folder name, too.)
 playerName = "Player"
 pronoun = {}
-pronoun.he = "he"		// subjective
-pronoun.him = "him"		// objective
-pronoun.his = "his"		// possessive
+pronoun.they = "he"			// subjective
+pronoun.them = "him"		// objective
+pronoun.their = "his"		// possessive (adjective)
+pronoun.theirs = "his"		// possessive (independent)
 
 // Path to the folder containing all the saved games.
 // ToDo: get /usr2 mapped to the user library folder,
@@ -58,9 +59,18 @@ readFromDisk = function
 	if dataStr then
 		outer.data = grfon.parse(dataStr)
 	end if
+	// copy a few items to module level for convenience
+	if data.hasIndex("playerName") then outer.playerName = str(data.playerName)
+	if data.hasIndex("pronoun") and data.pronoun isa map then
+		outer.pronoun = outer.pronoun + data.pronoun
+	end if
 end function
 
 writeToDisk = function
+	// copy the stuff we keep at module level for convenience
+	data.playerName = playerName
+	data.pronoun = pronoun
+	// then write the whole shebang to disk
 	tempPath = file.child(gameFolder, "~data.grfon")
 	finalPath = file.child(gameFolder, "data.grfon")
 	f = file.open(tempPath, "w")

@@ -47,8 +47,8 @@ if errors then
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
 		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "Don't worry Baab, I know he can do it!",
-			drawing.Speaker.Left, "Alicia"
+		drawing.drawSpeech "Don't worry Baab, I know " + gameData.pronoun.they +
+			" can do it!", drawing.Speaker.Left, "Alicia"
 	end function
 	
 	playSteps.push function
@@ -76,7 +76,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		drawing.drawSpeech "I told you " + gameData.pronoun.he + " could do it.",
+		drawing.drawSpeech "I told you " + gameData.pronoun.they + " could do it.",
 			drawing.Speaker.Left, "Alicia"
 	end function
 

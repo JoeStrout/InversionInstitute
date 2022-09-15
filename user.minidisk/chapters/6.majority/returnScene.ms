@@ -46,7 +46,7 @@ if errors then
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
 		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "Don't worry Baab, he'll get it!",
+		drawing.drawSpeech "Don't worry Baab, " + gameData.pronoun.they + "'ll get it!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 	

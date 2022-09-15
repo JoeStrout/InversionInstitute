@@ -45,7 +45,7 @@ setup = function
 	nameField.init
 	nameField.bounds = Rect.make(x+20, y-16, 160, 50)
 	nameField.font = font
-	nameField.text = "Pat"
+	nameField.text = gameData.playerName
 	nameField.select
 	nameField.draw
 	
@@ -64,7 +64,8 @@ setup = function
 	
 	x = 250; y = 320
 	outer.pronounFields = []
-	for pron in pronouns[pronounLabels[0]]
+	pn = gameData.pronoun
+	for pron in [pn.they, pn.them, pn.their, pn.theirs]
 		fld = new TextField
 		fld.init
 		fld.bounds = Rect.make(x+20, y-16, 100, 50)
@@ -85,6 +86,7 @@ setup = function
 	
 	backBtn = Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
 	backBtn.action = @cleanUp
+	backBtn.keys = ["escape"]
 	
 	nameField.setFocus
 end function
@@ -110,6 +112,13 @@ updateExample = function
 end function
 
 cleanUp = function
+	gameData.pronoun.they = pronounFields[0].text
+	gameData.pronoun.them = pronounFields[1].text
+	gameData.pronoun.their = pronounFields[2].text
+	gameData.pronoun.theirs = pronounFields[3].text
+	gameData.playerName = nameField.text
+	gameData.writeToDisk
+	
 	TextField.closeAll
 	uiSprites.sprites = []
 	bgSprites.sprites = []
@@ -128,7 +137,7 @@ end function
 
 doMainLoop = function
 	outer.done = false
-	while not key.pressed("escape") and not done
+	while not done
 		yield
 		shiftBg
 		TextField.updateAll
