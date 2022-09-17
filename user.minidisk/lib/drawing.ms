@@ -230,7 +230,7 @@ makeButton = function(caption, width)
 	img = scratchGfx.getImage
 	globals.gfx = oldGfx
 
-	result = new Button
+	result = new button.Button
 	result.init img
 	return result
 end function

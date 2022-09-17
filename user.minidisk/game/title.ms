@@ -65,7 +65,7 @@ chapters = toc.chapters
 
 smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
 
-ChapterButton = new Button
+ChapterButton = new button.Button
 ChapterButton.chapter = null  // fill in with a chapter data map from above
 ChapterButton.action = function
 	if self.chapter.locked then
@@ -118,7 +118,7 @@ for ch in chapters
 end for
 
 // create other UI
-optsBtn = Button.make(file.loadImage("/usr/pics/ui/optionsButton.png"), 960-90, 600)
+optsBtn = button.Button.make(file.loadImage("/usr/pics/ui/optionsButton.png"), 960-90, 600)
 optsBtn.action = function
 	ensureImport "optionScreen"
 	optionScreen.present
@@ -127,7 +127,7 @@ end function
 
 // main loop
 while true
-	Button.updateAll
+	button.Button.updateAll
 	music.update
 	yield
 end while

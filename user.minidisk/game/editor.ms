@@ -5,6 +5,7 @@ import "miscUtil"
 ensureImport "listUtil"
 ensureImport "textUtil"
 ensureImport "mathUtil"
+ensureImport "mapUtil"
 ensureImport "qa"
 ensureImport "rect"
 ensureImport "displays"
@@ -12,6 +13,7 @@ ensureImport "drawing"
 ensureImport "objectives"
 ensureImport "pixelLogicSim"; sim = pixelLogicSim
 ensureImport "music"
+ensureImport "gameData"
 
 modeHelp = {}
 
@@ -62,6 +64,7 @@ alwaysSprites = []	// UI sprites needed always
 if not globals.hasIndex("context") then
 	context = {}
 	context.title = "Free Play"
+	context.filename = ""
 	context.update = null		// (called every time through main loop)
 end if
 context.objectivesDrawn = false		
@@ -839,8 +842,27 @@ ModeButton.init = function(label, left, bottom)
 	Button.instances.push self
 end function
 
+if not context.get("number") then
+	// Free play mode: add Save As and Save buttons
+	saveAsButton = new ModeButton
+	saveAsButton.init "SAVE AS", paintArea.right - 72 - 88*2, paintArea.top + 14
+	saveAsButton.handleClick = function
+		ensureImport "saveFileDialog"
+		saveFileDialog.gfxDisplay = gfx
+		saveFileDialog.spriteDisplay = displays.edSprite
+		saveFileDialog.folder = gameData.freePlayFolder
+		saveFileDialog.present
+	end function
+
+	saveButton = new ModeButton
+	saveButton.init "SAVE", paintArea.right - 72 - 88*1, paintArea.top + 14
+	saveButton.handleClick = function
+		
+	end function
+end if
+
 exitButton = new ModeButton
-exitButton.init "EXIT", paintArea.right - 80, paintArea.top + 14
+exitButton.init "EXIT", paintArea.right - 72, paintArea.top + 14
 exitButton.handleClick = function
 	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 	if globals.hasIndex("returnFunc") then

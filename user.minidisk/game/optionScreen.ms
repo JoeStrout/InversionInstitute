@@ -84,7 +84,7 @@ setup = function
 		fld.onChange = @updateExample
 	end for
 	
-	backBtn = Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
+	backBtn = button.Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
 	backBtn.action = @cleanUp
 	backBtn.keys = ["escape"]
 	
@@ -141,7 +141,7 @@ doMainLoop = function
 		yield
 		shiftBg
 		TextField.updateAll
-		Button.updateAll
+		button.Button.updateAll
 	end while
 	cleanUp
 	key.clear

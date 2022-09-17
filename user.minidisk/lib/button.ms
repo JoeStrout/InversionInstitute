@@ -4,7 +4,7 @@
 sprites = null
 if display(4).mode == displayMode.sprite then sprites = display(4).sprites
 
-globals.Button = new Sprite
+Button = new Sprite
 Button.sortOrder = 0
 Button.highlighted = false
 Button.pressed = false

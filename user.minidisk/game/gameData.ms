@@ -21,11 +21,15 @@ pronoun.theirs = "his"		// possessive (independent)
 // ToDo: get /usr2 mapped to the user library folder,
 // and save stuff there instead of in /usr.
 savedGamesFolder = "/usr/userdata"
-if not file.exists(savedGamesFolder) then file.makedir(savedGamesFolder)
+if not file.exists(savedGamesFolder) then file.makedir savedGamesFolder
 
 // Path of the folder containing the current game data.
-gameFolder = file.child(savedGamesFolder, "user123")
-if not file.exists(gameFolder) then file.makedir(gameFolder)
+gameFolder = file.child(savedGamesFolder, "default")
+if not file.exists(gameFolder) then file.makedir gameFolder
+
+// Path of the folder containing your free-play circuits
+freePlayFolder = file.child(gameFolder, "freeplay")
+if not file.exists(freePlayFolder) then file.makedir freePlayFolder
 
 // Data map: this is the main repository of persistent data.
 // It gets stored in GRFON format, so should contain only
