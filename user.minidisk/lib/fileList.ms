@@ -18,6 +18,9 @@ textColor = color.white
 width = 300
 rowHeight = 68
 
+selectedRow = null
+onSelChange = null		// callback for when selectedRow changes
+
 // Entry class (we keep one instance for each circuit file in the list)
 Entry = {}
 Entry.filename = ""
@@ -85,10 +88,16 @@ prepare = function
 		entries.push entry
 	end for
 	outer.scroll = 0		// how much our list is scrolled up
+	outer.mouseWasDown = mouse.button
+	outer.selectedRow = null
 end function
 
-draw = function(bounds)
-	outer.bounds = bounds
+draw = function(bounds = null)
+	if bounds then
+		outer.bounds = bounds
+	else
+		bounds = outer.bounds
+	end if
 	outer.maxScroll = entries.len * rowHeight - bounds.height
 	y = bounds.top + scroll
 	for entry in entries
@@ -97,13 +106,59 @@ draw = function(bounds)
 	end for
 end function
 
+highlightRow = function(rowIndex)
+	// unhighlight the previous row, and highlight this one
+	if selectedRow != null then
+		entries[selectedRow].highlighted = false
+	end if
+
+	if rowIndex != null then
+		outer.selectedRow = rowIndex
+		entries[selectedRow].highlighted = true
+	
+		// scroll it into view
+		rowTop = bounds.top + scroll - rowHeight * rowIndex
+		rowBottom = rowTop - rowHeight
+		if rowTop > bounds.top then
+			outer.scroll = scroll + bounds.top - rowTop
+		else if rowBottom < bounds.bottom then
+			outer.scroll = scroll + bounds.bottom - rowBottom
+		end if
+	end if
+
+	// redraw and invoke event
+	outer.selectedRow = rowIndex
+	draw
+	onSelChange
+end function
+
+rowForName = function(filename)
+	if filename.len < 4 or filename[-4:] != ".png" then filename = filename + ".png"
+	for i in entries.indexes
+		if entries[i].filename == filename then return i
+	end for
+	return null
+end function
+	
+highlightByName = function(filename)
+	highlightRow rowForName(filename)
+end function	
+
+handleClick = function
+	row = floor((bounds.top + scroll - mouse.y) / rowHeight)
+	if row < 0 or row >= entries.len then return
+	highlightRow row
+end function
+
 doEvents = function
 	if not bounds.contains(mouse) then return
 	dscroll = -round(key.axis("Mouse ScrollWheel")*25)
 	if dscroll then
 		outer.scroll = mathUtil.clamp(outer.scroll + dscroll, 0, maxScroll)
-		draw bounds
+		draw
 	end if
+	if mouse.button and not mouseWasDown then handleClick
+	outer.mouseWasDown = mouse.button
 end function
 
 doTest = function

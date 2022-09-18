@@ -9,6 +9,7 @@ ensureImport "rect"
 ensureImport "textField"
 ensureImport "button"
 ensureImport "drawing"
+ensureImport "fileList"
 
 // Set these before calling present:
 gfxDisplay = null		// PixelDisplay
@@ -22,12 +23,16 @@ listBgColor = "#444444"
 listFrameColor = "#222222"
 
 present = function
-	qa.assert gfxDisplay != null and gfx.mode == displayMode.pixel
+	qa.assert gfxDisplay != null and gfxDisplay.mode == displayMode.pixel
 	qa.assert spriteDisplay != null and spriteDisplay.mode == displayMode.sprite
 	qa.assert folder != null and file.info(folder).isDirectory
 	button.sprites = spriteDisplay.sprites
 
-	w = 580
+	// because fileList requires it, for now we will also require:
+	qa.assert gfxDisplay == gfx
+	// (we can refactor that requirement away in the future if needed)
+
+	w = 480
 	h = 426
 	frame = Rect.make(480-w/2, 320-h/2, w, h)
 	frame.fill gfxDisplay, bgColor
@@ -64,8 +69,23 @@ present = function
 	end function
 	
 	fileListBox = Rect.make(frame.left + 20, frame.bottom + 84, frame.width - 40, frame.height - 144)
-	fileListBox.fill gfxDisplay, listBgColor
-	fileListBox.frame gfxDisplay, listFrameColor, 3
+	fileListBox.grow(2,2).frame gfxDisplay, listFrameColor, 3
+	fileList.width = fileListBox.width
+	fileList.prepare
+	fileList.draw fileListBox
+	
+	field.onChange = function
+		fileList.highlightByName self.text
+	end function
+	
+	fileList.onSelChange = function
+		if fileList.selectedRow == null then return
+		name = fileList.entries[fileList.selectedRow].filename - ".png"
+		if name != field.text then
+			field.setText name, true
+			field.setFocus
+		end if
+	end function
 	
 	field.setFocus
 	done = false
@@ -75,6 +95,7 @@ present = function
 
 		TextField.updateAll
 		button.Button.updateAll
+		fileList.doEvents
 	end while
 	if canceled then result = null else result = field.text
 	TextField.closeAll

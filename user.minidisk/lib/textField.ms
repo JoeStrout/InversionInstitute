@@ -192,7 +192,7 @@ TextField.handleMouse = function(firstDown)
 
 	// move the selection
 	shift = key.pressed("left shift") or key.pressed("right shift")
-	if shift or not firstDown then
+	if (shift or not firstDown) and self.selAnchor != null then
 		// with shift, or on subsequent drag: move unanchored point
 		if besti < self.selAnchor then
 			self.selStart = besti
@@ -372,6 +372,7 @@ TextField.recomputeOffsets = function
 end function
 
 TextField.recomputeSelRect = function
+	qa.assert self.selStart != null
 	if not self.offsets then self.recomputeOffsets
 	left = self.offsets[self.selStart]
 	right = self.offsets[self.selEnd] + 1
