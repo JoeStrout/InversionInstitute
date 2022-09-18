@@ -9,6 +9,7 @@ import "miscUtil"
 ensureImport "drawing"
 ensureImport "gameData"
 ensureImport "rect"
+ensureImport "mathUtil"
 
 // constants
 bgColor = "#444444"
@@ -71,7 +72,7 @@ Entry.drawInBounds = function(bounds, top)
 	else
 		// entirely in bounds
 		gfx.drawImage img, bounds.left, bottom	
-	end if		
+	end if
 end function
 
 prepare = function
@@ -83,6 +84,26 @@ prepare = function
 		entry.filename = f
 		entries.push entry
 	end for
+	outer.scroll = 0		// how much our list is scrolled up
+end function
+
+draw = function(bounds)
+	outer.bounds = bounds
+	outer.maxScroll = entries.len * rowHeight - bounds.height
+	y = bounds.top + scroll
+	for entry in entries
+		entry.drawInBounds bounds, y
+		y = y - rowHeight
+	end for
+end function
+
+doEvents = function
+	if not bounds.contains(mouse) then return
+	dscroll = -round(key.axis("Mouse ScrollWheel")*25)
+	if dscroll then
+		outer.scroll = mathUtil.clamp(outer.scroll + dscroll, 0, maxScroll)
+		draw bounds
+	end if
 end function
 
 doTest = function
@@ -90,11 +111,11 @@ doTest = function
 	prepare
 	r = Rect.make(200, 200, width, 400)
 	r.grow(2,2).frame gfx, color.blue, 3
-	y = r.top + 30
-	for entry in entries
-		entry.drawInBounds r, y
-		y = y - rowHeight
-	end for
+	draw r
+	while true
+		yield
+		doEvents
+	end while
 end function
 
 if locals == globals then doTest
