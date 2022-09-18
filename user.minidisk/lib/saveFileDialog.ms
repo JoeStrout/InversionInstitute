@@ -69,13 +69,17 @@ present = function
 	
 	field.setFocus
 	done = false
+	canceled = false
 	while not done
 		yield
 
 		TextField.updateAll
 		button.Button.updateAll
 	end while
-
+	if canceled then result = null else result = field.text
+	TextField.closeAll
+	button.Button.closeAll
+	return result
 end function
 
 

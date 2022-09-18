@@ -36,7 +36,15 @@ end function
 
 Button.close = function
 	idx = Button.instances.indexOf(self)
-	if idx >= 0 then Button.instances.remove self
+	if idx >= 0 then Button.instances.remove idx
+	idx = sprites.indexOf(self)
+	if idx >= 0 then sprites.remove idx
+end function
+
+Button.closeAll = function
+	for inst in Button.instances[:]
+		inst.close
+	end for
 end function
 
 Button.highlight = function(hilightIt=true)

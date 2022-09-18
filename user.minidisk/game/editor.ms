@@ -67,7 +67,8 @@ if not globals.hasIndex("context") then
 	context.filename = ""
 	context.update = null		// (called every time through main loop)
 end if
-context.objectivesDrawn = false		
+context.objectivesDrawn = false
+context.isFreePlay = not context.get("number")
 if not globals.hasIndex("clip") then clip = null
 
 // Prepare displays
@@ -134,22 +135,41 @@ end function
 
 //print pointsOnLine({"x":20, "y":0}, {"x":10, "y":5}); exit
 
-saveFromEditArea = function
-	circuitPic = fatbits.getImage(0, 0, picW, picH)
-end function
-
 saveToDisk = function
-	// ToDo
-//	err = file.saveImage(self.path, self.image)
-//	if not err then
-//		dlog = textUtil.Dialog.make("Saved """ + file.name(self.path) + """",
+	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+	path = file.child(gameData.freePlayFolder, context.filename)
+	err = file.saveImage(path, circuitPic)
+	if not err then
+//		dlog = textUtil.Dialog.make("Saved """ + context.filename + """",
 //		   self.path + char(13) + self.image.width + " x " + self.image.height + " pixels")
 //		dlog.okBtn.visible = false
 //		dlog.show 2
-//	else
-//		dlog = textUtil.Dialog.make("Unable to Save File", err)
-//		dlog.show
-//	end if
+	else
+		dlog = textUtil.Dialog.make("Unable to Save File", err)
+		dlog.show
+	end if
+end function
+
+doSaveAs = function
+	ensureImport "saveFileDialog"
+	saveFileDialog.gfxDisplay = gfx
+	saveFileDialog.spriteDisplay = displays.edSprite
+	saveFileDialog.folder = gameData.freePlayFolder
+	newName = saveFileDialog.present
+	if newName then
+		if newName.len < 4 or newName[-4:] != ".png" then newName = newName + ".png"
+		context.filename = newName
+		saveToDisk
+	end if
+	prepareScreen
+end function
+
+doSave = function
+	if not context.filename then
+		doSaveAs
+	else
+		saveToDisk
+	end if
 end function
 
 updatePaintScroll = function
@@ -842,23 +862,15 @@ ModeButton.init = function(label, left, bottom)
 	Button.instances.push self
 end function
 
-if not context.get("number") then
+if context.isFreePlay then
 	// Free play mode: add Save As and Save buttons
 	saveAsButton = new ModeButton
 	saveAsButton.init "SAVE AS", paintArea.right - 72 - 88*2, paintArea.top + 14
-	saveAsButton.handleClick = function
-		ensureImport "saveFileDialog"
-		saveFileDialog.gfxDisplay = gfx
-		saveFileDialog.spriteDisplay = displays.edSprite
-		saveFileDialog.folder = gameData.freePlayFolder
-		saveFileDialog.present
-	end function
+	saveAsButton.handleClick = @doSaveAs
 
 	saveButton = new ModeButton
 	saveButton.init "SAVE", paintArea.right - 72 - 88*1, paintArea.top + 14
-	saveButton.handleClick = function
-		
-	end function
+	saveButton.handleClick = @doSave
 end if
 
 exitButton = new ModeButton
@@ -935,7 +947,7 @@ handleClick = function(justDown)
 	pp = paintPixelAtXY(mouse)
 	tf = toolFuncs[mode]
 	tf pp, justDown
-	saveFromEditArea
+	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 end function
 
 handleMouseUp = function
@@ -969,7 +981,7 @@ handleKeys = function
 	if k == "f" then flipClip
 	if k == "r" then rotateClip
 	if k == "t" then makeClipTransparent
-	if k == "s" then saveToDisk
+	if k == "s" and context.isFreePlay then doSave
 	if k == "?" or k == "/" then showHelp
 	if k == "q" then
 		d = textUtil.Dialog.make("Quit fatbits?", "Are you sure you want to quit?")
