@@ -65,6 +65,10 @@ chapters = toc.chapters
 
 smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
 
+cleanUp = function
+	button.Button.closeAll
+end function
+
 ChapterButton = new button.Button
 ChapterButton.chapter = null  // fill in with a chapter data map from above
 ChapterButton.action = function
@@ -72,6 +76,7 @@ ChapterButton.action = function
 		// No way José!
 		return
 	end if
+	cleanUp
 	toc.startChapter self.chapter.number
 end function
 
@@ -116,6 +121,38 @@ for ch in chapters
 		y = 370
 	end if
 end for
+
+// create the "free play" button
+FreePlayButton = new button.Button
+FreePlayButton.make = function
+	w = 220
+	h = 40
+	oldGfx = gfx
+	globals.gfx = displays.tiScratch
+	gfx.clear "#00000066", w, h
+	gfx.drawRect 0, 0, w, h, color.black
+	title = "Free Play"
+	textColor = color.silver
+	locked = not gameData.get("ch3.done")
+	if locked then
+		textColor = color.gray
+		title = "(locked)"
+	end if
+	smallFont.printCentered title, w/2, 12, 1, textColor
+	sp = new FreePlayButton
+	sp.init displays.tiScratch.getImage
+	sp.locked = locked
+	return sp
+end function
+FreePlayButton.action = function
+	if self.locked then return
+	cleanUp
+	load "freeplay"
+	run
+end function
+freePlayBtn = FreePlayButton.make
+freePlayBtn.x = 826
+freePlayBtn.y = 34
 
 // create other UI
 optsBtn = button.Button.make(file.loadImage("/usr/pics/ui/optionsButton.png"), 960-90, 600)

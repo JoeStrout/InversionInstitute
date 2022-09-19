@@ -105,6 +105,7 @@ end function
 present = function
 	setup
 	doMainLoop
+	load "title"; run
 end function
 
 

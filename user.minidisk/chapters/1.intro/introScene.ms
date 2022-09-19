@@ -5,6 +5,7 @@
 import "miscUtil"
 ensureImport "scene"
 ensureImport "objectives"
+import "context"
 
 scene.prepare 1, "/usr/chapters/1.intro"
 if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
@@ -105,8 +106,6 @@ playSteps.push function
 	if circuitPic == null then
 		globals.circuitPic = Image.create(80, 64, color.black)
 	end if
-	globals.context = {}
-	context.title = "Ch. 1: Introduction"
 	objectivesDrawn = false
 	context.update = function
 		if not outer.objectivesDrawn then

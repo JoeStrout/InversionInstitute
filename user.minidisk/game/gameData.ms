@@ -43,6 +43,7 @@ get = function(dotPath)
 	for part in dotPath.split(".")
 		if not m.hasIndex(part) then return null
 		m = m[part]
+		if m == null then return null
 	end for
 	return m
 end function

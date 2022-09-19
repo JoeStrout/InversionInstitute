@@ -3,6 +3,7 @@
 import "miscUtil"
 ensureImport "scene"
 ensureImport "gameData"
+import "context"
 
 if not gameData.data.hasIndex("ch1") or not gameData.data.ch1 then gameData.data.ch1 = {}
 
@@ -68,8 +69,6 @@ end function
 
 scene.prepare 1, "/usr/chapters/1.intro"
 
-globals.context = {}
-context.title = "Ch. 1: Introduction"
 objectivesDrawn = false
 wasInTestMode = false
 context.update = function
