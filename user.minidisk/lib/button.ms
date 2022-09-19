@@ -48,18 +48,25 @@ Button.closeAll = function
 end function
 
 Button.highlight = function(hilightIt=true)
-	self.highlighted = true
-	self.tint = color.white
-	for b in Button.instances
-		if b.highlighted and b != self then
-			b.highlighted = false
-			b.tint = Button.tint
-		end if
-	end for
+	if hilightIt then
+		self.highlighted = true
+		self.tint = color.white
+		for b in Button.instances
+			if b.highlighted and b != self then
+				b.highlighted = false
+				b.tint = Button.tint
+			end if
+		end for
+	else
+		self.highlighted = false
+		self.tint = Button.tint
+	end if
 end function
 
 Button.update = function
-	if not self.highlighted then
+	if self.highlighted then
+		if not self.contains(mouse) then self.highlight false
+	else
 		if self.contains(mouse) then self.highlight
 	end if
 	if self.contains(mouse) and mouse.button then

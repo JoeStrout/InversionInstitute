@@ -66,14 +66,15 @@ present = function(filename="Untitled")
 	cancelBtn.keys = ["escape"]
 	cancelBtn.action = function
 		outer.done = true
+		outer.canceled = true
 	end function
 	
 	fileListBox = Rect.make(frame.left + 20, frame.bottom + 84, frame.width - 40, frame.height - 144)
 	fileListBox.grow(2,2).frame gfxDisplay, listFrameColor, 3
 	fileList.width = fileListBox.width
 	fileList.prepare
-	fileList.highlightByName filename
 	fileList.draw fileListBox
+	fileList.highlightByName filename
 	
 	field.onChange = function
 		fileList.highlightByName self.text
