@@ -22,7 +22,7 @@ frameColor = "#222222"
 listBgColor = "#444444"
 listFrameColor = "#222222"
 
-present = function
+present = function(filename="Untitled")
 	qa.assert gfxDisplay != null and gfxDisplay.mode == displayMode.pixel
 	qa.assert spriteDisplay != null and spriteDisplay.mode == displayMode.sprite
 	qa.assert folder != null and file.info(folder).isDirectory
@@ -47,7 +47,7 @@ present = function
 	field.bounds = Rect.make(x, frame.top - 48, frame.right - 20 - x, 36)
 	field.font = font
 	field.maxLength = 28
-	field.text = "Untitled"
+	field.text = filename
 	field.select
 	field.draw
 	
@@ -72,6 +72,7 @@ present = function
 	fileListBox.grow(2,2).frame gfxDisplay, listFrameColor, 3
 	fileList.width = fileListBox.width
 	fileList.prepare
+	fileList.highlightByName filename
 	fileList.draw fileListBox
 	
 	field.onChange = function
