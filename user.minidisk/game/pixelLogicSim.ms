@@ -10,6 +10,8 @@ nodes = []			// list of Node objects
 gates = []			// list of Gate objects
 crossings = []		// list of [x,y] coordinates
 
+heldNode = null
+
 filePath = null
 if (not locals.hasIndex("circuitPic") and
       not globals.hasIndex("circuitPic")) or circuitPic == null then    
@@ -57,6 +59,7 @@ Node.indices = null	// indexes into coords and colors
 Node.inputs = null	// list of Nodes that are inputs to this node
 Node.outputs = null	// list of Nodes that are outputs to this node
 Node.on = true
+Node.held = false	// if true, it's being "held" in its current value by the user
 Node.sprite = null	// sprite of the node path with transparent background
 Node.add = function(x, y, fullColor)
 	self.coords.push [x,y]
@@ -113,7 +116,7 @@ Node.setOn = function(nowOn, updateSelf=true)
 end function
 Node.update = function
 	// Set this node on if ANY of its input nodes are off.
-	if not self.inputs then return
+	if not self.inputs or self.held then return
 	setOn = false
 	for n in self.inputs
 		if not n.on then
@@ -359,16 +362,24 @@ dragScroll = function
 end function
 
 handleMouse = function
-	zoom = round(key.axis("Mouse ScrollWheel")*5)
-	if zoom != 0 then doZoom zoom
-	if mouse.button(1) then dragScroll
-	if not mouse.button then return
+//	zoom = round(key.axis("Mouse ScrollWheel")*5)
+//	if zoom != 0 then doZoom zoom
+//	if mouse.button(1) then dragScroll
+	if not mouse.button then
+		if heldNode then
+			heldNode.held = false
+			heldNode.update
+			outer.heldNode = null
+		end if
+		return
+	end if
 	node = nodeAtXY(floor((mouse.x + displays.simGfx.scrollX) / displays.simGfx.scale), 
 	  floor((mouse.y + displays.simGfx.scrollY) / displays.simGfx.scale))
-	if node != null then
+	if node != null and not heldNode then
+		outer.heldNode = node
+		heldNode.held = true
 		node.setOn not node.on
 	end if
-	while mouse.button; yield; end while	
 end function
 
 handleKeys = function
