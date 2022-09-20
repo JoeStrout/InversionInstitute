@@ -16,7 +16,7 @@ check = function
 
 	nodeRst.setOn true; nodeRst.held = true
 	sim.simulate; nodeRst.setOn false; nodeRst.held = false; sim.simulate
-	if not nodeOut.on then return "OUT did not turn off after pressing RST."
+	if nodeOut.on then return "OUT did not turn off after pressing RST."
 	if nodeSet.on then return "Pressing RST should not light up SET."
 
 	return ""

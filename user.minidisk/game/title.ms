@@ -147,6 +147,7 @@ end function
 FreePlayButton.action = function
 	if self.locked then return
 	cleanUp
+	cd "/usr/game"
 	load "freeplay"
 	run
 end function

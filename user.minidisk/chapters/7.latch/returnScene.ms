@@ -38,7 +38,7 @@ if errors then
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 		Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
-		drawing.drawSpeech "Hmm, that doesn't seem right.",
+		drawing.drawSpeech "That's not quite it, is it?",
 			drawing.Speaker.Right, "Baab"
 	end function
 
@@ -68,7 +68,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "Hey thanks, that looks great!",
+		drawing.drawSpeech "That's it!  Brilliant!",
 			drawing.Speaker.Right, "Baab"
 	end function
 
@@ -76,7 +76,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		drawing.drawSpeech "I told you " + gameData.pronoun.they + " could do it.",
+		drawing.drawSpeech "You did it again, " + gameData.playerName + "!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
@@ -84,7 +84,8 @@ else
 //		scene.playSunset
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		toc.startChapter
+//		toc.startChapter
+		load "/usr/game/title"; run
 	end function
 
 end if
