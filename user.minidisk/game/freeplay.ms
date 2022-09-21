@@ -35,7 +35,7 @@ setup = function
 	previewBox = Rect.make(460, 148, 480, 384)
 	previewBox.fill gfx, "#222222"
 
-	fileListBox = Rect.make(32, 32, 400, 500)
+	fileListBox = Rect.make(32, 80, 400, 452)
 	fileListBox.fill gfx, listBgColor
 	fileListBox.grow(2,2).frame gfx, listFrameColor, 3
 	fileList.width = fileListBox.width
@@ -53,6 +53,24 @@ setup = function
 	end function
 
 	button.sprites = uiSprites.sprites
+	
+	newBtn = drawing.makeButton("New", 150)
+	newBtn.x = fileListBox.left + newBtn.image.width/2
+	newBtn.y = 40
+	newBtn.action = function
+		globals.context = {}
+		context.title = "Free Play"
+		context.filename = null
+		context.update = null		// (called every time through main loop)
+		globals.circuitPic = Image.create(80, 64)
+		globals.returnFunc = function
+			load "freeplay"
+			run
+		end function
+		cleanUp
+		load "editor"; run
+	end function
+	
 	openBtn = drawing.makeButton("Open", 150)
 	openBtn.x = previewBox.left + openBtn.image.width/2
 	openBtn.y = previewBox.bottom - openBtn.image.height/2 - 12
@@ -71,11 +89,12 @@ setup = function
 		cleanUp
 		load "editor"; run
 	end function
+	openBtn.keys = ["o", "enter", "return"]
 
 	delBtn = drawing.makeButton("Delete", 150)
 	delBtn.x = previewBox.right - delBtn.image.width/2
 	delBtn.y = previewBox.bottom - delBtn.image.height/2 - 12
-//	openBtn.action = @pronounAction
+//	delBtn.action = @pronounAction		// ToDo!
 
 
 	backBtn = button.Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
