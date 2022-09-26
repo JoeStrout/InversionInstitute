@@ -4,7 +4,7 @@ Inversion Institute is a logic/puzzle game.  You play as a young initiate at the
 
 ## Platforms
 
-Inversion Institute runs on Windows, Mac, and Linux.  The current plan is to distribute it mainly through Steam.
+Inversion Institute runs on Windows, Mac, and Linux.  The current plan is to distribute it mainly through [Steam](https://joestrout.itch.io/inversion-institute).
 
 ## Status
 

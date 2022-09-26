@@ -457,6 +457,7 @@ deselect = function
 end function
 
 grabSelection = function(andClear = false)
+	if selection == null then return null
 	result = fatbits.getImage(selection.left, selection.bottom, selection.width, selection.height)
 	if andClear then selection.fill fatbits, backColor
 	return result
@@ -535,7 +536,7 @@ rotateClip = function
 	if mode == kModePasting then img = pasted
 	if mode == kModeSelect then img = grabSelection(true)	
 	if img == null then return
-
+	
 	result = Image.create(img.height, img.width)
 	xrange = range(0, img.width-1)
 	if key.pressed("left shift") or key.pressed("right shift") then
@@ -602,7 +603,7 @@ toolFuncs[kModeMove] = function(pp, justDown)
 	dy = pp.y - startPaintPos.y
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage startPaintImg.getImage(-dx * (dx<0), -dy * (dy<0), 
-		picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
+	picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
 end function
 
 toolFuncs[kModeDraw] = function(pp, justDown)
@@ -670,9 +671,9 @@ toolFuncs[kModeLine] = function(pp, justDown)
 	fatbits.drawImage picAtStart
 	if key.pressed("left shift") or key.pressed("right shift") then
 		// crossing mode -- try to make crossings
-		// (but for now, just make black any existing non-black pixel)
 		for pos in pointsOnLine(posAtStart, pp)
-			if fatbits.pixel(pos.x, pos.y) == "#000000FF" then
+			if fatbits.pixel(pos.x, pos.y) == "#000000FF" or
+			  pos == posAtStart or pos == pp then
 				setPaintPixel pos, foreColor
 			else
 				setPaintPixel pos, "#000000FF"
@@ -768,10 +769,10 @@ toolFuncs[kModeSelect] = function(pp, justDown)
 end function
 
 toolFuncs[kModePasting] = function(pp, justDown)
-//	if justDown then
-//		setMode kModeSelect
-//		globals.selectionAnchor = pp
-//	end if
+	//	if justDown then
+	//		setMode kModeSelect
+	//		globals.selectionAnchor = pp
+	//	end if
 end function
 
 //--------------------------------------------------------------------------------
@@ -826,7 +827,7 @@ end function
 
 makeDefaultPalette = function
 	for c in ("000000 000099 2222FF 007722 66AAFF 833494 FF0000 FF22FF " +
-			  "D19E6F AAAAAA FF8000 FFAAAA 00FF00 FFFF00 B6F0D6 FFFFFF").split
+		"D19E6F AAAAAA FF8000 FFAAAA 00FF00 FFFF00 B6F0D6 FFFFFF").split
 		PalButton.make "#" + c
 	end for
 end function
@@ -869,7 +870,7 @@ if context.isFreePlay then
 	saveAsButton = new ModeButton
 	saveAsButton.init "SAVE AS", paintArea.right - 72 - 88*2, paintArea.top + 14
 	saveAsButton.handleClick = @doSaveAs
-
+	
 	saveButton = new ModeButton
 	saveButton.init "SAVE", paintArea.right - 72 - 88*1, paintArea.top + 14
 	saveButton.handleClick = @doSave

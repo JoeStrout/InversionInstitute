@@ -4,6 +4,7 @@
 ### Editor
 - add work boundaries/margins, which the user can drag in to get a more compact space (determining position on the world-result histogram)
 - make zoom (scroll wheel) either work, or disable it entirely
+- BUG: the first time the Save As dialog comes up in the Free Play editor, there is some visual glitch where the preview area was in the Free Play screen.)
 
 ### Cut Scenes
 - add fade in/out when transitioning to/from cut scenes
@@ -11,7 +12,7 @@
 ### Simulator
 
 ### Title & Options
-- make a 48-point (or larger?) font for use as the Game Options title
+- make a 48-point (or larger?) font for use as the Game Options and Free Play title
 
 
 ### General
@@ -30,5 +31,6 @@
 1. (Make a latch with reset.)
 1. Quiz Game: (4 inputs, latch the output for the first to go high and lock out all the others.)
 1. (Make an XOR gate.)
-1. (Make a 4-bit, 1-digit hexadecimal display.)
-
+1. (Make a half-adder, described as "count the input pins that are on and light up the appropriate (1 or 2) output pin.")
+1. (Make a color mixer: inputs are Red, Green, and Blue, and outputs are the 7 possible combinations of those three inputs.)
+1. (Make a 7-segment display that shows digits 0-7 in response to 3 inputs.)
