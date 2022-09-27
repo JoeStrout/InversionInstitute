@@ -1,4 +1,4 @@
-// Return scene for Chapter 6.
+// Return scene for Chapter 8.
 
 import "miscUtil"
 ensureImport "scene"
@@ -31,13 +31,14 @@ display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
 Baab.present = true
+Alicia.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 		Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
-		drawing.drawSpeech "Hmm, I guess this is a tricky one?",
+		drawing.drawSpeech "Hmm, I thought this might be tricky.",
 			drawing.Speaker.Right, "Baab"
 	end function
 
@@ -46,8 +47,8 @@ if errors then
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
 		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "Don't worry Baab, " + gameData.pronoun.they + "'ll get it!",
-			drawing.Speaker.Left, "Alicia"
+		drawing.drawSpeech "Don't worry Baab, " + gameData.playerName +
+			" will get it!", drawing.Speaker.Left, "Alicia"
 	end function
 	
 	playSteps.push function
@@ -67,7 +68,7 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "You've done it again, " + gameData.playerName + "!",
+		drawing.drawSpeech "You've done it!",
 			drawing.Speaker.Right, "Baab"
 	end function
 
@@ -75,16 +76,16 @@ else
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "I never had any doubt.",
+		drawing.drawSpeech "The Snoof Festival is saved.",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
-//		scene.playSunset
+		scene.playSunset
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		toc.startChapter
+//		toc.startChapter
+		load "/usr/game/title"; run
 	end function
 
 end if

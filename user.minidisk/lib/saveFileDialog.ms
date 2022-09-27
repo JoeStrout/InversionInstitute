@@ -102,6 +102,7 @@ present = function(filename="Untitled")
 	if canceled then result = null else result = field.text
 	TextField.closeAll
 	button.Button.closeAll
+	fileList.onSelChange = null
 	return result
 end function
 

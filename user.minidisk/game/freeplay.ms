@@ -53,7 +53,7 @@ setup = function
 	end function
 
 	button.sprites = uiSprites.sprites
-	
+		
 	newBtn = drawing.makeButton("New", 150)
 	newBtn.x = fileListBox.left + newBtn.image.width/2
 	newBtn.y = 40
@@ -90,12 +90,11 @@ setup = function
 		load "editor"; run
 	end function
 	openBtn.keys = ["o", "enter", "return"]
-
+	
 	delBtn = drawing.makeButton("Delete", 150)
 	delBtn.x = previewBox.right - delBtn.image.width/2
 	delBtn.y = previewBox.bottom - delBtn.image.height/2 - 12
 //	delBtn.action = @pronounAction		// ToDo!
-
 
 	backBtn = button.Button.make(file.loadImage("/usr/pics/ui/backButton.png"), 10, 600)
 	backBtn.action = @cleanUp
@@ -105,8 +104,10 @@ end function
 
 cleanUp = function
 //	TextField.closeAll
+	button.Button.closeAll
 	uiSprites.sprites = []
 	bgSprites.sprites = []
+	fileList.onSelChange = null
 	outer.done = true
 end function
 

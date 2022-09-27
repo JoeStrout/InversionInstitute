@@ -1,4 +1,4 @@
-// Return scene for Chapter 2.
+// Return scene for Chapter 5.
 
 import "miscUtil"
 ensureImport "scene"
