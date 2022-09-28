@@ -1,4 +1,4 @@
-// Return scene for Chapter 8.
+// Return scene for Chapter 2.
 
 import "miscUtil"
 ensureImport "scene"
@@ -13,7 +13,7 @@ if not globals.hasIndex("sim") then
 	displays.setupEditorSim
 	display(0).mode = displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
-	circuitPic = gameData.loadCircuitForChapter(context.number)
+	circuitPic = gameData.loadCircuitForChapter(3)
 	if circuitPic == null then
 		circuitPic = Image.create(80, 64, color.black)
 	end if
@@ -30,25 +30,29 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
-Baab.present = true
+Baab.present = false
 Alicia.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
-		drawing.drawSpeech "Hmm, I thought this might be tricky.",
-			drawing.Speaker.Right, "Baab"
+		drawing.drawSpeech "How is Mr. Ex-Oarsley's discord alarm going?",
+			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
-		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "Don't worry Baab, " + gameData.playerName +
-			" will get it!", drawing.Speaker.Left, "Alicia"
+		Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "A tricky one, is it?",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
+		drawing.drawSpeech "Well keep at it.  I know you can do it!",
+			drawing.Speaker.Left, "Alicia"
 	end function
 	
 	playSteps.push function
@@ -66,26 +70,31 @@ else
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "You've done it!",
-			drawing.Speaker.Right, "Baab"
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+		drawing.drawSpeech "That's it!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "Now Mr. Ex-Oarsley can step in before his boys start to squabble.",
+			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		drawing.drawSpeech "The Snoof Festival is saved.",
+		drawing.drawSpeech "Nice work again, " + gameData.playerName + "!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
-		scene.playSunset
+//		scene.playSunset
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		toc.startChapter
-//		load "/usr/game/title"; run
+//		toc.startChapter
+		load "/usr/game/title"; run
 	end function
 
 end if

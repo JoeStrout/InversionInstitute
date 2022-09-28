@@ -1,16 +1,16 @@
-number = 3
-folderName = "3.or"
-title = "Mrs. Oarsley's Children"
+number = 9
+folderName = "9.xor"
+title = "Ex-Oarsley's Discord Alert"
 
-globals.circuitPic = gameData.loadCircuitForChapter(3)
+globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
 
 drawObjs = function
 	objectives.erase
-	objectives.print "Connect the two inputs (F and C) to the light (L) such that " +
-	"the light is on whenever either (or both) of the inputs is on."
+	objectives.print "Connect the two inputs (F and C) to the alert (X) such that " +
+	"the alert is on whenever the inputs differ (F is not equal to C)."
 	objectives.print
 end function
 
