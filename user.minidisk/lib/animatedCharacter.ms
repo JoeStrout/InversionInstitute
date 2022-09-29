@@ -1,11 +1,13 @@
 // Loads and manages an animated character, with a hierarchy defined in a GRFON file.
 
-import "stringUtil"
-import "grfon"
-import "spriteSheet"
-import "mathUtil"
-import "matrixUtil"
-import "transform"
+import "miscUtil"
+ensureImport "stringUtil"
+ensureImport "grfon"
+ensureImport "spriteSheet"
+ensureImport "mathUtil"
+ensureImport "matrixUtil"
+ensureImport "transform"
+ensureImport "qa"
 
 twoPi = pi * 2
 
@@ -79,6 +81,7 @@ makeObjFromMap = function(m, z=0)
 		if kv.key == "animPhase" then noob.animPhase = val(kv.value)
 		if kv.key == "sprite" then
 			noob.sprite = findSprite(kv.value)
+			qa.assert noob.sprite != null, "Sprite undefined: " + kv.value
 			noob.sprite.z = z
 		end if
 		if kv.value isa map then
