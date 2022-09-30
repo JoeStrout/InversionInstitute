@@ -13,7 +13,7 @@ if not globals.hasIndex("sim") then
 	displays.setupEditorSim
 	display(0).mode = displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
-	circuitPic = gameData.loadCircuitForChapter(3)
+	circuitPic = gameData.loadCircuitForChapter(context.number)
 	if circuitPic == null then
 		circuitPic = Image.create(80, 64, color.black)
 	end if
@@ -90,11 +90,16 @@ else
 	end function
 
 	playSteps.push function
-//		scene.playSunset
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+		drawing.drawSpeech "You've gotten a lot done today!  Let's pick it up again tomorrow.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-//		toc.startChapter
-		load "/usr/game/title"; run
+		load "meetLeo"; run
 	end function
 
 end if

@@ -12,7 +12,7 @@ if not globals.hasIndex("sim") then
 	displays.setupEditorSim
 	display(0).mode = displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
-	circuitPic = gameData.loadCircuitForChapter(3)
+	circuitPic = gameData.loadCircuitForChapter(context.number)
 	if circuitPic == null then
 		circuitPic = Image.create(80, 64, color.black)
 	end if

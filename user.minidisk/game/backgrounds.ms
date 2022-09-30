@@ -37,3 +37,15 @@ lab = function
 	return _lab
 end function
 
+_garden = null
+garden = function
+	if not _garden then outer._garden = _load("garden day")
+	return _garden
+end function
+
+_gardenEvening = null
+gardenEvening = function
+	if not _gardenEvening then outer._gardenEvening = _load("garden evening")
+	return _gardenEvening
+end function
+

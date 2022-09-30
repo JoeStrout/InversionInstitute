@@ -4,16 +4,19 @@ import "miscUtil"
 ensureImport "displays"
 ensureImport "alicia"
 ensureImport "baab"
+ensureImport "leo"
 ensureImport "drawing"
 ensureImport "backgrounds"
 ensureImport "gameData"
 ensureImport "music"
 
-characters = [Alicia, Baab]
+characters = [Alicia, Baab, Leo]
 for c in characters; c.present = false; end for
 
 prepare = function(chapterNum, chapterPath)
 	displays.setupVN
+	Baab.present = false
+	Leo.present = false
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function

@@ -23,15 +23,15 @@ eyes.closed = faceParts.Eyes3.image
 
 eyebrows = {}
 eyebrows.normal = faceParts.Eyebrow1.image
-eyebrows.sad = faceParts.Eyebrow2.image
-eyebrows.mad = faceParts.Eyebrow3.image
+eyebrows.mad = faceParts.Eyebrow2.image
+eyebrows.sad = faceParts.Eyebrow3.image
 
 Leo.nonblinkingEyes = eyes.normal
 
-Leo.setExpression = function(eyebrows, eyes, mouth)
+Leo.setExpression = function(eyebrows, eyes)
+	if eyes == null then eyes = outer.eyes.normal
 	eyebrowSprite.image = eyebrows
 	eyesSprite.image = eyes
-	mouthSprite.image = mouth
 	self.nonblinkingEyes = eyes
 end function
 
