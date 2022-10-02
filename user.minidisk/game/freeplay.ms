@@ -117,6 +117,7 @@ doMainLoop = function
 		yield
 		button.Button.updateAll
 		fileList.doEvents
+		music.update
 	end while
 	cleanUp
 	key.clear

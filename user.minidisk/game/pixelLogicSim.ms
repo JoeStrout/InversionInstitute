@@ -187,6 +187,7 @@ createNodeAt = function(x,y)
 		if c == "#000000FF" or c[-2:] != "FF" then continue
 		
 		displays.simGfx.setPixel x, y, c[:7] + "F0"
+		outer.totalInk = totalInk + 1
 		node.add x, y, c
 		
 		// push immediate neighbors
@@ -256,6 +257,7 @@ analyze = function
 	//resetAlpha				we'll instead just require opaque images for now
 	
 	outer.crossings = []		// list of [x,y] coordinates
+	outer.totalInk = 0
 	
 	// Find all the gates.
 //	print "Finding gates"
@@ -268,10 +270,10 @@ analyze = function
 	for y in yrange
 		for x in xrange
 			c = displays.simGfx.pixel(x,y)
-			if c == "#000000FF" then continue
-			if c[-2:] != "FF" then continue
+			if c == "#000000FF" then continue		// empty space (non-ink)
+			if c[-2:] != "FF" then continue			// already assigned to a node
 			
-			node = createNodeAt(x,y)
+			node = createNodeAt(x,y)				// processes all connected ink
 			// print "Got node at " + x + "," + y + " with " + node.coords.len + " pixels"
 			nodes.push node
 		end for

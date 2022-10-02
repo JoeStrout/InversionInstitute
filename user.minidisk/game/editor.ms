@@ -905,6 +905,18 @@ checkButton.handleClick = function
 end function
 checkButton.hide
 
+drawSimStats = function
+	x = 848
+	y = 575
+	gap = 12
+	helpFont.printRight "Glyphs:", x,y, 1, color.silver
+	helpFont.print str(sim.gates.len), x + gap,y, 1, color.white
+
+	y = y - 20
+	helpFont.printRight "Total Ink:", x,y, 1, color.silver
+	helpFont.print str(sim.totalInk), x + gap,y, 1, color.white
+end function
+
 setTestMode = function(enterTestMode = true)
 	if testMode == enterTestMode then return	// (already in the correct mode)
 	outer.testMode = enterTestMode
@@ -916,6 +928,7 @@ setTestMode = function(enterTestMode = true)
 		sim.setup true
 		sim.analyze
 		text.clear
+		drawSimStats
 		if context.hasIndex("check") then checkButton.unhide else checkButton.hide
 		drawHelp "Click any ink to toggle it on or off."
 	else
