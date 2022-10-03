@@ -7,6 +7,8 @@
 //   __underline__  -- underlined
 //   ~~struck~~     -- strikethrough
 //   ##highlight##  -- highlighted
+//
+// Still TO-DO: word wrapping in the print methods.
 
 // StyleRun class: represents a bit of text with a uniform style.
 StyleRun = {}
