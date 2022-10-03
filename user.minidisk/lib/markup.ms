@@ -8,7 +8,11 @@
 //   ~~struck~~     -- strikethrough
 //   ##highlight##  -- highlighted
 //
-// Still TO-DO: word wrapping in the print methods.
+// Still TO-DO: make printers keep their own cursor position, and possibly wrap
+// settings so you can call print on them multiple times to add additional
+// lines/paragraphs.
+
+import "stringUtil"
 
 // StyleRun class: represents a bit of text with a uniform style.
 StyleRun = {}
@@ -29,10 +33,9 @@ StyleRun.make = function(s, copyStyle=null)
 	return result
 end function
 
-// Parser class: takes a string containing markup, and returns it as 
+// parse: takes a string containing markup, and returns it as 
 // a list of StyleRuns.
-Parser = {}
-Parser.parse = function(markup)
+parse = function(markup)
 	result = []
 	maxi = markup.len - 1
 	i = -1
@@ -141,16 +144,45 @@ TextPrinter.restore = function
 	text.backColor = self.prevBack
 end function
 
-TextPrinter.print = function(markup, endDelimiter=null)
-	if endDelimiter == null then endDelimiter = char(13)
+// Cut the text of the given style run to fit within the given width,
+// on a word boundary if possible.  Return the left part; update 
+// styleRun.text to be the right part.  If we can't fit, then return
+// "" unless forceCut is true.
+TextPrinter.cutToFit = function(styleRun, width, forceCut=false)
+	i = width
+	while i > 0
+		if styleRun.text[i] <= " " then
+			result = styleRun.text[:i]
+			styleRun.text = styleRun.text[i:].trimLeft
+			return result
+		end if
+		i = i - 1
+	end while
+	if not forceCut then
+		styleRun.text = styleRun.text.trimLeft
+		return ""
+	end if
+	result = styleRun.text[:width]
+	styleRun.text = styleRun.text[width:].trimLeft
+	return result
+end function
+
+TextPrinter.print = function(markup, col, row, wrapAt=68, wrapTo=null)
+	if col != null then text.column = col
+	if row != null then text.row = row
+	if wrapTo == null then wrapTo = text.column
 	oldDelim = text.delimiter
 	text.delimiter = ""
-	for styleRun in Parser.parse(markup)
+	for styleRun in parse(markup)
 		self.applyStyle styleRun
+		while wrapAt - text.column < styleRun.text.len
+			text.print self.cutToFit(styleRun, wrapAt - text.column, text.column<=wrapTo) + char(13)
+			text.column = wrapTo
+		end while
 		text.print styleRun.text
 		self.restore
 	end for
-	print endDelimiter
+	text.print oldDelim
 	text.delimiter = oldDelim
 end function
 	
@@ -186,63 +218,102 @@ GfxPrinter.width = function(text)
 	return text.len * 14
 end function
 
+// Cut the text of the given style run to fit within the given width,
+// on a word boundary if possible.  Return the left part; update 
+// styleRun.text to be the right part.  If we can't fit, then return
+// "" unless forceCut is true.
+GfxPrinter.cutToFit = function(styleRun, width, forceCut=false)
+	charWidth = floor(width / self.width("m"))	// find character position at which to cut
+	i = charWidth
+	while i > 0
+		if styleRun.text[i] <= " " then
+			result = styleRun.text[:i]
+			styleRun.text = styleRun.text[i:].trimLeft
+			return result
+		end if
+		i = i - 1
+	end while
+	if not forceCut then
+		styleRun.text = styleRun.text.trimLeft
+		return ""
+	end if
+	result = styleRun.text[:charWidth]
+	styleRun.text = styleRun.text[charWidth:].trimLeft
+	return result
+end function
 
-GfxPrinter.print = function(markup, x, y)
+// Print a single line of text in a single style, at the given
+// x and y coordinates.  Return the new x coordinate after printing.
+GfxPrinter.printOneRun = function(style, text, x, y)
 	g = self.display
 	if g == null then g = gfx
-	for styleRun in Parser.parse(markup)
-		x1 = x + self.width(styleRun.text) + 2 + 2 * (self.font == "large")
-		if styleRun.highlight then
-			h = self.lineHeight[self.font]
-			y0 = y - floor(h * 0.08)
-			y1 = y0 + h
-			gfx.fillRect x-1, y0, x1 - x + 2, y1 - y0, self.highlightBackColor
-		end if
-		g.print styleRun.text, x, y, gfx.color, self.font
-		if styleRun.underline then
-			ty = y + self.underlineOffset[self.font]
-			gfx.line x, ty, x1, ty
-		end if
-		if styleRun.strikethrough then
-			ty = y + self.strikeOffset[self.font]
-			gfx.line x-1, ty, x1+1, ty
-		end if
-		if styleRun.bold then gfx.print styleRun.text, x+1, y-1, gfx.color, self.font
-		if styleRun.italic then
-			h = self.lineHeight[self.font]
-			y0 = y - floor(h * 0.12)
-			y1 = y0 + h
-			h4 = ceil(h * 0.25)
-			img = gfx.getImage(x+2, y0, x1 - x - 2, h4)
-			gfx.drawImage img, x, y0
-			img = gfx.getImage(x+1, y0+h4, x1 - x - 1, h4)
-			gfx.drawImage img, x, y0+h4
-			img = gfx.getImage(x, y1-h4, x1 - x - 1, h4)
-			gfx.drawImage img, x + 1, y1-h4
-		end if
-		x = x1
+	x1 = x + self.width(text) + 2 + 2 * (self.font == "large")
+	if style.highlight then
+		h = self.lineHeight[self.font]
+		y0 = y - floor(h * 0.08)
+		y1 = y0 + h
+		gfx.fillRect x-1, y0, x1 - x + 2, y1 - y0, self.highlightBackColor
+	end if
+	g.print text, x, y, gfx.color, self.font
+	if style.underline then
+		ty = y + self.underlineOffset[self.font]
+		gfx.line x, ty, x1, ty
+	end if
+	if style.strikethrough then
+		ty = y + self.strikeOffset[self.font]
+		gfx.line x-1, ty, x1+1, ty
+	end if
+	if style.bold then gfx.print text, x+1, y-1, gfx.color, self.font
+	if style.italic then
+		h = self.lineHeight[self.font]
+		y0 = y - floor(h * 0.12)
+		y1 = y0 + h
+		h4 = ceil(h * 0.25)
+		img = gfx.getImage(x+2, y0, x1 - x - 2, h4)
+		gfx.drawImage img, x, y0
+		img = gfx.getImage(x+1, y0+h4, x1 - x - 1, h4)
+		gfx.drawImage img, x, y0+h4
+		img = gfx.getImage(x, y1-h4, x1 - x - 1, h4)
+		gfx.drawImage img, x + 1, y1-h4
+	end if
+	return x1	
+end function
+
+GfxPrinter.print = function(markup, x, y, wrapAt=960, wrapTo=null)
+	if wrapTo == null then wrapTo = x
+	for styleRun in parse(markup)
+		while wrapAt - x < self.width(styleRun.text)
+			partialText = self.cutToFit(styleRun, wrapAt - x, x <= wrapTo)
+			self.printOneRun styleRun, partialText, x, y
+			x = wrapTo
+			y = y - self.lineHeight[self.font]
+		end while
+		x = self.printOneRun(styleRun, styleRun.text, x, y)
 	end for
 end function
 
-runUnitTests = function
-	p = new Parser
-	//pprint p.parse("Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!")
-	print
-	//pprint p.parse("5\*3 is five\three")
-	//pprint p.parse("##Highlight## this, __underline__ that, and ~~strike this out~~.")
+runDemo = function
+	clear; text.delimiter = char(13)
+	text.color = color.silver
+	msg1 = "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!"
+	msg2 = "##Highlight## this, __underline__ that, and ~~strike this out~~."
+	msg3 = "This is a much longer message.  _So_ long, in fact, that we will need " +
+	"to do *word wrap*, and it's __vital__ that we do this ~~fast~~ correctly."
 	tp = new TextPrinter
-	tp.print "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!"
-	tp.print "##Highlight## this, __underline__ that, and ~~strike this out~~."
+	tp.print msg1
+	tp.print msg2
+	text.column = 4; tp.print msg3
 	gfx.color = color.silver
 	gp = new GfxPrinter
 	y = 450
 	for f in ["small", "normal", "large"]	// ToDo: add "medium" in v1.2
 		gp.font = f
-		gp.print "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!", 10, y
-		gp.print "##Highlight## this, __underline__ that, and ~~strike this out~~.", 10, y - gp.lineHeight[f]
-		y = y - 80
+		gp.print msg1, 10, y
+		gp.print msg2, 10, y - gp.lineHeight[f]
+		y = y - 100
 	end for
-	
+	gp.print msg3, 10, y - 50
+	text.row = 2
 end function
 
-if locals == globals then runUnitTests
+if locals == globals then runDemo
