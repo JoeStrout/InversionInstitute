@@ -56,39 +56,35 @@ Parser.parse = function(markup)
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 1
 			curStyle.code = not curStyle.code
 		else if c == "*" then
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 1
 			curStyle.bold = not curStyle.bold
 		else if c == "_" then
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 1
 			curStyle.italic = not curStyle.italic
 		else if c == "__" then
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 2
 			curStyle.underline = not curStyle.underline
 		else if c == "~~" then
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 2
 			curStyle.strikethrough = not curStyle.strikethrough
 		else if c == "##" then
 			if startIndex < i then
 				result.push StyleRun.make(markup[startIndex:i], curStyle)
 			end if
-			startIndex = i + 2
 			curStyle.highlight = not curStyle.highlight
 		end if
+		startIndex = i + c.len
+		i = i + c.len - 1
 	end while
 	if startIndex < markup.len then
 		result.push StyleRun.make(markup[startIndex:], curStyle)
@@ -156,6 +152,75 @@ TextPrinter.print = function(markup, endDelimiter=null)
 	text.delimiter = oldDelim
 end function
 	
+// GfxPrinter: Prints to a PixelDisplay (gfx by default).  Always prints in the
+// current color, but you can define the color to use for the highlight background.
+GfxPrinter = {}
+GfxPrinter.highlightBackColor = color.yellow
+GfxPrinter.font = "normal"
+GfxPrinter.display = null	// if null, uses current gfx at time of printing
+
+GfxPrinter.underlineOffset = {}
+GfxPrinter.underlineOffset.small = -1
+GfxPrinter.underlineOffset.medium = -1
+GfxPrinter.underlineOffset.normal = -1
+GfxPrinter.underlineOffset.large = -3
+
+GfxPrinter.strikeOffset = {}
+GfxPrinter.strikeOffset.small = 6
+GfxPrinter.strikeOffset.medium = 8
+GfxPrinter.strikeOffset.normal = 10
+GfxPrinter.strikeOffset.large = 14
+
+GfxPrinter.lineHeight = {}
+GfxPrinter.lineHeight.small = 14
+GfxPrinter.lineHeight.medium = 20
+GfxPrinter.lineHeight.normal = 24
+GfxPrinter.lineHeight.large = 32
+
+GfxPrinter.width = function(text)
+	if self.font == "large" then return text.len * 20
+	if self.font == "small" then return text.len * 8
+	if self.font == "medium" then return text.len * 17 // ?
+	return text.len * 14
+end function
+
+
+GfxPrinter.print = function(markup, x, y)
+	g = self.display
+	if g == null then g = gfx
+	for styleRun in Parser.parse(markup)
+		x1 = x + self.width(styleRun.text) + 2 + 2 * (self.font == "large")
+		if styleRun.highlight then
+			h = self.lineHeight[self.font]
+			y0 = y - floor(h * 0.08)
+			y1 = y0 + h
+			gfx.fillRect x-1, y0, x1 - x + 2, y1 - y0, self.highlightBackColor
+		end if
+		g.print styleRun.text, x, y, gfx.color, self.font
+		if styleRun.underline then
+			ty = y + self.underlineOffset[self.font]
+			gfx.line x, ty, x1, ty
+		end if
+		if styleRun.strikethrough then
+			ty = y + self.strikeOffset[self.font]
+			gfx.line x-1, ty, x1+1, ty
+		end if
+		if styleRun.bold then gfx.print styleRun.text, x+1, y-1, gfx.color, self.font
+		if styleRun.italic then
+			h = self.lineHeight[self.font]
+			y0 = y - floor(h * 0.12)
+			y1 = y0 + h
+			h4 = ceil(h * 0.25)
+			img = gfx.getImage(x+2, y0, x1 - x - 2, h4)
+			gfx.drawImage img, x, y0
+			img = gfx.getImage(x+1, y0+h4, x1 - x - 1, h4)
+			gfx.drawImage img, x, y0+h4
+			img = gfx.getImage(x, y1-h4, x1 - x - 1, h4)
+			gfx.drawImage img, x + 1, y1-h4
+		end if
+		x = x1
+	end for
+end function
 
 runUnitTests = function
 	p = new Parser
@@ -166,6 +231,16 @@ runUnitTests = function
 	tp = new TextPrinter
 	tp.print "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!"
 	tp.print "##Highlight## this, __underline__ that, and ~~strike this out~~."
+	gfx.color = color.silver
+	gp = new GfxPrinter
+	y = 450
+	for f in ["small", "normal", "large"]	// ToDo: add "medium" in v1.2
+		gp.font = f
+		gp.print "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!", 10, y
+		gp.print "##Highlight## this, __underline__ that, and ~~strike this out~~.", 10, y - gp.lineHeight[f]
+		y = y - 80
+	end for
+	
 end function
 
 if locals == globals then runUnitTests
