@@ -12,7 +12,9 @@
 // settings so you can call print on them multiple times to add additional
 // lines/paragraphs.
 
-import "stringUtil"
+import "miscUtil"
+ensureImport "stringUtil"
+ensureImport "bmfFonts"
 
 // StyleRun class: represents a bit of text with a uniform style.
 StyleRun = {}
@@ -97,6 +99,7 @@ parse = function(markup)
 	return result
 end function
 
+//-----------------------------------------------------------------
 // TextPrinter: prints markup using a Text display.  Feel free to 
 // override the applyStyle method for custom purposes.
 TextPrinter = {}
@@ -186,6 +189,7 @@ TextPrinter.print = function(markup, col, row, wrapAt=68, wrapTo=null)
 	text.delimiter = oldDelim
 end function
 	
+//-----------------------------------------------------------------
 // GfxPrinter: Prints to a PixelDisplay (gfx by default).  Always prints in the
 // current color, but you can define the color to use for the highlight background.
 GfxPrinter = {}
@@ -292,19 +296,112 @@ GfxPrinter.print = function(markup, x, y, wrapAt=960, wrapTo=null)
 	end for
 end function
 
+//-----------------------------------------------------------------
+// BmfPrinter: prints using BMF fonts.
+BmfPrinter = {}
+BmfPrinter.highlightBackColor = color.yellow
+BmfPrinter.font = null		// required (a BMF font)
+BmfPrinter.display = null	// if null, uses current gfx at time of printing
+
+// Cut the text of the given style run to fit within the given width,
+// on a word boundary if possible.  Return the left part; update 
+// styleRun.text to be the right part.  If we can't fit, then return
+// "" unless forceCut is true.
+BmfPrinter.cutToFit = function(styleRun, width, forceCut=false)
+	charWidth = self.font.lenToFit(styleRun.text, width)
+	i = charWidth
+	while i > 0
+		if styleRun.text[i] <= " " then
+			result = styleRun.text[:i]
+			styleRun.text = styleRun.text[i:].trimLeft
+			return result
+		end if
+		i = i - 1
+	end while
+	if not forceCut then
+		styleRun.text = styleRun.text.trimLeft
+		return ""
+	end if
+	result = styleRun.text[:charWidth]
+	styleRun.text = styleRun.text[charWidth:].trimLeft
+	return result
+end function
+
+// Print a single line of text in a single style, at the given
+// x and y coordinates.  Return the new x coordinate after printing.
+BmfPrinter.printOneRun = function(style, text, x, y)
+	g = self.display
+	if g == null then g = gfx
+	x1 = x + self.font.width(text) + 2	// ToDo
+	if style.highlight then
+		h = self.font.lineHeight
+		y0 = y - self.font.sizeUnder
+		y1 = y - self.font.sizeOver
+		gfx.fillRect x-1, y0, x1 - x + 2, y1 - y0, self.highlightBackColor
+	end if
+	if style.bold and self.boldFont then
+		self.boldFont.print text, x, y, 1, gfx.color
+	else
+		self.font.print text, x, y, 1, gfx.color
+	end if
+	if style.underline then
+		ty = y - ceil(self.font.sizeUnder/2)
+		gfx.line x, ty, x1, ty
+	end if
+	if style.strikethrough then
+		ty = y - floor(self.font.sizeOver * 0.4)
+		gfx.line x-1, ty, x1+1, ty
+	end if
+	if style.bold and not self.boldFont then
+		// fake bold by drawing again with a slight offset
+		self.font.print text, x+1, y-1, 1, gfx.color
+	end if
+	if style.italic then
+		// ToDo: just switch to an italic font, if we have one.
+		// Otherwise, fake italics by pixel-shifting.
+		h = self.font.lineHeight
+		y0 = y - floor(h * 0.12)
+		y1 = y0 + h
+		h4 = ceil(h * 0.25)
+		img = gfx.getImage(x+2, y0, x1 - x - 2, h4)
+		gfx.drawImage img, x, y0
+		img = gfx.getImage(x+1, y0+h4, x1 - x - 1, h4)
+		gfx.drawImage img, x, y0+h4
+		img = gfx.getImage(x, y1-h4, x1 - x - 1, h4)
+		gfx.drawImage img, x + 1, y1-h4
+	end if
+	return x1	
+end function
+
+BmfPrinter.print = function(markup, x, y, wrapAt=960, wrapTo=null)
+	if wrapTo == null then wrapTo = x
+	for styleRun in parse(markup)
+		while wrapAt - x < self.font.width(styleRun.text)
+			partialText = self.cutToFit(styleRun, wrapAt - x, x <= wrapTo)
+			self.printOneRun styleRun, partialText, x, y
+			x = wrapTo
+			y = y - self.font.lineHeight
+		end while
+		x = self.printOneRun(styleRun, styleRun.text, x, y)
+	end for
+end function
+
+
+
+//-----------------------------------------------------------------
 runDemo = function
 	clear; text.delimiter = char(13)
 	text.color = color.silver
 	msg1 = "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!"
 	msg2 = "##Highlight## this, __underline__ that, and ~~strike this out~~."
-	msg3 = "This is a much longer message.  _So_ long, in fact, that we will need " +
+	msg3 = "This is a ##much## longer message.  _So_ long, in fact, that we will need " +
 	"to do *word wrap*, and it's __vital__ that we do this ~~fast~~ correctly."
-	tp = new TextPrinter
+	outer.tp = new TextPrinter
 	tp.print msg1
 	tp.print msg2
 	text.column = 4; tp.print msg3
 	gfx.color = color.silver
-	gp = new GfxPrinter
+	outer.gp = new GfxPrinter
 	y = 450
 	for f in ["small", "normal", "large"]	// ToDo: add "medium" in v1.2
 		gp.font = f
@@ -312,8 +409,16 @@ runDemo = function
 		gp.print msg2, 10, y - gp.lineHeight[f]
 		y = y - 100
 	end for
-	gp.print msg3, 10, y - 50
-	text.row = 2
+	gp.print msg3, 10, y - 30
+	text.row = 1
+	print "Press Esc to exit, or any other key for the BMF demo"
+	if key.get == char(27) then return
+	clear
+	ensureImport "bmfFonts"
+	outer.bp = new BmfPrinter
+	bp.font = bmfFonts.Font.load("/usr/fonts/Arial14.bmf")
+	bp.boldFont = bmfFonts.Font.load("/usr/fonts/Arial14Bold.bmf")
+	bp.print msg3, 100, 500, 400
 end function
 
 if locals == globals then runDemo
