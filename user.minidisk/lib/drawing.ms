@@ -3,8 +3,21 @@ ensureImport "displays"
 ensureImport "bmfFonts"
 ensureImport "qa"
 ensureImport "json"	// (used for PixelDrawing.load)
+ensureImport "markup"
 
-globals.font = bmfFonts.Font.load("/usr/fonts/Georgia-24.bmf")
+globals.font = bmfFonts.Font.load("/usr/fonts/NotoSerif-24.bmf")
+
+globals.bigPrinter = new markup.BmfPrinter
+bigPrinter.font = font
+bigPrinter.boldFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBold-24.bmf")
+bigPrinter.italicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifItalic-24.bmf")
+bigPrinter.boldItalicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBoldItalic-24.bmf")
+
+globals.smallPrinter = new markup.BmfPrinter
+smallPrinter.font = bmfFonts.Font.load("/usr/fonts/NotoSerif-14.bmf")
+smallPrinter.boldFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBold-14.bmf")
+smallPrinter.italicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifItalic-14.bmf")
+smallPrinter.boldItalicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBoldItalic-14.bmf")
 
 button9slice = null
 
@@ -194,16 +207,12 @@ end function
 
 drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone")
 	displays.vnSpeech.clear color.clear
-	lines = wrapLines(speech, 550)
-	lbwh = drawSpeechBox(speaker, lines.len * font.lineHeight + 50, name)
-	y = lbwh[1] + 25 + font.lineHeight * lines.len + font.sizeOver
-	x = lbwh[0] + 25
-	globals.gfx = displays.vnSpeech
-	font.printWrapped speech, x, y, 550
-//	for line in lines
-//		font.print line, x, y
-//		y = y - font.lineHeight
-//	end for
+	textWidth = 550
+	textHeight = bigPrinter.calcHeight(speech, 0, 0, textWidth)
+	lbwh = drawSpeechBox(speaker, textHeight + 50, name)
+	top = lbwh[1] + lbwh[3]
+	left = lbwh[0] + 25
+	bigPrinter.print speech, left, top - 20 - bigPrinter.font.lineHeight, left + textWidth
 end function
 
 drawButton = function(left, bottom, width, height, caption="", font=null, tint="")

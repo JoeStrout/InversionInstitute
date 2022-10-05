@@ -2,7 +2,7 @@ number = 2
 folderName = "2.diode"
 title = "Recess is Over"
 
-globals.circuitPic = gameData.loadCircuitForChapter(2)
+globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if

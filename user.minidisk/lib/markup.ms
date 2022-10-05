@@ -300,7 +300,9 @@ end function
 // BmfPrinter: prints using BMF fonts.
 BmfPrinter = {}
 BmfPrinter.highlightBackColor = color.yellow
-BmfPrinter.font = null		// required (a BMF font)
+BmfPrinter.font = null				// required (a BMF font)
+BmfPrinter.boldFont = null			// optional
+BmfPrinter.boldItalicFont = null	// also optional
 BmfPrinter.display = null	// if null, uses current gfx at time of printing
 
 // Cut the text of the given style run to fit within the given width,
@@ -329,21 +331,28 @@ end function
 
 // Print a single line of text in a single style, at the given
 // x and y coordinates.  Return the new x coordinate after printing.
-BmfPrinter.printOneRun = function(style, text, x, y)
+// If dryRun is true, don't actually print; just calculate.
+BmfPrinter.printOneRun = function(style, text, x, y, dryRun=false)
 	g = self.display
 	if g == null then g = gfx
-	x1 = x + self.font.width(text) + 2	// ToDo
+	font = self.font
+	if style.bold and style.italic and self.boldItalicFont then
+		font = self.boldItalicFont
+	else if style.bold and self.boldFont then
+		font = self.boldFont
+	else if style.italic and self.italicFont then
+		font = self.italicFont
+	end if
+	
+	x1 = x + font.width(text) + 2	// ToDo: figure correct fudge factor
+	if dryRun then return x1
 	if style.highlight then
 		h = self.font.lineHeight
 		y0 = y - self.font.sizeUnder
 		y1 = y - self.font.sizeOver
 		gfx.fillRect x-1, y0, x1 - x + 2, y1 - y0, self.highlightBackColor
 	end if
-	if style.bold and self.boldFont then
-		self.boldFont.print text, x, y, 1, gfx.color
-	else
-		self.font.print text, x, y, 1, gfx.color
-	end if
+	font.print text, x, y, 1, gfx.color
 	if style.underline then
 		ty = y - ceil(self.font.sizeUnder/2)
 		gfx.line x, ty, x1, ty
@@ -354,11 +363,10 @@ BmfPrinter.printOneRun = function(style, text, x, y)
 	end if
 	if style.bold and not self.boldFont then
 		// fake bold by drawing again with a slight offset
-		self.font.print text, x+1, y-1, 1, gfx.color
+		font.print text, x+1, y-1, 1, gfx.color
 	end if
-	if style.italic then
-		// ToDo: just switch to an italic font, if we have one.
-		// Otherwise, fake italics by pixel-shifting.
+	if style.italic and not self.italicFont then
+		// Fake italics by pixel-shifting.
 		h = self.font.lineHeight
 		y0 = y - floor(h * 0.12)
 		y1 = y0 + h
@@ -386,6 +394,20 @@ BmfPrinter.print = function(markup, x, y, wrapAt=960, wrapTo=null)
 	end for
 end function
 
+BmfPrinter.calcHeight = function(markup, x, y, wrapAt=960, wrapTo=null)
+	if wrapTo == null then wrapTo = x
+	top = y - self.font.sizeOver
+	for styleRun in parse(markup)
+		while wrapAt - x < self.font.width(styleRun.text)
+			partialText = self.cutToFit(styleRun, wrapAt - x, x <= wrapTo)
+			x = wrapTo
+			y = y - self.font.lineHeight
+		end while
+		x = self.printOneRun(styleRun, styleRun.text, x, y, true)
+	end for
+	bottom = y - self.font.sizeUnder
+	return top - bottom
+end function
 
 
 //-----------------------------------------------------------------
@@ -395,7 +417,8 @@ runDemo = function
 	msg1 = "Hello *there* world, this is _italic_, but _*this*_ and *_this_* are both!"
 	msg2 = "##Highlight## this, __underline__ that, and ~~strike this out~~."
 	msg3 = "This is a ##much## longer message.  _So_ long, in fact, that we will need " +
-	"to do *word wrap*, and it's __vital__ that we do this ~~fast~~ correctly."
+	"to do *word wrap*, and it's __vital__ that we do this ~~fast~~ correctly. " +
+	"Even with _*bold italic*_ text!"
 	outer.tp = new TextPrinter
 	tp.print msg1
 	tp.print msg2
@@ -416,8 +439,10 @@ runDemo = function
 	clear
 	ensureImport "bmfFonts"
 	outer.bp = new BmfPrinter
-	bp.font = bmfFonts.Font.load("/usr/fonts/Arial14.bmf")
-	bp.boldFont = bmfFonts.Font.load("/usr/fonts/Arial14Bold.bmf")
+	bp.font = bmfFonts.Font.load("/usr/fonts/NotoSans-24.bmf")
+	bp.boldFont = bmfFonts.Font.load("/usr/fonts/NotoSansBold-24.bmf")
+	bp.italicFont = bmfFonts.Font.load("/usr/fonts/NotoSansItalic-24.bmf")
+	bp.boldItalicFont = bmfFonts.Font.load("/usr/fonts/NotoSansBoldItalic-24.bmf")
 	bp.print msg3, 100, 500, 400
 end function
 

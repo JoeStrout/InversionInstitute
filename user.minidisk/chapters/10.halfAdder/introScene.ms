@@ -36,7 +36,7 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-	drawing.drawSpeech "So, today let's see if we can make Ink count!",
+	drawing.drawSpeech "So, today let's see if we can make Ink _count!_",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
@@ -49,8 +49,8 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-	drawing.drawSpeech "I need you to light up 1 if only one of the inputs are lit; " +
-	"or 2 if both inputs are lit.  If neither input is lit, then leave both outputs off.",
+	drawing.drawSpeech "I need you to light up 1 if only *one* of the inputs are lit; " +
+	"or 2 if *both* inputs are lit.  If neither input is lit, then leave both outputs off.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

@@ -28,7 +28,7 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "Mr. Ex-Oarsley has come to us with his own Magic Ink request.  But apparently his needs are different.",
+	drawing.drawSpeech "Mr. Ex-Oarsley has come to us with his own Magic Ink request.  But it seems his needs are different.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

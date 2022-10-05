@@ -2,7 +2,7 @@ number = 3
 folderName = "3.or"
 title = "Mrs. Oarsley's Children"
 
-globals.circuitPic = gameData.loadCircuitForChapter(context.number)
+globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
