@@ -59,7 +59,7 @@ if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
-		drawing.drawSpeech "Don't forget to Check your work!",
+		drawing.drawSpeech "Don't forget to *Check* your work!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 	

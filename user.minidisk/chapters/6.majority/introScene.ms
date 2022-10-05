@@ -20,7 +20,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.present = false
 	Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.huh
-	drawing.drawSpeech "Well!  Your ""guard 1 AND guard 2"" Ink design worked perfectly, but...",
+	drawing.drawSpeech "Well!  Your ""guard 1 _and_ guard 2"" Ink design worked perfectly, but...",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
@@ -43,7 +43,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.oh
-	drawing.drawSpeech "So now he wants to add a THIRD guard. And he wants the gate to open if at least two of the guards agree it should open.",
+	drawing.drawSpeech "So now he wants to add a _third_ guard. And he wants the gate to open if at least two of the guards agree it should open.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function

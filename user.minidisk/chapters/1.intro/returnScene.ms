@@ -132,7 +132,7 @@ if not gameData.data.ch1.get("didCrossings") then
 		outer.curDrawing = null
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 		drawing.drawSpeech "There is a trick or two this Magic Ink can do. " +
-			"Let me tell you about crossings!",
+			"Let me tell you about _crossings_!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 

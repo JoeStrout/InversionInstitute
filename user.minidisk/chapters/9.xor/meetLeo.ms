@@ -99,6 +99,7 @@ playSteps.push function
 end function
 
 playSteps.push function
+	scene.playSunset
 	gameData.data.curChapter = context.number + 1
 	gameData.writeToDisk
 	toc.startChapter

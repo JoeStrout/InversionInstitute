@@ -24,19 +24,19 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "Master Leo has asked me to think about Ink state as numbers.",
+	drawing.drawSpeech "Master Leo has asked me to think about Ink state as _numbers_.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smallFrown
-	drawing.drawSpeech "Magic Ink only has two states - on and off - so I guess we'll call those 1 and 0.",
+	drawing.drawSpeech "Magic Ink only has two states - _on_ and _off_ - so I guess we'll call those *1* and *0*.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-	drawing.drawSpeech "You can help!  Let's make an ink design that lights up as a ZERO when the input signal is off, or a ONE when the input is on!",
+	drawing.drawSpeech "You can help!  Let's make an ink design that lights up as a *zero* when the input signal is off, or a *one* when the input is on!",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

@@ -62,7 +62,7 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "Can you come up with a way that the sign can only be controlled " +
+	drawing.drawSpeech "Can you come up with a way that the sign can *only* be controlled " +
 	"from Mr. Guttersnipe's end, and not from the sign itself?",
 		drawing.Speaker.Left, "Alicia"
 end function

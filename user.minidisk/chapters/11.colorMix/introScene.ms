@@ -1,5 +1,5 @@
-// Intro scene for the "bit display" task, in which we make a 1-bit
-// binary (0/1) numeric display.
+// Intro scene for the "XOR gate" task, in which we must help Mr. Ex-Oarley
+// make a discord alert for his two sons.
 
 import "miscUtil"
 ensureImport "scene"
@@ -11,83 +11,77 @@ scene.prepare context.number, "/usr/chapters/" + context.folderName
 ch = "ch" + context.number
 if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch] = {}
 
-//demoTablet = file.loadImage("/usr/pics/ui/DemoTablet.png")
-
 Alicia.present = true
+Baab.present = true
 
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	Alicia.setLeftArm alicia.LeftArm.normal
-	Baab.present = false
-	drawing.drawSpeech "I'd like to introduce you to someone today.",
-		drawing.Speaker.Left, "Alicia"
-end function
-playSteps.push function
-	displays.vnBackground.drawImage backgrounds.lab
-	Baab.present = true
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-	Alicia.setLeftArm alicia.LeftArm.showing
-	drawing.drawSpeech gameData.playerName + ", this is Baab.  Spelled with two ""A""s.",
+	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
+	drawing.drawSpeech "Heya, " + gameData.playerName + ". I've got an easy job for you!",
+		drawing.Speaker.Right, "Baab"
+end function
+playSteps.push function
+	displays.vnBackground.drawImage backgrounds.lab
+	Alicia.setExpression alicia.eyebrows.mad, alicia.eyes.normal, alicia.mouth.bigOh
+	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
+	drawing.drawSpeech "Baab! You're interrupting. I was about to explain why I've decided " +
+	"to call that 2-bit counter a _half adder_.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-	Alicia.setLeftArm alicia.LeftArm.normal
-	Baab.setExpression baab.eyebrows.mad, baab.eyes.closing, baab.mouth.huh
-	drawing.drawSpeech "Well of course it's with two ""A""s.  How else would you spell it?!",
+	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.frown
+	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
+	drawing.drawSpeech "Oops, sorry Alicia. But we just got a request from Ms. Mixwell, and it's kind of urgent. But I think it'll be an easy one for " + gameData.playerName + ".",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "Baab has been working on ways to make Magic Ink affect real objects in the world.",
+	drawing.drawSpeech "All right then. What's the job?",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-	drawing.drawSpeech "Right.  I'm currently working on a project for an important Institute sponsor, Andi Anderson.",
+	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
+	drawing.drawSpeech "Ms. Mixwell, the art teacher, has a new class starting soon. " +
+	"And she this idea to help her students learn how to mix paints.",
+		drawing.Speaker.Right, "Baab"
+end function
+playSteps.push function
+	displays.vnBackground.drawImage backgrounds.lab
+	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
+	drawing.drawSpeech "She's going to paint a little Magic Ink diagram with the primary " +
+	"colors on the left, and the possible mixed colors on the right.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-	drawing.drawSpeech "He's got this big wall around his estate, and a gate with two guards out front.",
-		drawing.Speaker.Right, "Baab"
-end function
-playSteps.push function
-	displays.vnBackground.drawImage backgrounds.lab
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-	drawing.drawSpeech "I've made a spell that can unlock the gate when some Magic Ink lights up.",
-		drawing.Speaker.Right, "Baab"
-end function
-playSteps.push function
-	displays.vnBackground.drawImage backgrounds.lab
-	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
-	drawing.drawSpeech "...Trouble is, Andi wants the gate to open only if _both_ guards activate their Ink.  I'm not sure how to do that.",
+	drawing.drawSpeech "We just need to light up the right color for any combination of paints!",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "I told Baab that you were clever with that sort of thing.",
+	drawing.drawSpeech "That _does_ sound like an easy one for " + gameData.playerName + "!",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-	drawing.drawSpeech "Yeah, if you could, that would really help me out!",
-		drawing.Speaker.Right, "Baab"
+	drawing.drawSpeech "Better get to it, " + gameData.playerName + ". I promise I'll " +
+	"explain about the half-adder thing when you're done with this.",
+		drawing.Speaker.Left, "Alicia"
 end function
+
 playSteps.push function
 	context.objectivesDrawn = false
 	context.checkDrawn = false

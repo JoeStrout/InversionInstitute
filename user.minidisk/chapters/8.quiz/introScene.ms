@@ -20,7 +20,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smallOpen
-	drawing.drawSpeech "OK, remember that separated ON and OFF thing you did for me last time?",
+	drawing.drawSpeech "OK, remember that separated _on_ and _off_ thing you did for me last time?",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
@@ -33,7 +33,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.mad, baab.eyes.normal, baab.mouth.frown
-	drawing.drawSpeech "Yeah.  Turns out the client wasn't tell us the whole story.",
+	drawing.drawSpeech "Yeah.  Turns out the client wasn't telling us the whole story.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
@@ -75,14 +75,14 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-	drawing.drawSpeech "Not so fast! They only want it to light up for the FIRST contestant to press the button.  Any subsequent button presses should be ignored, until the quizmaster resets the whole thing for the next question.",
+	drawing.drawSpeech "Not so fast! They only want it to light up for the _first_ contestant to press the button.  Any subsequent button presses should be ignored, until the quizmaster resets the whole thing for the next question.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smallFrown
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "Oh dear.  That DOES sound tricky. Why did they tell us before that they wanted a latch?",
+	drawing.drawSpeech "Oh dear.  That _does_ sound tricky. Why did they tell us before that they wanted a latch?",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
@@ -96,7 +96,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "Anyway, that's what we need now.  Only light up the output that goes with the first input, ignoring all others until reset.",
+	drawing.drawSpeech "Anyway, that's what we need now.  Only light up the output that goes with the _first_ input, ignoring all others until reset.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function

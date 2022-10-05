@@ -100,14 +100,14 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.smallFrown
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "I guess it's sort of like a latch with two buttons... one button sets the latch, and the other one resets it.",
+	drawing.drawSpeech "I guess it's sort of like a _latch_ with two buttons... one button sets the latch, and the other one resets it.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.frown
-	drawing.drawSpeech "If by ""set"" you mean ""light up"", and by ""reset"" " +
+	drawing.drawSpeech "If by _set_ you mean ""light up"", and by _reset_ " +
 	"you mean ""turn off"", then yeah, I guess that's right.",
 		drawing.Speaker.Right, "Baab"
 end function

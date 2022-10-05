@@ -76,7 +76,7 @@ playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Alicia.setLeftArm alicia.LeftArm.normal
 	display(6).clear color.clear
-	drawing.drawSpeech "In the meantime, here's something fun to play with: Magic Ink.",
+	drawing.drawSpeech "In the meantime, here's something fun to play with: _Magic Ink_.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
