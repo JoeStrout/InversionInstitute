@@ -1,4 +1,4 @@
-// Return scene for Chapter 2.
+// Return scene for Chapter 11.
 
 import "miscUtil"
 ensureImport "scene"
@@ -30,28 +30,23 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
-Baab.present = false
+Baab.present = true
 Alicia.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		drawing.drawSpeech "How's the 2-bit counter going?",
-			drawing.Speaker.Left, "Alicia"
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.frown2
+		drawing.drawSpeech "How's that paint-mixer going, " + gameData.playerName + "?",
+			drawing.Speaker.Right, "Baab"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.small
-		drawing.drawSpeech "You know, I'm now thinking about calling it a ""half-adder"" instead.",
-			drawing.Speaker.Left, "Alicia"
-	end function
-
-	playSteps.push function
-		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		drawing.drawSpeech "I'll explain why after you have it working.  Keep at it!",
+		Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.smile
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
+		drawing.drawSpeech "Keep trying, I'm sure you'll get it!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 	
@@ -71,8 +66,9 @@ else
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-		drawing.drawSpeech "You did it!  Just as I knew you would.",
-			drawing.Speaker.Left, "Alicia"
+		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
+		drawing.drawSpeech "That'll do it!  Ms. Mixwell will be so pleased.",
+			drawing.Speaker.Right, "Baab"
 	end function
 
 	playSteps.push function

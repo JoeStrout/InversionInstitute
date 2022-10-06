@@ -1,4 +1,4 @@
-// Return scene for Chapter 2.
+// Return scene for Chapter 10.
 
 import "miscUtil"
 ensureImport "scene"
@@ -78,8 +78,8 @@ else
 	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-//		toc.startChapter
-		load "/usr/game/title"; run
+		toc.startChapter
+//		load "/usr/game/title"; run
 	end function
 
 end if
