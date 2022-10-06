@@ -906,6 +906,7 @@ end function
 checkButton.hide
 
 drawSimStats = function
+	gfx.fillRect 760, 525, 192, 92, bgColor
 	x = 848
 	y = 575
 	gap = 12

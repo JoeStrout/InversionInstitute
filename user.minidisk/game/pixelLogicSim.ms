@@ -5,6 +5,7 @@
 import "miscUtil"
 ensureImport "mathUtil"
 ensureImport "displays"
+ensureImport "progressDisplay"
 
 nodes = []			// list of Node objects
 gates = []			// list of Gate objects
@@ -239,7 +240,8 @@ findGates = function
 				result.push Gate.make(x, y, 1)
 			end if
 		end for
-		print floor(100*y/maxY) + "%"; text.row = text.row+1
+		progressDisplay.setPercent 75*y/maxY
+		//print floor(100*y/maxY) + "%"; text.row = text.row+1
 	end for
 	return result
 end function
@@ -258,7 +260,8 @@ analyze = function
 	
 	outer.crossings = []		// list of [x,y] coordinates
 	outer.totalInk = 0
-	
+	progressDisplay.setup displays.edSprite
+		
 	// Find all the gates.
 //	print "Finding gates"
 	outer.gates = findGates		// list of Gate objects
@@ -277,7 +280,7 @@ analyze = function
 			// print "Got node at " + x + "," + y + " with " + node.coords.len + " pixels"
 			nodes.push node
 		end for
-		print floor(100*y/maxY) + "%"; text.row = text.row+1
+		progressDisplay.setPercent 75 + 25*y/maxY
 	end for
 //	print "Found " + nodes.len + " nodes"
 	
@@ -316,6 +319,7 @@ analyze = function
 	for n in nodes
 		n.setOn false, false
 	end for
+	progressDisplay.close
 	//	outer.toDo = nodes[:]
 end function
 
