@@ -18,9 +18,7 @@ pronoun.their = "his"		// possessive (adjective)
 pronoun.theirs = "his"		// possessive (independent)
 
 // Path to the folder containing all the saved games.
-// ToDo: get /usr2 mapped to the user library folder,
-// and save stuff there instead of in /usr.
-savedGamesFolder = "/usr/userdata"
+savedGamesFolder = "/usr2"
 if not file.exists(savedGamesFolder) then file.makedir savedGamesFolder
 
 // Path of the folder containing the current game data.

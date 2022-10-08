@@ -1,0 +1,38 @@
+#!/bin/sh
+
+echo
+echo "Zipping user.minidisk..."
+rm build/*.zip
+rm build/user.minidisk
+cd user.minidisk
+zip -r ../build/user.minidisk *
+cd ../build
+
+echo
+echo "Preparing Mac build..."
+cp -f user.minidisk InversionInstitute-Mac/InversionInstitute.app/Contents/Resources/Data/StreamingAssets
+sed 's/controlC: true/controlC: false/g' ../bootOpts.grfon > InversionInstitute-Mac/InversionInstitute.app/Contents/Resources/Data/StreamingAssets/bootOpts.grfon
+cd InversionInstitute-Mac
+zip -r ../InversionInstitute-Mac.zip InversionInstitute.app
+cd ..
+
+echo
+echo "Preparing Windows build..."
+cp -f user.minidisk InversionInstitute-Win/
+sed 's/controlC: true/controlC: false/g' ../bootOpts.grfon > InversionInstitute-Win/InversionInstitute_Data/StreamingAssets/bootOpts.grfon
+cd InversionInstitute-Win
+zip -r ../InversionInstitute-Win.zip *
+cd ..
+
+echo
+echo "Preparing Linux build..."
+cp -f user.minidisk InversionInstitute-Linux/
+sed 's/controlC: true/controlC: false/g' ../bootOpts.grfon > InversionInstitute-Linux/InversionInstitute_Data/StreamingAssets/bootOpts.grfon
+cd InversionInstitute-Linux
+zip -r ../InversionInstitute-Linux.zip *
+cd ..
+
+open .
+echo
+dir *.zip
+echo "All done!"

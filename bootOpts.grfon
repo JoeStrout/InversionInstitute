@@ -1,6 +1,7 @@
 startupChime: false
 welcome: false
 queryCmd: false
-controlC: true	// for now -- change for release!
+controlC: true
 hasBezel: false
 ignorePrefs: true
+usr2appDataFolder: InversionInstitute
