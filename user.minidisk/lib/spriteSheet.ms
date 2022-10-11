@@ -9,9 +9,9 @@ import "stringUtil"
 load = function(path)
 	result = {}
 	srcImg = file.loadImage(path)
-	qa.assert srcImg
+	qa.assert srcImg, "Couldn't read image at " + path
 	meta = file.readLines(path + ".meta")
-	qa.assert meta
+	qa.assert meta, "Couldn't read file at " + path+".meta"
 	i = meta.indexOf("    sprites:")
 	while i < meta.len - 1
 		i = i + 1

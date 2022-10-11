@@ -131,10 +131,11 @@ test = function
 		end if
 	end function
 	
-	while true
+	while not key.pressed("escape")
 		character.animate
 		yield
 	end while
+	key.clear
 end function
 
 if locals ==  globals then

@@ -22,7 +22,8 @@ prepare = function(chapterNum, chapterPath)
 	globals.returnFunc = function
 		gameData.saveCircuitForChapter(chapterNum, circuitPic)
 		cd chapterPath
-		load "returnScene"; run
+		text.color = color.clear; load "returnScene"
+		text.color = color.gray; run
 	end function
 	music.playNovel
 end function
