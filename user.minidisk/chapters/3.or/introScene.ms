@@ -7,8 +7,9 @@ ensureImport "objectives"
 import "findErrors"
 import "context"
 
-scene.prepare 3, "/usr/chapters/3.or"
-if not gameData.data.hasIndex("ch3") or not gameData.data.ch3 then gameData.data.ch3 = {}
+scene.prepare context.number, "/usr/chapters/" + context.folderName
+ch = "ch" + context.number
+if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch] = {}
 
 Alicia.present = true
 
@@ -34,13 +35,13 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-	drawing.drawSpeech "Anyway, the light should turn on if EITHER boy activates his control blob.",
+	drawing.drawSpeech "Anyway, the light should turn on if _either_ boy activates his control blob.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "And just like the recess sign, nobody should be able to turn it off by tapping the light.  The only way it should turn off is if BOTH boys turn off their control blobs.",
+	drawing.drawSpeech "And just like the recess sign, nobody should be able to turn it off by tapping the light.  The only way it should turn off is if _both_ boys turn off their control blobs.",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

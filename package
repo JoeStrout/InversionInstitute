@@ -26,7 +26,7 @@ cd ..
 
 echo
 echo "Preparing Linux build..."
-cp -f user.minidisk InversionInstitute-Linux/StreamingAssets/
+cp -f user.minidisk InversionInstitute-Linux/InversionInstitute_Data/StreamingAssets/
 sed 's/controlC: true/controlC: false/g' ../bootOpts.grfon > InversionInstitute-Linux/InversionInstitute_Data/StreamingAssets/bootOpts.grfon
 cd InversionInstitute-Linux
 zip -r ../InversionInstitute-Linux.zip *

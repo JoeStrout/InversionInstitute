@@ -64,8 +64,8 @@ setup = function
 		context.update = null		// (called every time through main loop)
 		globals.circuitPic = Image.create(80, 64)
 		globals.returnFunc = function
-			load "freeplay"
-			run
+			text.color = color.clear; load "freeplay"
+			text.color = color.gray; run
 		end function
 		cleanUp
 		load "editor"; run
@@ -83,8 +83,8 @@ setup = function
 		context.update = null		// (called every time through main loop)
 		globals.circuitPic = entry.circuitPic
 		globals.returnFunc = function
-			load "freeplay"
-			run
+			text.color = color.clear; load "freeplay"
+			text.color = color.gray; run
 		end function
 		cleanUp
 		load "editor"; run

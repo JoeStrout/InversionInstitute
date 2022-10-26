@@ -54,8 +54,11 @@ if not globals.hasIndex("circuitPic") or not circuitPic isa Image then
 end if
 picW = circuitPic.width
 picH = circuitPic.height
+marginPic = circuitPic.getImage
 resourceDir = "/sys/data/fatbits/"
 helpFont = objectives.smallFont
+selectionAnchor = null
+picAtStart = null
 
 testSprites = []		// UI sprites needed only in simulation mode
 editSprites = []	// UI sprites needed only in edit mode
@@ -69,6 +72,7 @@ if not globals.hasIndex("context") then
 end if
 context.objectivesDrawn = false
 context.isFreePlay = not context.get("number")
+if not context.hasIndex("margin") then context.margin = Rect.make(0, 0, picW, picH)
 if not globals.hasIndex("clip") then clip = null
 
 // Prepare displays
@@ -177,6 +181,19 @@ updatePaintScroll = function
 	// For now, just hard-code it:
 	fatbits.scrollX = -paintArea.left
 	fatbits.scrollY = -paintArea.bottom
+end function
+
+restoreMargins = function
+	x0 = context.margin.left
+	x1 = context.margin.right
+	w = marginPic.width
+	y0 = context.margin.bottom
+	y1 = context.margin.top
+	h = marginPic.height
+	if x0 > 0 then fatbits.drawImage marginPic, 0, 0, x0, h, 0, 0, x0, h
+	if x1 < w then fatbits.drawImage marginPic, x1, 0, w-x1, h, x1, 0, w-x1, h
+	if y0 > 0 then fatbits.drawImage marginPic, x0, 0, x1-x0, y0, x0, 0, x1-x0, y0
+	if y1 < h then fatbits.drawImage marginPic, x0, y1, x1-x0, h-y1, x0, y1, x1-x0, h-y1
 end function
 
 //---------------------------------------------------------------------
@@ -380,6 +397,10 @@ drawGrid = function
 			gfx.line area.left, y, area.right, y
 		end if
 	end for
+	// Draw margin (edit area) boundary
+	gfx.color = "#AAAAFF"
+	b = context.margin
+	gfx.drawRect area.left + b.left*ps, area.bottom + b.bottom*ps, b.width*ps, b.height*ps
 end  function
 
 drawHelp = function(helpStr)
@@ -476,6 +497,7 @@ deleteSelection = function
 		setMode kModeSelect
 	else if selection != null then
 		selection.fill fatbits, backColor
+		restoreMargins
 		deselect
 	end if
 end function
@@ -496,6 +518,7 @@ updatePaste = function(pp)
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart, 0, 0
 	fatbits.drawImage pasted, pp.x - clipMouseOffset.x, pp.y - clipMouseOffset.y
+	restoreMargins
 end function
 
 flipClip = function
@@ -528,7 +551,10 @@ flipClip = function
 		end for
 	end if
 	
-	if mode == kModeSelect then fatbits.drawImage img, selection.left, selection.bottom
+	if mode == kModeSelect then
+		fatbits.drawImage img, selection.left, selection.bottom
+		restoreMargins
+	end if
 end function
 
 rotateClip = function
@@ -562,6 +588,7 @@ rotateClip = function
 		drawGrid
 		globals.selection = Rect.make(left, bottom, selection.height, selection.width)
 		fatbits.drawImage result, selection.left, selection.bottom
+		restoreMargins
 	else
 		globals.pasted = result
 	end if
@@ -593,7 +620,7 @@ end function
 toolFuncs = {}
 
 toolFuncs[kModeMove] = function(pp, justDown)
-	if justDown then
+	if justDown or startPaintPos == null then
 		globals.startPaintPos = pp
 		globals.startPaintImg = fatbits.getImage(0, 0, picW, picH)
 		return
@@ -603,11 +630,12 @@ toolFuncs[kModeMove] = function(pp, justDown)
 	dy = pp.y - startPaintPos.y
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage startPaintImg.getImage(-dx * (dx<0), -dy * (dy<0), 
-	picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
+	  picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
+	restoreMargins
 end function
 
 toolFuncs[kModeDraw] = function(pp, justDown)
-	if justDown then
+	if justDown or lastPP == null then
 		// On the initial mouse-down, pick erase mode if we're clicking
 		// a pixel that's already the fore color; otherwise, draw mode.
 		pcolor = fatbits.pixel(pp.x, pp.y)
@@ -618,6 +646,7 @@ toolFuncs[kModeDraw] = function(pp, justDown)
 	for pos in pointsOnLine(lastPP, pp)
 		setPaintPixel pos, c
 	end for
+	restoreMargins
 	outer.lastPP = pp
 end function
 
@@ -629,6 +658,7 @@ toolFuncs[kModePaint] = function(pos, justDown)
 		y = ceil(pos.y - brushSize/2)
 		fatbits.fillEllipse x, y, brushSize, brushSize, foreColor
 	end if
+	restoreMargins
 end function
 
 toolFuncs[kModeErase] = function(pos, justDown)
@@ -637,6 +667,7 @@ toolFuncs[kModeErase] = function(pos, justDown)
 	else
 		fatbits.fillEllipse pos.x - brushSize/2, pos.y - brushSize/2, brushSize, brushSize, backColor
 	end if
+	restoreMargins
 end function
 
 toolFuncs[kModeFill] = function(pos, justDown)
@@ -646,7 +677,7 @@ toolFuncs[kModeFill] = function(pos, justDown)
 	if matchColor == foreColor then return
 	while toDo
 		pos = toDo.pop
-		if pos.x < 0 or pos.x >= picW or pos.y < 0 or pos.y >= picH then continue
+		if not context.margin.contains(pos) then continue
 		if fatbits.pixel(pos.x, pos.y) != matchColor then continue		
 		setPaintPixel pos, foreColor
 		toDo.push {"x":pos.x-1, "y":pos.y}
@@ -654,6 +685,7 @@ toolFuncs[kModeFill] = function(pos, justDown)
 		toDo.push {"x":pos.x, "y":pos.y-1}
 		toDo.push {"x":pos.x, "y":pos.y+1}		
 	end while
+	restoreMargins
 end function
 
 toolFuncs[kModeEyedrop] = function(pp, justDown)
@@ -662,7 +694,7 @@ toolFuncs[kModeEyedrop] = function(pp, justDown)
 end function
 
 toolFuncs[kModeLine] = function(pp, justDown)
-	if justDown then
+	if justDown or picAtStart == null or posAtStart == null then
 		globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 		globals.posAtStart = pp
 		return
@@ -685,10 +717,11 @@ toolFuncs[kModeLine] = function(pp, justDown)
 			setPaintPixel pos, foreColor
 		end for
 	end if
+	restoreMargins
 end function
 
 toolFuncs[kModeDrawRect] = function(pp, justDown)
-	if justDown then
+	if justDown or picAtStart == null or posAtStart == null then
 		globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 		globals.posAtStart = pp
 		return
@@ -698,10 +731,11 @@ toolFuncs[kModeDrawRect] = function(pp, justDown)
 	startPos = posAtStart
 	curPos = pp
 	Rect.fromPoints(startPos, curPos).frame fatbits, foreColor, 1
+	restoreMargins
 end function
 
 toolFuncs[kModeFillRect] = function(pp, justDown)
-	if justDown then
+	if justDown or picAtStart == null or posAtStart == null then
 		globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 		globals.posAtStart = pp
 		return
@@ -711,10 +745,11 @@ toolFuncs[kModeFillRect] = function(pp, justDown)
 	startPos = posAtStart
 	curPos = pp
 	Rect.fromPoints(startPos, curPos).fill fatbits, foreColor
+	restoreMargins
 end function
 
 toolFuncs[kModeDrawEllipse] = function(pp, justDown)
-	if justDown then
+	if justDown or picAtStart == null or posAtStart == null then
 		globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 		globals.posAtStart = pp
 		return
@@ -724,10 +759,11 @@ toolFuncs[kModeDrawEllipse] = function(pp, justDown)
 	startPos = posAtStart
 	curPos = pp
 	Rect.fromPoints(startPos, curPos).frameEllipse fatbits, foreColor, 1
+	restoreMargins
 end function
 
 toolFuncs[kModeFillEllipse] = function(pp, justDown)
-	if justDown then
+	if justDown or picAtStart == null or posAtStart == null then
 		globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 		globals.posAtStart = pp
 		return
@@ -737,10 +773,11 @@ toolFuncs[kModeFillEllipse] = function(pp, justDown)
 	startPos = posAtStart
 	curPos = pp
 	Rect.fromPoints(startPos, curPos).fillEllipse fatbits, foreColor
+	restoreMargins
 end function
 
 toolFuncs[kModeSelect] = function(pp, justDown)
-	if justDown then
+	if justDown or selectionAnchor == null then
 		if selection and selection.contains(pp) then
 			// drag the existing selection
 			left = selection.left; bottom = selection.bottom

@@ -6,6 +6,7 @@ globals.circuitPic = gameData.loadCircuitForChapter(number)
 if circuitPic == null then
 	globals.circuitPic = file.loadImage("start.png")
 end if
+margin = Rect.make(19, 0, 40, circuitPic.height)
 
 drawObjs = function
 	objectives.erase

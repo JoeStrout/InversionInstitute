@@ -43,6 +43,11 @@ playOneStep = function(curStep)
 	if curDrawing then curDrawing.draw
 end function
 
+backToTitle = function
+	text.color = color.clear; load "/usr/game/title"
+	text.color = color.gray; run
+end function
+
 play = function(startAtStep = 0)
 	curStep = startAtStep
 
@@ -72,9 +77,12 @@ play = function(startAtStep = 0)
 					curStep = curStep + 1
 					break
 				else if k == 27 then
-					load "/usr/game/title"
-					run
+					backToTitle
 				end if
+			end if
+			if key.pressed("escape") then
+				// (since Esc doesn't enter keyboard buffer on Win/Linux)
+				backToTitle
 			end if
 			if mouse.button then
 				while mouse.button; yield; end while

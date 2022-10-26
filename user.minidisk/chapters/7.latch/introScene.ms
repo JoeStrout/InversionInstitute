@@ -27,7 +27,7 @@ playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-	drawing.drawSpeech "Really, Baab?  " + gameData.pronoun.they + 
+	drawing.drawSpeech "Really, Baab?  " + gameData.pronoun.they.capitalized + 
 		" just finished the last task!", drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
