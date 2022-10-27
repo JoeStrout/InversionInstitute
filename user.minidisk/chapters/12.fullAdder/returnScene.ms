@@ -1,4 +1,4 @@
-// Return scene for Chapter 11.
+// Return scene for Chapter 10.
 
 import "miscUtil"
 ensureImport "scene"
@@ -30,23 +30,35 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
-Baab.present = true
+Baab.present = false
 Alicia.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.frown2
-		drawing.drawSpeech "How's that paint-mixer going, " + gameData.playerName + "?",
-			drawing.Speaker.Right, "Baab"
+		drawing.drawSpeech "How's the 3-input counter going?",
+			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
-		drawing.drawSpeech "Keep trying, I'm sure you'll get it!",
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.small
+		drawing.drawSpeech "Or, I mean, the ""full adder"" design!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smallFrown
+		drawing.drawSpeech "You know, I bet you could just combine two of your ""half-adder"" designs together.",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
+		drawing.drawSpeech "Anyway, keep trying.  I know you'll get it!",
 			drawing.Speaker.Left, "Alicia"
 	end function
 	
@@ -66,16 +78,30 @@ else
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "That'll do it!  Ms. Mixwell will be so pleased.",
-			drawing.Speaker.Right, "Baab"
+		drawing.drawSpeech "That's it!  I think this is your most complex Magic Ink layout yet!",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.small
+		drawing.drawSpeech "Now that we have this, I think we could chain them together to add numbers of any size...",
+			drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
+		drawing.drawSpeech "But it's getting late.  Let's pick it up in the morning!",
+			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		toc.startChapter
-//		load "/usr/game/title"; run
+		scene.playSunset
+//		toc.startChapter
+		load "/usr/game/title"; run
 	end function
 
 end if

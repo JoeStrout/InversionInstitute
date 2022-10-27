@@ -81,9 +81,9 @@ else
 	end function
 
 	playSteps.push function
-		scene.playSunset
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
+		scene.playSunset
 		toc.startChapter
 //		load "/usr/game/title"; run
 	end function

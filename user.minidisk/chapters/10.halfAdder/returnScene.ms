@@ -37,7 +37,7 @@ if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		drawing.drawSpeech "How's the 2-bit counter going?",
+		drawing.drawSpeech "How's the 2-input counter going?",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
