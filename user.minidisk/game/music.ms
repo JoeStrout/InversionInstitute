@@ -29,10 +29,29 @@ preloadAll = function
 end function
 
 stop = function
+	outer.songToResume = curPlaying
 	if curPlaying then curPlaying.stop
 	outer.curPlaying = null
 	if fadingOut then fadingOut.stop
 	outer.fadingOut = null
+end function
+
+isOn = function
+	return fullVolume > 0
+end function
+
+setOn = function(nowOn)
+	fullVolume = nowOn * 0.5
+	if not nowOn then
+		if curPlaying then curPlaying.adjust 0
+		if fadingOut then fadingOut.stop
+	else if curPlaying then
+		if curPlaying.isPlaying then
+			curPlaying.adjust fullVolume
+		else
+			curPlaying.play fullVolume
+		end if
+	end if
 end function
 
 fadeOut = function
@@ -60,7 +79,7 @@ playSong = function(soundOrName)
 	end if
 	fadeOut
 	outer.curPlaying = soundOrName
-	curPlaying.play fullVolume
+	if isOn then curPlaying.play fullVolume
 end function
 
 

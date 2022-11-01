@@ -5,6 +5,8 @@ ensureImport "mathUtil"
 ensureImport "textField"
 ensureImport "drawing"
 ensureImport "button"
+ensureImport "gameData"
+ensureImport "music"
 
 pronounLabels = ["he/him", "she/her", "they/them", "other"]
 pronouns = {}
@@ -13,8 +15,34 @@ pronouns[pronounLabels[1]] = ["she", "her", "her", "hers"]
 pronouns[pronounLabels[2]] = ["they", "them", "their", "theirs"]
 pronouns[pronounLabels[3]] = [""] * 4
 
+OnOffSwitch = new button.Button
+OnOffSwitch.images = []
+OnOffSwitch.images.push file.loadImage("/usr/pics/ui/switch-off.png")
+OnOffSwitch.images.push file.loadImage("/usr/pics/ui/switch-on.png")
+OnOffSwitch.isOn = function
+	return self.image == self.images[true]
+end function
+OnOffSwitch.setOn = function(nowOn)
+	self.image = self.images[nowOn]
+end function
+
+OnOffSwitch.init = function(leftx=null, midy=320, keys)
+	super.init self.images[0], leftx, midy, keys
+end function
+
+OnOffSwitch.make = function(leftx=null, midy=320, keys)
+	noob = new OnOffSwitch
+	noob.init leftx, midy, keys
+	return noob
+end function
+
+OnOffSwitch.action = function
+	self.setOn not self.isOn
+end function
+
 setup = function
 	clear
+	button.Button.closeAll
 
 	display(6).mode = displayMode.solidColor
 	display(6).color = "#000066"
@@ -88,6 +116,15 @@ setup = function
 	backBtn.action = @cleanUp
 	backBtn.keys = ["escape"]
 	
+	outer.musicSwitch = OnOffSwitch.make(200, 100)
+	musicSwitch.setOn music.isOn
+	musicSwitch.action = function
+		super.action
+		text.color = color.aqua
+		music.setOn self.isOn
+	end function
+	font.printRight "Music:", musicSwitch.x-musicSwitch.image.width/2-20, musicSwitch.y - 12
+
 	nameField.setFocus
 end function
 

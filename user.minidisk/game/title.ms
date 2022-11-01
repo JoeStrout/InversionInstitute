@@ -161,6 +161,7 @@ freePlayBtn.y = 34
 optsBtn = button.Button.make(file.loadImage("/usr/pics/ui/optionsButton.png"), 960-90, 600)
 optsBtn.action = function
 	ensureImport "optionScreen"
+	cleanUp
 	optionScreen.present
 	run
 end function
