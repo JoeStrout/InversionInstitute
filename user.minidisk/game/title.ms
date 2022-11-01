@@ -102,7 +102,7 @@ ChapterButton.make = function(data)
 		smallFont.print lines[0], w - tw, 21, 1, textColor
 		smallFont.print lines[1], w - tw, 5, 1, textColor
 	end if
-	gfx = oldGfx
+	globals.gfx = oldGfx
 	sp = new ChapterButton
 	sp.chapter = data
 	sp.init displays.tiScratch.getImage
@@ -139,6 +139,7 @@ FreePlayButton.make = function
 		title = "(locked)"
 	end if
 	smallFont.printCentered title, w/2, 12, 1, textColor
+	globals.gfx = oldGfx
 	sp = new FreePlayButton
 	sp.init displays.tiScratch.getImage
 	sp.locked = locked
@@ -163,6 +164,33 @@ optsBtn.action = function
 	optionScreen.present
 	run
 end function
+
+// special welcome dialog during Early Access
+doEADialog = function
+	import "baab"
+	Baab.addSpritesToList displays.vnCharacters.sprites
+	displays.vnSpeech.color = color.yellow
+	drawing.drawSpeech "Thank you for supporting Inversion Institute in *Early Access!*" +
+	char(13) + char(13) + "_This is not a finished game._ There are rough edges to " +
+	"polish off, and many more puzzles and features to come. *For support*, please " +
+	"use the Steam or itch.io forums, or find us on Discord. We really want to hear " +
+	"your feedback!",
+		drawing.Speaker.Right, null
+	while not key.available and not mouse.button
+		Baab.animate
+		yield
+	end while
+	key.clear
+	while mouse.button; yield; end while
+	displays.vnSpeech.clear
+	displays.vnCharacters.clear
+end function
+
+if not gameData.get("EAdialog") then
+	doEADialog
+	gameData.data.EAdialog = true
+	gameData.writeToDisk
+end if
 
 // main loop
 while true

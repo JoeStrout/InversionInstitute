@@ -106,10 +106,16 @@ setupTitle = function
 	display(5).mode = displayMode.sprite
 	outer.tiSprite = display(5)
 	tiSprite.clear
+
+	display(4).mode = displayMode.sprite
+	outer.vnCharacters = display(4)
+	vnCharacters.clear
 	
-	display(4).mode = displayMode.pixel
-	globals.gfx = display(4)
-	gfx.clear color.clear
+	display(2).mode = displayMode.pixel
+	outer.vnSpeech = display(2)
+	globals.gfx = display(2)
+	vnSpeech.clear color.clear
+
 end function
 
 if locals == globals then setupVN
