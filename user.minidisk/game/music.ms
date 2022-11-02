@@ -3,8 +3,10 @@
 import "miscUtil"
 ensureImport "qa"
 ensureImport "mathUtil"
+ensureImport "gameData"
 
 fullVolume = 0.5
+if not gameData.get("music", true) then fullVolume = 0
 
 curPlaying = null
 fadingOut = null

@@ -100,8 +100,8 @@ else
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
 		scene.playSunset
-//		toc.startChapter
-		load "/usr/game/title"; run
+		toc.startChapter
+//		load "/usr/game/title"; run
 	end function
 
 end if

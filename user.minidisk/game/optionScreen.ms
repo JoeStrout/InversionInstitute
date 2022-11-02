@@ -122,6 +122,8 @@ setup = function
 		super.action
 		text.color = color.aqua
 		music.setOn self.isOn
+		gameData.data.music = self.isOn
+		gameData.writeToDisk
 	end function
 	font.printRight "Music:", musicSwitch.x-musicSwitch.image.width/2-20, musicSwitch.y - 12
 

@@ -35,13 +35,13 @@ if not file.exists(freePlayFolder) then file.makedir freePlayFolder
 data = {}
 
 // get: helper method to look up foo.bar.baz in the `data` map,
-// returning null if any part of the path isn't found.
-get = function(dotPath)
+// returning default if any part of the path isn't found.
+get = function(dotPath, default=null)
 	m = data
 	for part in dotPath.split(".")
-		if not m.hasIndex(part) then return null
+		if not m.hasIndex(part) then return default
 		m = m[part]
-		if m == null then return null
+		if m == null then return default
 	end for
 	return m
 end function
