@@ -313,7 +313,7 @@ BmfPrinter.cutToFit = function(styleRun, width, forceCut=false)
 	charWidth = self.font.lenToFit(styleRun.text, width)
 	i = charWidth
 	while i > 0
-		if styleRun.text[i] <= " " then
+		if i == styleRun.text.len or styleRun.text[i] <= " " then
 			result = styleRun.text[:i]
 			styleRun.text = styleRun.text[i:].trimLeft
 			return result

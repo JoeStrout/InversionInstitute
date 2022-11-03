@@ -1,4 +1,4 @@
-// Return scene for Chapter 8.
+// Return scene for Chapter 11.
 
 import "miscUtil"
 ensureImport "scene"
@@ -30,25 +30,36 @@ errors = findErrors.check
 display(0).mode = displayMode.off
 
 scene.prepare context.number, "/usr/chapters/" + context.folderName
-Baab.present = true
+Baab.present = false
 Alicia.present = true
 
 if errors then
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-		Baab.setExpression baab.eyebrows.sad, baab.eyes.normal, baab.mouth.frown
-		drawing.drawSpeech "Hmm, I thought this might be tricky.",
-			drawing.Speaker.Right, "Baab"
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smallFrown
+			drawing.drawSpeech "Hmm, having trouble?",
+				drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.huh
-		// ToDo: get player's pronouns, and adjust accordingly
-		drawing.drawSpeech "Don't worry Baab, " + gameData.playerName +
-			" will get it!", drawing.Speaker.Left, "Alicia"
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
+			drawing.drawSpeech "You know, I was thinking... What if you set up a sort of grid, with lines running horizontally from the inputs, and vertically down to the outputs?",
+				drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
+			drawing.drawSpeech "Then you'd just need to use glyphs in some way to make each output light up only when the right combination of inputs is on.  And it'd be nice and neat!",
+				drawing.Speaker.Left, "Alicia"
+	end function
+
+	playSteps.push function
+		displays.vnBackground.drawImage backgrounds.lab
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
+			drawing.drawSpeech "Anyway, keep trying.  I know you can do it!",
+				drawing.Speaker.Left, "Alicia"
 	end function
 	
 	playSteps.push function
@@ -66,25 +77,24 @@ else
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.openSmile
-		drawing.drawSpeech "You've done it!",
-			drawing.Speaker.Right, "Baab"
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.smile
+			drawing.drawSpeech "That's it!  Beautiful work, " + gameData.playerName + "!",
+				drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
-		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.smile
-		Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.smile
-		drawing.drawSpeech "The Snoof Festival is saved.",
-			drawing.Speaker.Left, "Alicia"
+			Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
+			drawing.drawSpeech "We made great progress today.  Get some sleep, and we'll pick it up again tomorrow!",
+				drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-//		scene.playSunset
+		scene.playSunset
 		toc.startChapter
+//		load "/usr/game/title"; run
 	end function
 
 end if

@@ -1,4 +1,4 @@
-// Return scene for Chapter 2.
+// Special cut scene for meeting Leo.
 
 import "miscUtil"
 ensureImport "scene"

@@ -92,16 +92,15 @@ else
 	playSteps.push function
 		displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.giggle, alicia.mouth.normal
-		drawing.drawSpeech "But it's getting late.  Let's pick it up in the morning!",
+		drawing.drawSpeech "But let's revisit that another day.",
 			drawing.Speaker.Left, "Alicia"
 	end function
 
 	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		scene.playSunset
+//		scene.playSunset
 		toc.startChapter
-//		load "/usr/game/title"; run
 	end function
 
 end if
