@@ -1,4 +1,5 @@
 ## Current WIP
+- Fixed bug causing the music toggle to not take full effect until the game is restarted.
 
 
 ## Nov 04, 2022

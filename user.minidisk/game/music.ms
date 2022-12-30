@@ -43,7 +43,7 @@ isOn = function
 end function
 
 setOn = function(nowOn)
-	fullVolume = nowOn * 0.5
+	outer.fullVolume = nowOn * 0.5
 	if not nowOn then
 		if curPlaying then curPlaying.adjust 0
 		if fadingOut then fadingOut.stop

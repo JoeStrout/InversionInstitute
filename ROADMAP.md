@@ -38,4 +38,5 @@
 1. Paint Mixer: (Make a color mixer: inputs are Red, Green, and Blue, and outputs are the 7 possible combinations of those three inputs.)
 1. (Make a 3-digit binary decoder, mapping 3 inputs to 8 outputs.)
 1. (Extend previous circuit to make a 7-segment display that shows digits 0-7 in response to 3 inputs.)
+1. Edge Pulse Generator: make a circuit that generates a brief pulse whenever the input state changes.
 1. (Make a J-K Flip-Flop.)
