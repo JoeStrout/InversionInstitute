@@ -16,6 +16,8 @@ check = function
 		nodeB.setOn b
 		nodeC.setOn c		
 		sim.simulate
+		sim.simulate
+		sim.simulate
 	end function
 
 	offOn = ["off", "on"]

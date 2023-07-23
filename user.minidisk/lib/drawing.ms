@@ -183,7 +183,7 @@ speechBoxImage = Image9Slice.make(file.loadImage("/usr/pics/ui/SpeechBox.png"),
 nameBubbleImage = Image9Slice.make(file.loadImage("/usr/pics/ui/NameBubble.png"), 
 		60, 20, 60, 20)
 
-drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
+drawSpeechBox = function(speaker=0, height=150, name="Someone")
 	bottom = 50 + 30 * (speaker != Speaker.Player)
 	top = bottom + height
 	middle = 480
@@ -205,7 +205,7 @@ drawSpeechBox = function(speaker=Speaker.Left, height=150, name="Someone")
 	return [left, bottom, width, height]
 end function
 
-drawSpeech = function(speech="Hello World!", speaker=Speaker.Left, name="Someone")
+drawSpeech = function(speech="Hello World!", speaker=0, name="Someone")
 	displays.vnSpeech.clear color.clear
 	textWidth = 550
 	textHeight = bigPrinter.calcHeight(speech, 0, 0, textWidth)
