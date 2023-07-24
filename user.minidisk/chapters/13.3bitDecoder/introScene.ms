@@ -52,7 +52,7 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 		Alicia.setExpression alicia.eyebrows.sad, alicia.eyes.normal, alicia.mouth.smallFrown
-		drawing.drawSpeech "...Though it'd be might be a lot to fit in.  I'm not sure how you will keep everything nice and neat.",
+		drawing.drawSpeech "...Though it might be a lot to fit in.  I'm not sure how you will keep everything nice and neat.",
 			drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function
