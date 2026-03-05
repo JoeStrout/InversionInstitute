@@ -1037,15 +1037,15 @@ handleKeys = function
 	if k == "t" then makeClipTransparent
 	if k == "s" and context.isFreePlay then doSave
 	if k == "?" or k == "/" then showHelp
-	if k == "q" then
-		d = textUtil.Dialog.make("Quit fatbits?", "Are you sure you want to quit?")
-		d.okBtn.caption = "Quit"
-		d.cancelBtn.visible = true
-		if d.show.caption == "Quit" then
-			clear
-			exit
-		end if
-	end if
+//	if k == "q" then
+//		d = textUtil.Dialog.make("Quit fatbits?", "Are you sure you want to quit?")
+//		d.okBtn.caption = "Quit"
+//		d.cancelBtn.visible = true
+//		if d.show.caption == "Quit" then
+//			clear
+//			exit
+//		end if
+//	end if
 end function
 
 mouseWasDown = mouse.button
