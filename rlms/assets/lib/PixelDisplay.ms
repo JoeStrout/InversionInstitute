@@ -2,6 +2,9 @@
 // compatible with the Mini Micro PixelDisplay API.
 // Backed by a raylib RenderTexture.
 
+import "importUtil"
+ensureImport "Display"
+
 rl = raylib
 
 // Convert a hex digit character to its numeric value (0-15).
@@ -29,7 +32,8 @@ colorToRGBA = function(s)
 	return [r, g, b, a]
 end function
 
-PixelDisplay = {}
+PixelDisplay = new Display
+PixelDisplay.mode = displayMode.pixel
 PixelDisplay.color = [255, 255, 255, 255]
 PixelDisplay.scale = 1
 PixelDisplay.scrollX = 0

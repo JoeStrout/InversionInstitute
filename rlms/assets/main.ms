@@ -1,15 +1,17 @@
 // PixelDisplay + Image test program.
 
 print "Running main.ms"
-import "Image"
-import "PixelDisplay"
+import "importUtil"
+ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay"]
+
+Display.Initialize
 
 rl = raylib
 rl.SetTraceLogLevel(rl.LOG_WARNING)
 
 titleFont = raylib.LoadFontEx("assets/Merkin.ttf", 48)
 
-gfx = PixelDisplay.Make(960, 640, "#000044")
+display(7).color = [0, 128, 0, 255]
 
 // Draw some test pixels: a diagonal line of colored dots on a yellow background
 gfx.fillRect 100, 100, 100, 100, "#FFFF00"
@@ -40,13 +42,13 @@ printCentered = function(s, y, fontSize=20, color)
 	fontSize = titleFont.baseSize
 	size = rl.MeasureTextEx(titleFont, s, fontSize, 0)
 	raylib.DrawTextEx titleFont, s, [480 - size.x/2, y], fontSize, 0, color
-
 end function
 
 // Main loop
 while true
 	rl.BeginDrawing
-	gfx.render
+	
+	Display.RenderAll
 
 	printCentered "Inversion Institute Redux", 10, 30, [100,100,255,255]
 	printCentered "host version " + version.host, 40, 10, [50,50,200,255]
