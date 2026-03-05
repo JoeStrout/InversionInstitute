@@ -39,12 +39,12 @@ PixelDisplay.height = 640
 PixelDisplay._renderTex = null
 
 // Create a new PixelDisplay with the given size.
-PixelDisplay.Make = function(width=960, height=640)
+PixelDisplay.Make = function(width=960, height=640, color="#00000000")
 	result = new self
 	result.width = width
 	result.height = height
 	result._renderTex = rl.LoadRenderTexture(width, height)
-	result.clear
+	result.fillRect 0, 0, width, height, color
 	return result
 end function
 
@@ -58,10 +58,7 @@ PixelDisplay.clear = function(color=null, width=960, height=640)
 		self._renderTex = rl.LoadRenderTexture(width, height)
 	end if
 	if color == null then color = [0, 0, 0, 0]
-	color = colorToRGBA(color)
-	rl.BeginTextureMode self._renderTex
-	rl.ClearBackground color
-	rl.EndTextureMode
+	result.fillRect 0, 0, width, height, color
 end function
 
 // Set a single pixel.  Uses self.color if color is not specified.
@@ -109,6 +106,35 @@ PixelDisplay.fillEllipse = function(left=0, bottom=0, width=100, height=100, col
 	rl.EndTextureMode
 end function
 
+
+// Get a rectangular region of the display as an Image.
+// Requires the Image module.
+PixelDisplay.getImage = function(left, bottom, width, height)
+	fullImg = rl.LoadImageFromTexture(self._renderTex.texture)
+	ry = self.height - bottom - height
+	subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
+	rl.UnloadImage fullImg
+	return Image._fromRaylibImage(subImg)
+end function
+
+// Draw an Image onto this PixelDisplay.
+PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, srcLeft=0, srcBottom=0, srcWidth=null, srcHeight=null)
+	if width == null then width = img.width
+	if height == null then height = img.height
+	if srcWidth == null then srcWidth = img.width
+	if srcHeight == null then srcHeight = img.height
+	// Create a temp texture from the image
+	tex = rl.LoadTextureFromImage(img._img)
+	// Source rect in texture coords (y=0 at top), with negative height to
+	// flip vertically — compensating for the render texture's Y-inversion.
+	srcY = img.height - srcBottom - srcHeight
+	src = [srcLeft, srcY, srcWidth, -srcHeight]
+	dest = [left, bottom, width, height]
+	rl.BeginTextureMode self._renderTex
+	rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
+	rl.EndTextureMode
+	rl.UnloadTexture tex
+end function
 
 // Draw this PixelDisplay to the screen (call during BeginDrawing/EndDrawing).
 // Uses positive source height (no flip) so that the RenderTexture's natural
