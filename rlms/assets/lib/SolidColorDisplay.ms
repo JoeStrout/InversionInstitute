@@ -1,9 +1,9 @@
 SolidColorDisplay = new Display
 SolidColorDisplay.mode = displayMode.solidColor
-SolidColorDisplay.color = [0, 0, 0, 255]
+SolidColorDisplay.color = "#000000FF"
 
 SolidColorDisplay.render = function
-	raylib.DrawRectangle 0, 0, 960, 640, self.color
+	raylib.DrawRectangle 0, 0, 960, 640, color.toList(self.color)
 end function
 
 return SolidColorDisplay

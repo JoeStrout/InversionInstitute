@@ -1,3 +1,5 @@
+import "importUtil"
+ensureImport "color"
 
 globals.displayMode = {
   "off": 0,

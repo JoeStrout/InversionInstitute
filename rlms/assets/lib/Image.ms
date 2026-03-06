@@ -111,4 +111,12 @@ Image.rotate = function(degrees=90)
 	self.height = self._img.height
 end function
 
+// Add a load method to the global file module.
+file.loadImage = function(path)
+	rImg = rl.LoadImage(path)
+	if rImg == null then return null
+	return Image._fromRaylibImage(rImg)
+end function
+
+
 return Image

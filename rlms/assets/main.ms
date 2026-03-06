@@ -11,7 +11,7 @@ rl.SetTraceLogLevel(rl.LOG_WARNING)
 
 titleFont = raylib.LoadFontEx("assets/Merkin.ttf", 48)
 
-display(7).color = [0, 128, 0, 255]
+display(7).color = color.green
 
 // Draw some test pixels: a diagonal line of colored dots on a yellow background
 gfx.fillRect 100, 100, 100, 100, "#FFFF00"
@@ -19,18 +19,16 @@ gfx.drawRect 100, 100, 100, 100, "#8888FF"
 gfx.fillEllipse 200,100, 200,100, "#008800"
 gfx.drawEllipse 200,100, 200,100, "#88FF88"
 for i in range(0, 99)
-	gfx.setPixel 100 + i, 100 + i, "#FF00FF"
+	gfx.setPixel 100 + i, 100 + i, color.pink
 end for
-
-// A few individual pixels at known corners to verify coordinate system
-gfx.setPixel 0, 0, [255, 0, 0, 255]           // red at bottom-left
-gfx.setPixel 959, 0, [0, 255, 0, 255]          // green at bottom-right
-gfx.setPixel 0, 639, [0, 0, 255, 255]          // blue at top-left
-gfx.setPixel 959, 639, [255, 255, 255, 255]    // white at top-right
 
 // Test getImage/drawImage: clone the test pattern region and draw it elsewhere
 snippet = gfx.getImage(100, 100, 200, 100)
 gfx.drawImage snippet, 500, 300
+
+// Also try drawing an image loaded from disk
+img = file.loadImage("pics/logo.png")
+if img != null then gfx.drawImage img, 500, 500
 
 printCentered = function(s, y, fontSize=20, color)
 	if color == null then color = rl.WHITE
