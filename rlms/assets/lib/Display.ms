@@ -84,11 +84,21 @@ Display.Initialize = function
 			Display.FindOrMakeDisplay slot, mode
 		end for
 	end for
-	display(4).setMode displayMode.sprite
-	display(5).setMode displayMode.pixel
-	display(7).setMode displayMode.solidColor
+	outer.clear
+end function
+
+clear = function
+	modes = [0, 0, 0, 2, 5, 3, 0, 1]
+	for i in range(0, 7)
+		if modes[i] == 2 then modes[i] = 0 // HACK until we have TextDisplay
+		display(i).setMode modes[i]
+	end for
+	display(4).clear
+	display(5).clear
+	display(7).color = "#00000000"
 	globals.gfx = display(5)
 end function
+globals.clear = @clear
 
 Display.RenderAll = function
 	for slot in range(7, 0)

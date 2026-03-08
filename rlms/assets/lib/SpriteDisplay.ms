@@ -18,10 +18,15 @@ Sprite.draw = function(offsetX=0, offsetY=0)
 	end if
 	destWidth = srcRect[2] * self.scale
 	destHeight = srcRect[3] * self.scale
-	destRect = [self.x + offsetX, self.y + offsetY, destWidth, destHeight]
+	h = raylib.GetScreenHeight()
+	destRect = [self.x + offsetX, h - self.y - offsetY, destWidth, destHeight]
 	origin = [destWidth * 0.5, destHeight * 0.5]
 	raylib.DrawTexturePro self.image.texture, srcRect, destRect,
 		origin, self.rotation, self.tint
+end function
+
+Sprite.contains = function(x=0, y=0)
+	return false  // ToDo
 end function
 
 SpriteDisplay = new Display

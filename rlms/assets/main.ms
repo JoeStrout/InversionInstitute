@@ -1,11 +1,7 @@
 // PixelDisplay + Image test program.
 
 print "Running main.ms"
-import "importUtil"
-ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
-  "SpriteDisplay"]
-
-Display.Initialize
+import "soda"
 
 rl = raylib
 rl.SetTraceLogLevel(rl.LOG_WARNING)
@@ -35,12 +31,12 @@ if img != null then gfx.drawImage img, 500, 500
 sp = new Sprite
 sp.image = img
 sp.scale = 0.5
-sp.x = 480; sp.y = 320
+sp.x = 480; sp.y = 120
 display(4).sprites.push sp
 
 sp = new Sprite
 sp.image = file.loadImage("assets/Wumpus.png")
-sp.x = 400; sp.y = 300
+sp.x = 400; sp.y = 100
 display(4).sprites.push sp
 
 printCentered = function(s, y, fontSize=20, color)
@@ -53,7 +49,7 @@ end function
 while true
 	rl.BeginDrawing
 	
-	Display.RenderAll
+	soda.update
 
 	printCentered "Inversion Institute Redux", 10, 48, [100,100,255,255]
 	printCentered "host version " + version.host, 50, 24, [50,50,200,255]

@@ -46,3 +46,20 @@ toList = function(s)
 	return [r, g, b, a]
 end function
 
+// Convert a numeric [r, g, b, a] list or map to a color string.
+_hexDigits = "0123456789ABCDEF"
+fromList = function(rgbaList)
+	s = "#"
+	if rgbaList isa map then
+		c = rgbaList
+		s += _hexDigits[floor(c.r / 16)] + _hexDigits[c.r % 16]
+		s += _hexDigits[floor(c.g / 16)] + _hexDigits[c.g % 16]
+		s += _hexDigits[floor(c.b / 16)] + _hexDigits[c.b % 16]
+		s += _hexDigits[floor(c.a / 16)] + _hexDigits[c.a % 16]
+	else
+		for value in rgbaList
+			s += _hexDigits[floor(value / 16)] + _hexDigits[value % 16]
+		end for
+	end if
+	return s
+end function
