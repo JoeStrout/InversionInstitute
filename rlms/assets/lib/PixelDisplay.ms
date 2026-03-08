@@ -95,7 +95,7 @@ PixelDisplay.getImage = function(left, bottom, width, height)
 	ry = self.height - bottom - height
 	subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
 	rl.UnloadImage fullImg
-	return Image._fromRaylibImage(subImg)
+	return Image.FromRaylibImage(subImg)
 end function
 
 // Draw an Image onto this PixelDisplay.

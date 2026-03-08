@@ -28,6 +28,7 @@ Display.NewDisplayOfMode = function(mode)
 	if mode == 0 then return new Display
 	if mode == 1 then return new SolidColorDisplay
 	if mode == 3 then return PixelDisplay.Make
+	if mode == 5 then return SpriteDisplay.Make
 	print "Not implemented yet: display mode " + mode
 	exit
 end function
@@ -83,6 +84,7 @@ Display.Initialize = function
 			Display.FindOrMakeDisplay slot, mode
 		end for
 	end for
+	display(4).setMode displayMode.sprite
 	display(5).setMode displayMode.pixel
 	display(7).setMode displayMode.solidColor
 	globals.gfx = display(5)

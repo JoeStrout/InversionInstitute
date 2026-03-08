@@ -44,6 +44,7 @@ end function
 
 Image = {}
 Image._img = null	// raylib Image map
+Image._tex = null	// cached raylib Texture
 Image.width = 0
 Image.height = 0
 
@@ -57,12 +58,31 @@ Image.create = function(width, height, color="#00000000")
 end function
 
 // Wrap an existing raylib Image map as an Image instance.
-Image._fromRaylibImage = function(rImg)
+Image.FromRaylibImage = function(rImg)
 	result = new Image
 	result._img = rImg
 	result.width = rImg.width
 	result.height = rImg.height
 	return result
+end function
+
+Image.release = function
+	if self._img != null then
+		rl.UnloadImage(self._img)
+		self._img = null
+	end if
+	if self._tex != null then
+		rl.UnloadTexture(self._tex)
+		self._tex = null
+	end if
+end function
+
+// Get a Raylib Texture (and cache for future use)
+Image.texture = function
+	if self._tex == null then
+		self._tex = raylib.LoadTextureFromImage(self._img)
+	end if
+	return self._tex
 end function
 
 // Get the color of a pixel as a "#RRGGBBAA" string.
@@ -76,13 +96,14 @@ end function
 Image.setPixel = function(x, y, color)
 	ry = self.height - 1 - y
 	rl.ImageDrawPixel self._img, x, ry, colorToRGBA(color)
+	if self._tex then rl.UnloadTexture(self._tex)
 end function
 
 // Extract a rectangular sub-region as a new Image.
 Image.getImage = function(left, bottom, width, height)
 	ry = self.height - bottom - height
 	subImg = rl.ImageFromImage(self._img, [left, ry, width, height])
-	return Image._fromRaylibImage(subImg)
+	return Image.FromRaylibImage(subImg)
 end function
 
 // Flip the image in place.
@@ -93,6 +114,7 @@ Image.flip = function(vertical=false)
 	else
 		rl.ImageFlipHorizontal self._img
 	end if
+	if self._tex then rl.UnloadTexture(self._tex)
 end function
 
 // Rotate the image in place, counter-clockwise, in 90-degree increments.
@@ -109,13 +131,17 @@ Image.rotate = function(degrees=90)
 	end if
 	self.width = self._img.width
 	self.height = self._img.height
+	if self._tex then rl.UnloadTexture(self._tex)
 end function
 
 // Add a load method to the global file module.
 file.loadImage = function(path)
 	rImg = rl.LoadImage(path)
-	if rImg == null then return null
-	return Image._fromRaylibImage(rImg)
+	if rImg == null then
+		print "file.loadImage: could not load " + path
+		return null
+	end if
+	return Image.FromRaylibImage(rImg)
 end function
 
 

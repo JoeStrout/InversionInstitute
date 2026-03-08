@@ -3,7 +3,7 @@ Sprite.x = 0
 Sprite.y = 320
 Sprite.rotation = 0
 Sprite.scale = 1
-Sprite.srcTexture = null // must be defined
+Sprite.image = null
 Sprite.srcRect = null    // optional: [left, top, width, height] in srcTexture
 Sprite.tint = raylib.WHITE
 
@@ -19,7 +19,7 @@ Sprite.draw = function
 	destHeight = srcRect[3] * self.scale
 	destRect = [self.x, self.y, destWidth, destHeight]
 	origin = [destWidth * 0.5, destHeight * 0.5]
-	raylib.DrawTexturePro self.srcTexture, srcRect, destRect,
+	raylib.DrawTexturePro self.image.texture, srcRect, destRect,
 		origin, self.rotation, self.tint
 end function
 

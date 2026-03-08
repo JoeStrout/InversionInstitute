@@ -2,7 +2,8 @@
 
 print "Running main.ms"
 import "importUtil"
-ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay"]
+ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
+  "SpriteDisplay"]
 
 Display.Initialize
 
@@ -30,14 +31,20 @@ gfx.drawImage snippet, 500, 300
 img = file.loadImage("pics/logo.png")
 if img != null then gfx.drawImage img, 500, 500
 
+// And let's get a sprite or two going
+sp = new Sprite
+sp.image = img
+sp.scale = 0.5
+sp.x = 480; sp.y = 320
+display(4).sprites.push sp
+
+sp = new Sprite
+sp.image = file.loadImage("assets/Wumpus.png")
+sp.x = 400; sp.y = 300
+display(4).sprites.push sp
+
 printCentered = function(s, y, fontSize=20, color)
 	if color == null then color = rl.WHITE
-	// DrawText uses a spacing equal to fontSize/10, so measure as:
-
-	//size = rl.MeasureTextEx(rl.GetFontDefault, s, fontSize, fontSize/10)
-	//rl.DrawText s, 480 - size.x/2, y, fontSize, color
-	
-	fontSize = titleFont.baseSize
 	size = rl.MeasureTextEx(titleFont, s, fontSize, 0)
 	raylib.DrawTextEx titleFont, s, [480 - size.x/2, y], fontSize, 0, color
 end function
@@ -48,10 +55,12 @@ while true
 	
 	Display.RenderAll
 
-	printCentered "Inversion Institute Redux", 10, 30, [100,100,255,255]
-	printCentered "host version " + version.host, 40, 10, [50,50,200,255]
+	printCentered "Inversion Institute Redux", 10, 48, [100,100,255,255]
+	printCentered "host version " + version.host, 50, 24, [50,50,200,255]
 
 	rl.DrawFPS
 	rl.EndDrawing
 	yield
+	
+	sp.rotation += 3
 end while
