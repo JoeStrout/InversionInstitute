@@ -8,7 +8,7 @@ Inversion Institute runs on Windows, Mac, and Linux.  The current plan is to dis
 
 ## Status
 
-This project was started in August 2022.  So, obviously, it's in the very early stages.
+This project was started in August 2022.  It went through substantial development for about a year, and then rather stalled out for three years.  Now (as of March 2026), it is coming back to life — being rewritten using [raylib-miniscript](https://github.com/JoeStrout/raylib-miniscript), in part to help drive development of [Soda](https://github.com/JoeStrout/soda).  I'm now aiming for the game to be finished (version 1.0) by the end of 2026.
 
 Check back frequently as the game develops!
 
