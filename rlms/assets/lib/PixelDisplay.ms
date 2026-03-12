@@ -3,7 +3,6 @@
 // Backed by a raylib RenderTexture.
 
 import "importUtil"
-ensureImport "Display"
 ensureImport "color"
 
 colorToList = @color.toList
@@ -124,16 +123,35 @@ PixelDisplay.fillEllipse = function(left=0, bottom=0, width=100, height=100, col
 end function
 
 
+// Draw a polygon outline from a list of [x,y] points.
+PixelDisplay.drawPoly = function(points, color=null, penSize=1)
+	if points == null or points.len < 2 then return
+	if color == null then color = self.color
+	color = colorToList(color)
+	self._beginDraw
+	h = 0.5
+	prev = points[-1]
+	for pt in points
+		rl.DrawLineEx([prev[0]+h, self.height-prev[1]+h], [pt[0]+h, self.height-pt[1]+h], penSize, color)
+		prev = pt
+	end for
+	self._endDraw
+end function
+
 // Get a rectangular region of the display as an Image.
 // Requires the Image module.
 PixelDisplay.getImage = function(left=0, bottom=0, width, height)
 	fullImg = rl.LoadImageFromTexture(self._renderTex.texture)
+	// Render texture data is vertically flipped; flip it so y=0 is at the
+	// top, matching the Image class's internal convention.
+	rl.ImageFlipVertical fullImg
 	if width == null then width = self.width
 	if height == null then height = self.height
 	if left == 0 and bottom == 0 and width == self.width and height == self.height then
 		subImg = fullImg
 	else
-		subImg = rl.ImageFromImage(fullImg, [left, bottom, width, height])
+		ry = self.height - bottom - height
+		subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
 		rl.UnloadImage fullImg
 	end if
 	return Image.FromRaylibImage(subImg)

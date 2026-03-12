@@ -16,7 +16,7 @@ Rect.midX = function; return self.left + self.width/2; end function
 
 Rect.midY = function; return self.bottom + self.height/2; end function
 
-Rect.make = function(left, bottom, width, height)
+Rect.Make = function(left, bottom, width, height)
 	r = new Rect
 	r.left = left
 	r.bottom = bottom
@@ -25,7 +25,7 @@ Rect.make = function(left, bottom, width, height)
 	return r
 end function
 
-Rect.makeFromCenter = function(midX, midY, width=0, height=0)
+Rect.MakeFromCenter = function(midX, midY, width=0, height=0)
 	r = new Rect
 	r.left = midX - width/2
 	r.bottom = midY - height/2
@@ -37,7 +37,7 @@ end function
 Rect.fromPoints = function(p0, p1)
 	if p0 == null then
 		if p1 == null then return null
-		return Rect.makeFromCenter(p1.x, p1.y)
+		return Rect.MakeFromCenter(p1.x, p1.y)
 	end if
 	r = new Rect
 	if p0.x < p1.x then
@@ -58,11 +58,11 @@ Rect.fromPoints = function(p0, p1)
 end function
 
 Rect.offset = function(dx, dy)
-	return Rect.make(self.left + dx, self.bottom + dy, self.width, self.height)
+	return Rect.Make(self.left + dx, self.bottom + dy, self.width, self.height)
 end function
 
 Rect.grow = function(dwidth, dheight)
-	return Rect.make(self.left, self.bottom, self.width + dwidth, self.height + dheight)
+	return Rect.Make(self.left, self.bottom, self.width + dwidth, self.height + dheight)
 end function
 
 Rect.contains = function(pt)

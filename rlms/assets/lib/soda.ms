@@ -5,6 +5,8 @@
 // Then, call soda.update from the main loop (at the 
 // point where you want it to render).
 
+raylib.SetTraceLogLevel raylib.LOG_WARNING
+
 import "importUtil"
 
 ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
@@ -12,9 +14,16 @@ ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
 
 Display.Initialize
 
-
-update = function
+update = function(beginEndRaylibDrawing = true)
+	if beginEndRaylibDrawing then raylib.BeginDrawing
 	Display.RenderAll
 	mouse.update
+	if beginEndRaylibDrawing then raylib.EndDrawing
 end function
 
+// Override (actually, shadow) the `yield` intrinsic to do our standard
+// update, so that a tight yield loop does not lock up the app.
+globals.yield = function
+	outer.update
+	intrinsics.yield
+end function

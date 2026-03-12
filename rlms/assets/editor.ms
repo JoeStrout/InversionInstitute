@@ -43,7 +43,7 @@ modeHelp[kModeDrawEllipse] = "Click and drag to draw a round outline."
 kModeFillEllipse = "FILLELLIPSE"
 modeHelp[kModeFillEllipse] = "Click and drag to draw a filled ellipse."
 kModeLine = "DRAWLINE"
-modeHelp[kModeLine] = "Click and drag to draw a straight line; [Shift] make crossings."
+modeHelp[kModeLine] = "Click and drag to draw a straight line; [Shift] Make crossings."
 kModePasting = "PASTING"
 modeHelp[kModePasting] = "Click to drop; [R] rotate, [F] flip, [T] transparent."
 
@@ -74,7 +74,7 @@ if not globals.hasIndex("context") then
 end if
 context.objectivesDrawn = false
 context.isFreePlay = not context.get("number")
-if not context.hasIndex("margin") then context.margin = Rect.make(0, 0, picW, picH)
+if not context.hasIndex("margin") then context.margin = Rect.Make(0, 0, picW, picH)
 if not globals.hasIndex("clip") then clip = null
 
 // Prepare displays
@@ -100,14 +100,6 @@ brushRowWidths = [null, [1], [2,2], [3,3,3], [2,4,4,2], [3,5,5,5,3], [4,6,6,6,6,
   [3,5,7,7,7,5,3], [4,6,8,8,8,8,6,4], [5,7,9,9,9,9,9,7,5], [4,8,8,10,10,10,10,8,8,4],
   [5,7,9,11,11,11,11,11,9,7,5], [4,8,10,10,12,12,12,12,10,10,8,4]]
 
-
-// Helper methods we probably should have in a utils module somewhere
-Sprite.addBounds = function(inset=0)
-	qa.assert self.image != null, "Sprite image is null"
-//	self.localBounds = new Bounds
-//	self.localBounds.width = self.image.width - inset*2
-//	self.localBounds.height = self.image.height - inset*2
-end function
 
 pointsOnLine = function(pA, pB, manhattanJoin=true)
 	if pA == pB then return [pA]
@@ -146,12 +138,12 @@ saveToDisk = function
 	path = file.child(gameData.freePlayFolder, context.filename)
 	err = file.saveImage(path, circuitPic)
 	if not err then
-//		dlog = textUtil.Dialog.make("Saved """ + context.filename + """",
+//		dlog = textUtil.Dialog.Make("Saved """ + context.filename + """",
 //		   self.path + char(13) + self.image.width + " x " + self.image.height + " pixels")
 //		dlog.okBtn.visible = false
 //		dlog.show 2
 	else
-		dlog = textUtil.Dialog.make("Unable to Save File", err)
+		dlog = textUtil.Dialog.Make("Unable to Save File", err)
 		dlog.show
 	end if
 end function
@@ -249,7 +241,7 @@ Button.update = function(pressed=false)
 	end if
 end function
 
-Button.make = function(imageName, left, top, toggles=false)
+Button.Make = function(imageName, left, top, toggles=false)
 	btn = new Button
 	btn.init imageName, left, top
 	btn.toggles = toggles
@@ -296,7 +288,7 @@ Tool.init = function(name, left, top, mode)
 	Tool.instances.push self
 end function
 
-Tool.make = function(name, left, top, mode)
+Tool.Make = function(name, left, top, mode)
 	tool = new Tool
 	tool.init name, left, top, mode
 	return tool
@@ -342,8 +334,7 @@ end function
 
 //---------------------------------------------------------------------
 // screen layout
-print 345
-paintArea = Rect.make(10, 24, 720, 576)
+paintArea = Rect.Make(10, 24, 720, 576)
 prepareScreen = function
 	gfx.clear bgColor, 960+10, 640+10
 	gfx.scrollX = 5; gfx.scrollY = 5
@@ -360,8 +351,8 @@ prepareScreen = function
 		if context.filename then s = s + ": " + (context.filename - ".png")
 //		font.print s, 10, 642 + font.sizeOver
 	end if
-//	objectives.area = Rect.make(750,10, 208,410)
-	outer.helpArea = Rect.make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
+//	objectives.area = Rect.Make(750,10, 208,410)
+	outer.helpArea = Rect.Make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
 end function
 
 drawGrid = function
@@ -370,7 +361,7 @@ drawGrid = function
 //	// Calculate backdrop rectangle
 //	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
 //	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
-//	backdropRect = Rect.make(
+//	backdropRect = Rect.Make(
 //	    paintArea.midX - (maxWidth / 2)*ps,
 //	    paintArea.midY - (maxHeight / 2)*ps,
 //	    maxWidth * ps,
@@ -420,7 +411,7 @@ makeTools = function
 	for i in tools.indexes
 		t = tools[i]
 		if t[0] == null then continue
-		Tool.make t[0], 770 + 40*(i%4), 40 + 40*floor(i/4), t[1]
+		Tool.Make t[0], 770 + 40*(i%4), 40 + 40*floor(i/4), t[1]
 	end for
 end function
 makeTools
@@ -462,7 +453,6 @@ end function
 //--------------------------------------------------------------------------------
 // CLIPBOARD HELPER FUNCTIONS
 selection = null
-print 465
 
 drawSelection = function
 	if selection == null then
@@ -590,7 +580,7 @@ rotateClip = function
 		left = round(selection.midX - selection.height/2)
 		bottom = round(selection.midY - selection.width/2)
 		drawGrid
-		globals.selection = Rect.make(left, bottom, selection.height, selection.width)
+		globals.selection = Rect.Make(left, bottom, selection.height, selection.width)
 		fatbits.drawImage result, selection.left, selection.bottom
 		restoreMargins
 	else
@@ -602,14 +592,14 @@ makeClipTransparent = function
 	if globals.mode != kModePasting then return
 	xrange = range(0, pasted.width-1)
 	if key.pressed("left shift") or key.pressed("right shift") then
-		// make NON-transparent
+		// Make NON-transparent
 		for y in range(0, pasted.height-1)
 			for x in xrange
 				if pasted.pixel(x,y) == "#00000000" then pasted.setPixel x,y, "#000000FF"
 			end for
 		end for
 	else
-		// make transparent
+		// Make transparent
 		for y in range(0, pasted.height-1)
 			for x in xrange
 				if pasted.pixel(x,y) == "#000000FF" then pasted.setPixel x,y, "#00000000"
@@ -633,8 +623,9 @@ toolFuncs[kModeMove] = function(pp, justDown)
 	dx = pp.x - startPaintPos.x
 	dy = pp.y - startPaintPos.y
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
-	fatbits.drawImage startPaintImg.getImage(-dx * (dx<0), -dy * (dy<0), 
-	  picW-abs(dx), picH-abs(dy)), dx * (dx>0), dy * (dy>0)
+	subImg = startPaintImg.getImage(-dx * (dx<0), -dy * (dy<0), 
+	  picW-abs(dx), picH-abs(dy))
+	fatbits.drawImage subImg, dx * (dx>0), dy * (dy>0)
 	restoreMargins
 end function
 
@@ -706,7 +697,7 @@ toolFuncs[kModeLine] = function(pp, justDown)
 	fatbits.fillRect 0, 0, picW+1, picH+1, color.black
 	fatbits.drawImage picAtStart
 	if key.pressed("left shift") or key.pressed("right shift") then
-		// crossing mode -- try to make crossings
+		// crossing mode -- try to Make crossings
 		for pos in pointsOnLine(posAtStart, pp)
 			if fatbits.pixel(pos.x, pos.y) == "#000000FF" or
 			  pos == posAtStart or pos == pp then
@@ -818,17 +809,16 @@ end function
 
 //--------------------------------------------------------------------------------
 // COLOR PALETTE
-print 821
 palSelectionRing = new Sprite
 palSelectionRing.image = Image.create(22, 22, "#CCCCCC")
 editSprites.push palSelectionRing
 
-paletteArea = Rect.make(766, 424, 164, 44) 
+paletteArea = Rect.Make(766, 424, 164, 44) 
 PalButton = new Sprite
 PalButton.image = Image.create(18, 18, color.white)
 PalButton.instances = []
-PalButton.make = function(c)
-	noob = new PalButton
+PalButton.Make = function(c)
+	noob = new self
 	if c.len < 9 then c = c + "FF"
 	noob.tint = c
 	noob.index = PalButton.instances.len
@@ -870,7 +860,7 @@ end function
 makeDefaultPalette = function
 	for c in ("000000 000099 2222FF 007722 66AAFF 833494 FF0000 FF22FF " +
 		"D19E6F AAAAAA FF8000 FFAAAA 00FF00 FFFF00 B6F0D6 FFFFFF").split
-		PalButton.make "#" + c
+		PalButton.Make "#" + c
 	end for
 end function
 makeDefaultPalette
@@ -986,7 +976,6 @@ end function
 
 //--------------------------------------------------------------------------------
 // MAIN PROGRAM
-print 989
 
 startPaintPos = null
 startPaintImg = null
@@ -1002,7 +991,6 @@ fatbits.drawImage circuitPic
 updatePaintScroll
 setTestMode false
 
-print 1005
 handleClick = function(justDown)
 	if not paintArea.contains(mouse) then return
 	pp = paintPixelAtXY(mouse)
@@ -1028,7 +1016,7 @@ showHelp = function
 	lines.push "Backspace/Delete - Clear"
 	lines.push "S - Save                "
 	lines.push "Q - Quit                "
-	d = textUtil.Dialog.make("Keyboard Shortcuts", lines.join(char(13)))
+	d = textUtil.Dialog.Make("Keyboard Shortcuts", lines.join(char(13)))
 	d.show
 end function
 
@@ -1048,13 +1036,9 @@ end function
 
 mouseWasDown = mouse.button
 setMode kModeDraw
-print 1060
 while true
 	yield
-	raylib.BeginDrawing
-	soda.update
 //	music.update
-	raylib.EndDrawing
 	
 	pp = paintPixelAtXY(mouse)
 	gfx.fillRect 860, 0, 100, 20, bgColor
