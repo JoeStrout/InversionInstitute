@@ -23,10 +23,14 @@ PixelDisplay._renderTex = null
 // Begin drawing to the render texture in "replace" blend mode,
 // so that drawn colors fully overwrite the destination (matching
 // Mini Micro behavior, where alpha < 255 does not blend).
-PixelDisplay._beginDraw = function
+PixelDisplay._beginDraw = function(alphaBlend = false)
 	rl.BeginTextureMode self._renderTex
-	rl.rlSetBlendFactors 1, 0, 32774    // GL_ONE, GL_ZERO, GL_FUNC_ADD
-	rl.BeginBlendMode 6                 // BLEND_CUSTOM
+	if alphaBlend then
+		rl.BeginBlendMode 5				// BLEND_ALPHA_PREMULTIPLY
+	else
+		rl.rlSetBlendFactors 1, 0, 32774    // GL_ONE, GL_ZERO, GL_FUNC_ADD
+		rl.BeginBlendMode 6                 // BLEND_CUSTOM
+	end if
 end function
 
 PixelDisplay._endDraw = function
@@ -169,7 +173,7 @@ PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, sr
 	srcY = img.height - srcBottom - srcHeight
 	src = [srcLeft, srcY, srcWidth, srcHeight]
 	dest = [left, self.height - bottom - height, width, height]
-	self._beginDraw
+	self._beginDraw true  // (alpha blend)
 	rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
 	self._endDraw
 	rl.UnloadTexture tex

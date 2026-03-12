@@ -22,6 +22,12 @@ TTFont.Load = function(path, size=24)
 	end if
 	info = rl.GetGlyphInfo(font._font, "M".code)
 	font.ascent = size - info.offsetY
+	
+	// silly measures for compatibility with BMFFont:
+	font.sizeOver = -font.ascent
+	font.sizeUnder = size - font.ascent
+	font.lineHeight = size
+	
 	return font
 end function
 
@@ -63,6 +69,55 @@ end function
 // Return the width of the given string in this font.
 TTFont.width = function(s, scale=1)
 	return rl.MeasureTextEx(self._font, s, self._size * scale, 0).x
+end function
+
+// Return the number of characters of the given string that
+// fit a given width.
+TTFont.lenToFit = function(s, width=100)
+	if not s or not (s isa string) then return 0
+	if self.width(s) <= width then return s.len
+	lo = 1
+	hi = s.len
+	while lo + 1 < hi
+		mid = floor((lo + hi) / 2)
+		if self.width(s[:mid]) <= width then
+			lo = mid
+		else
+			hi = mid
+		end if
+	end while
+	return lo
+end function
+
+// Wrap a long text into multiple lines, breaking on words,
+// as needed to fit within the given width.  Return a list of strings.
+TTFont.wrapLines = function(s="", width=550)
+	if not s then return [""]
+	result = []
+	while true
+		lenToFit = self.lenToFit(s, width)
+		if lenToFit+1 >= s.len then
+			result.push s
+			break
+		end if
+		while lenToFit > 1
+			c = s[lenToFit+1]
+			if c <= " " then break
+			lenToFit = lenToFit - 1
+		end while
+		result.push s[:lenToFit+1]
+		s = s[lenToFit+1:].trimLeft
+	end while
+	return result
+end function
+
+TTFont.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
+	lines = self.wrapLines(s, wrapWidth)
+	for line in lines
+		self.print line, x, y, 1, tint
+		y = y - self.lineHeight
+	end for
+	return y
 end function
 
 if locals == globals then

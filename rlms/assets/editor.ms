@@ -11,8 +11,8 @@ ensureImport "mapUtil"
 ensureImport "qa"
 ensureImport "rect"
 ensureImport "displays"
-//ensureImport "drawing"
-//ensureImport "objectives"
+ensureImport "drawing"
+ensureImport "objectives"
 //ensureImport "pixelLogicSim"; sim = pixelLogicSim
 //ensureImport "music"
 //ensureImport "gameData"
@@ -58,7 +58,7 @@ picW = circuitPic.width
 picH = circuitPic.height
 marginPic = circuitPic.getImage
 resourceDir = "pics/fatbits/"
-helpFont = null //objectives.smallFont
+helpFont = objectives.smallFont
 selectionAnchor = null
 picAtStart = null
 
@@ -83,7 +83,7 @@ spriteDisp = displays.edSprite
 fatbits = displays.edFatbits
 backdrop = displays.edBackdrop
 bgColor = "#888888"
-//objectives.bgColor = bgColor
+objectives.bgColor = bgColor
 scratch = displays.edScratch
 
 // load brush sprites
@@ -344,14 +344,15 @@ prepareScreen = function
 	backdrop.clear color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
+	font = bigPrinter.boldFont
 	if not context.isFreePlay then
 		font.print "Ch." + context.number + ": " + context.title, 10, 642 + font.sizeOver
 	else
 		s = context.title
 		if context.filename then s = s + ": " + (context.filename - ".png")
-//		font.print s, 10, 642 + font.sizeOver
+		font.print s, 10, 642 + font.sizeOver
 	end if
-//	objectives.area = Rect.Make(750,10, 208,410)
+	objectives.area = Rect.Make(750,10, 208,410)
 	outer.helpArea = Rect.Make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
 end function
 
@@ -1031,7 +1032,7 @@ handleKeys = function
 	if k == "r" then rotateClip
 	if k == "t" then makeClipTransparent
 	if k == "s" and context.isFreePlay then doSave
-	if k == "?" or k == "/" then showHelp
+	if k == "?" or k == "/" or k == "h" then showHelp
 end function
 
 mouseWasDown = mouse.button

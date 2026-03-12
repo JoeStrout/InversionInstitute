@@ -45,10 +45,9 @@ setupVN = function
 	
 	display(3).setMode displayMode.off
 	display(2).setMode displayMode.off
-	display(1).setMode displayMode.text
-	globals.text = display(1)
-	
-	text.clear
+//	display(1).setMode displayMode.text
+//	globals.text = display(1)	
+//	text.clear
 end function
 
 // Set up displays for the editor/simulator

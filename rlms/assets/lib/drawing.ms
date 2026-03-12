@@ -1,23 +1,28 @@
 import "miscUtil"
-ensureImport "displays"
-ensureImport "bmfFonts"
+ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
+  "SpriteDisplay", "mouse", "key"]
+ensureImport "ttFonts"
 ensureImport "qa"
-ensureImport "json"	// (used for PixelDrawing.load)
+//ensureImport "json"	// (used for PixelDrawing.load)
 ensureImport "markup"
 
-globals.font = bmfFonts.Font.load("/usr/fonts/NotoSerif-24.bmf")
+TTFont = ttFonts.TTFont
+
+fontName = "fonts/EBGaramond"
 
 globals.bigPrinter = new markup.BmfPrinter
-bigPrinter.font = font
-bigPrinter.boldFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBold-24.bmf")
-bigPrinter.italicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifItalic-24.bmf")
-bigPrinter.boldItalicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBoldItalic-24.bmf")
+bigPrinter.font = TTFont.Load(fontName + "-Regular.ttf", 40)
+bigPrinter.boldFont = TTFont.Load(fontName + "-Bold.ttf", 40)
+bigPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 40)
+bigPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 40)
 
 globals.smallPrinter = new markup.BmfPrinter
-smallPrinter.font = bmfFonts.Font.load("/usr/fonts/NotoSerif-14.bmf")
-smallPrinter.boldFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBold-14.bmf")
-smallPrinter.italicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifItalic-14.bmf")
-smallPrinter.boldItalicFont = bmfFonts.Font.load("/usr/fonts/NotoSerifBoldItalic-14.bmf")
+smallPrinter.font = TTFont.Load(fontName + "-Regular.ttf", 24)
+smallPrinter.boldFont = TTFont.Load(fontName + "-Bold.ttf", 24)
+smallPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 24)
+smallPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 24)
+
+globals.font = bigPrinter.font
 
 button9slice = null
 
@@ -101,7 +106,7 @@ PixelDrawing.nextStepTime = 0
 PixelDrawing.left = 300
 PixelDrawing.bottom = 200
 PixelDrawing.scale = 5
-PixelDrawing.gfx = gfx
+PixelDrawing.gfx = function; return gfx; end function
 PixelDrawing.load = function(path, gfx, left, bottom, scale=5)
 	if gfx then self.gfx = gfx
 	self.left = left
@@ -162,14 +167,14 @@ wrapLines = function(s="", width=550, font=null)
 end function
 
 // Extend the font class to draw wrapped text, and return the next Y.
-bmfFonts.Font.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
-	lines = wrapLines(s, wrapWidth, self)
-	for line in lines
-		self.print line, x, y, 1, tint
-		y = y - self.lineHeight
-	end for
-	return y
-end function
+//bmfFonts.Font.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
+//	lines = wrapLines(s, wrapWidth, self)
+//	for line in lines
+//		self.print line, x, y, 1, tint
+//		y = y - self.lineHeight
+//	end for
+//	return y
+//end function
 
 // Enum for which speaker a speech box is coming from
 Speaker = {}
@@ -177,10 +182,10 @@ Speaker.Left = 0
 Speaker.Player = 1
 Speaker.Right = 2
 
-speechBoxImage = Image9Slice.make(file.loadImage("/usr/pics/ui/SpeechBox.png"), 
+speechBoxImage = Image9Slice.make(file.loadImage("pics/ui/SpeechBox.png"), 
 		120, 56, 120, 56)
 
-nameBubbleImage = Image9Slice.make(file.loadImage("/usr/pics/ui/NameBubble.png"), 
+nameBubbleImage = Image9Slice.make(file.loadImage("pics/ui/NameBubble.png"), 
 		60, 20, 60, 20)
 
 drawSpeechBox = function(speaker=0, height=150, name="Someone")
@@ -217,7 +222,7 @@ end function
 
 drawButton = function(left, bottom, width, height, caption="", font=null, tint="")
 	if button9slice == null then
-		src = file.loadImage("/usr/pics/ui/button.png")
+		src = file.loadImage("pics/ui/button.png")
 		hm = src.width/2 - 4
 		vm = src.height/2 - 4
 		outer.button9slice = Image9Slice.make(src, hm, vm, hm, vm)
@@ -245,10 +250,15 @@ makeButton = function(caption, width)
 end function
 
 if locals == globals then
+	import "soda"
+	ensureImport "displays"
 	displays.setupVN
 	//drawSpeechBox Speaker.Left
 	drawSpeech "Hello world!  This is a speech box with several lines of text " +
 	"in it.  They should wrap automatically, and the speech bubble should adjust " +
 	"as needed to fit."
 	drawButton 100, 500, 120, 64, "Button"
+	while true
+		yield
+	end while
 end if
