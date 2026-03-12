@@ -63,7 +63,7 @@ PixelDisplay.setPixel = function(x, y, color=null)
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawPixel x+0.5, y+0.5, color
+	rl.DrawPixel x+0.5, self.height - 1 - y + 0.5, color
 	self._endDraw
 end function
 
@@ -72,8 +72,7 @@ end function
 // instead call getImage on the display, then get pixels of that.
 PixelDisplay.pixel = function(x, y)
 	img = rl.LoadImageFromTexture(self._renderTex.texture)
-	ry = self.height - 1 - y
-	c = rl.GetImageColor(img, x, ry)
+	c = rl.GetImageColor(img, x, y)
 	rl.UnloadImage img
 	return colorFromList(c)
 end function
@@ -84,7 +83,7 @@ PixelDisplay.line = function(x1=0, y1=0, x2=960, y2=640, color, penSize=1)
 	color = colorToList(color)
 	self._beginDraw
 	h = 0.5  // offset to properly address pixel coordinates
-	rl.DrawLineEx([x1+h,y1+h], [x2+h,y2+h], penSize, color)
+	rl.DrawLineEx([x1+h, self.height-y1+h], [x2+h, self.height-y2+h], penSize, color)
 	self._endDraw
 end function
 
@@ -93,7 +92,7 @@ PixelDisplay.drawRect = function(left=0, bottom=0, width=100, height=100, color=
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawRectangleLines left, bottom, width, height, color
+	rl.DrawRectangleLines left, self.height - bottom - height, width, height, color
 	self._endDraw
 end function
 
@@ -102,7 +101,7 @@ PixelDisplay.fillRect = function(left=0, bottom=0, width=100, height=100, color=
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawRectangle left, bottom, width, height, color
+	rl.DrawRectangle left, self.height - bottom - height, width, height, color
 	self._endDraw
 end function
 
@@ -111,7 +110,7 @@ PixelDisplay.drawEllipse = function(left=0, bottom=0, width=100, height=100, col
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawEllipseLines left + width/2, bottom + height/2, width/2, height/2, color
+	rl.DrawEllipseLines left + width/2, self.height - bottom - height/2, width/2, height/2, color
 	self._endDraw
 end function
 
@@ -120,7 +119,7 @@ PixelDisplay.fillEllipse = function(left=0, bottom=0, width=100, height=100, col
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawEllipse left + width/2, bottom + height/2, width/2, height/2, color
+	rl.DrawEllipse left + width/2, self.height - bottom - height/2, width/2, height/2, color
 	self._endDraw
 end function
 
@@ -134,8 +133,7 @@ PixelDisplay.getImage = function(left=0, bottom=0, width, height)
 	if left == 0 and bottom == 0 and width == self.width and height == self.height then
 		subImg = fullImg
 	else
-		ry = self.height - bottom - height
-		subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
+		subImg = rl.ImageFromImage(fullImg, [left, bottom, width, height])
 		rl.UnloadImage fullImg
 	end if
 	return Image.FromRaylibImage(subImg)
@@ -149,11 +147,10 @@ PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, sr
 	if srcHeight == null then srcHeight = img.height
 	// Create a temp texture from the image
 	tex = rl.LoadTextureFromImage(img._img)
-	// Source rect in texture coords (y=0 at top), with negative height to
-	// flip vertically — compensating for the render texture's Y-inversion.
+	// Source rect in texture coords (y=0 at top).
 	srcY = img.height - srcBottom - srcHeight
-	src = [srcLeft, srcY, srcWidth, -srcHeight]
-	dest = [left, bottom, width, height]
+	src = [srcLeft, srcY, srcWidth, srcHeight]
+	dest = [left, self.height - bottom - height, width, height]
 	self._beginDraw
 	rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
 	self._endDraw
@@ -161,10 +158,11 @@ PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, sr
 end function
 
 // Draw this PixelDisplay to the screen (call during BeginDrawing/EndDrawing).
-// Uses positive source height (no flip) so that the RenderTexture's natural
-// Y-inversion gives us Mini Micro's bottom-up coordinate system.
+// Uses negative source height to flip the render texture vertically.
+// Drawing functions flip Y coords so content is upside-down in the texture;
+// this flip corrects it, giving us Mini Micro's bottom-up coordinate system.
 PixelDisplay.render = function
-	src = [0, 0, self.width, self.height]
+	src = [0, 0, self.width, -self.height]
 	w = self.width * self.scale
 	h = self.height * self.scale
 	top = rl.GetScreenHeight - h

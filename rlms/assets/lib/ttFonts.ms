@@ -7,6 +7,7 @@ rl = raylib
 TTFont = {}
 TTFont._font = null  // Raylib font
 TTFont._size = 0	 // loaded point size
+TTFont.ascent = 0    // font ascent (best estimate)
 
 TTFont.Load = function(path, size=24)
 	// ToDo: provide a way to load more (non-ASCII) characters, perhaps
@@ -19,6 +20,8 @@ TTFont.Load = function(path, size=24)
 		font._font = null
 		exit
 	end if
+	info = rl.GetGlyphInfo(font._font, "M".code)
+	font.ascent = size - info.offsetY
 	return font
 end function
 
@@ -29,69 +32,41 @@ TTFont.unload = function
 	end if
 end function
 
-TTFont._beginDrawing = function(gfx)
-	// Send drawing to the given PixelDisplay texture, and also swizzle around
-	// the drawing matrix so it comes out right-side-up.  That flips all the triangles
-	// we're about to draw, so we also have to turn backface culling off.
-	rl.BeginTextureMode gfx._renderTex
-	rl.rlPushMatrix
-	rl.rlTranslatef 0, gfx.height, 0
-	rl.rlScalef 1, -1, 1
-	rl.rlDisableBackfaceCulling
-end function
-
-TTFont._endDrawing = function
-	rl.rlDrawRenderBatchActive  // (force immediate draw, while backface culling is off)
-	rl.rlEnableBackfaceCulling
-	rl.rlPopMatrix
-	rl.EndTextureMode
-end function
-
 // Render (draw) the given character to gfx, and return how
-// far to shift the cursor.  This uses the image cache, so
-// it gets faster after the first drawing of each character.
+// far to shift the cursor.
 TTFont.printChar = function(c, x=480, y=320, scale=1, tint="#FFFFFF")
-	self._beginDrawing gfx
-	rl.DrawTextCodepoint self._font, c.code, [x, y], self._size * scale, tint
-	self._endDrawing
+	rl.BeginTextureMode gfx._renderTex
+	rl.DrawTextCodepoint self._font, c.code, [x, gfx.height - y - self.ascent * scale], self._size * scale, tint
+	rl.EndTextureMode
 	info = rl.GetGlyphInfo(self._font, c.code)
 	return info.advanceX
 end function
 
 // Print the given string to gfx at the given location.
 TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
-	self._beginDrawing gfx
-	rl.DrawTextEx self._font, s, [x, gfx.height - y], self._size * scale, 0, tint
-	self._endDrawing
+	rl.BeginTextureMode gfx._renderTex
+	size = self._size * scale
+	rl.DrawTextEx self._font, s, [x, gfx.height - y - self.ascent * scale], size, 0, tint
+	rl.EndTextureMode
 end function
 
-//// Print the given string to gfx, centered horizontally on the given x.
-//Font.printCentered = function(s, x=480, y=320, scale=1, tint="#FFFFFF")
-//	self.print s, x - self.width(s, scale)/2, y, scale, tint
-//end function
-//
-//// Print the given string to gfx, right-aligned on x.
-//Font.printRight = function(s, x=940, y=320, scale=1, tint="#FFFFFF")
-//	self.print s, x - self.width(s, scale), y, scale, tint
-//end function
-//
-//// Return the width of the given string in this font.
-//Font.width = function(s, scale=1)
-//	sum = 0
-//	lastc = ""
-//	for c in s
-//		d = self.charData(c)
-//		if d == null then continue
-//		sum = sum + (d.shift + self.addSpace + self.kern(lastc, c)) * scale
-//		lastc = c
-//	end for
-//	return sum
-//end function
+// Print the given string to gfx, centered horizontally on the given x.
+TTFont.printCentered = function(s, x=480, y=320, scale=1, tint="#FFFFFF")
+	self.print s, x - self.width(s, scale)/2, y, scale, tint
+end function
+
+// Print the given string to gfx, right-aligned on x.
+TTFont.printRight = function(s, x=940, y=320, scale=1, tint="#FFFFFF")
+	self.print s, x - self.width(s, scale), y, scale, tint
+end function
+
+// Return the width of the given string in this font.
+TTFont.width = function(s, scale=1)
+	return rl.MeasureTextEx(self._font, s, self._size * scale, 0).x
+end function
 
 if locals == globals then
 	import "soda"
-	
-	gfx.clear color.green
 	
 	f = TTFont.Load("fonts/NotoSerif-Regular.ttf")
 	print "f._font: " + f._font
@@ -103,6 +78,9 @@ if locals == globals then
 	//end for
 
 	f.print "Hello world!", 400, 200
+	w = f.width("Hello world!")
+	gfx.line 400, 200, 400+w, 200, color.yellow
+	f.print "Width of that was: " + w, 400, 150
 
 	while true
 		yield
