@@ -63,7 +63,7 @@ PixelDisplay.setPixel = function(x, y, color=null)
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawPixel x, y, color
+	rl.DrawPixel x+0.5, y+0.5, color
 	self._endDraw
 end function
 
@@ -83,7 +83,8 @@ PixelDisplay.line = function(x1=0, y1=0, x2=960, y2=640, color, penSize=1)
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawLineEx([x1,y1], [x2,y2], penSize, color)
+	h = 0.5  // offset to properly address pixel coordinates
+	rl.DrawLineEx([x1+h,y1+h], [x2+h,y2+h], penSize, color)
 	self._endDraw
 end function
 
@@ -126,11 +127,17 @@ end function
 
 // Get a rectangular region of the display as an Image.
 // Requires the Image module.
-PixelDisplay.getImage = function(left, bottom, width, height)
+PixelDisplay.getImage = function(left=0, bottom=0, width, height)
 	fullImg = rl.LoadImageFromTexture(self._renderTex.texture)
-	ry = self.height - bottom - height
-	subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
-	rl.UnloadImage fullImg
+	if width == null then width = self.width
+	if height == null then height = self.height
+	if left == 0 and bottom == 0 and width == self.width and height == self.height then
+		subImg = fullImg
+	else
+		ry = self.height - bottom - height
+		subImg = rl.ImageFromImage(fullImg, [left, ry, width, height])
+		rl.UnloadImage fullImg
+	end if
 	return Image.FromRaylibImage(subImg)
 end function
 
@@ -157,10 +164,11 @@ end function
 // Uses positive source height (no flip) so that the RenderTexture's natural
 // Y-inversion gives us Mini Micro's bottom-up coordinate system.
 PixelDisplay.render = function
+	src = [0, 0, self.width, self.height]
 	w = self.width * self.scale
 	h = self.height * self.scale
-	src = [0, 0, self.width, self.height]
-	dest = [-self.scrollX, -self.scrollY, w, h]
+	top = rl.GetScreenHeight - h
+	dest = [-self.scrollX, top + self.scrollY, w, h]
 	rl.DrawTexturePro self._renderTex.texture, src, dest, [0, 0], 0, [255, 255, 255, 255]
 end function
 

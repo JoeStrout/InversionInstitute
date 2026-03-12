@@ -15,6 +15,6 @@ y = 0
 
 update = function
 	outer.x = raylib.GetMouseX
-	outer.y = raylib.GetScreenHeight() - raylib.GetMouseY
+	outer.y = raylib.GetScreenHeight - raylib.GetMouseY
 end function
 

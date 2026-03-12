@@ -144,5 +144,13 @@ file.loadImage = function(path)
 	return Image.FromRaylibImage(rImg)
 end function
 
+file.saveImage = function(path, image, quality=80)
+	if image == null or not image isa Image then
+		return "file.saveImage: invalid image"
+	end if
+	success = rl.ExportImage(image._img, path)
+	if not success then return "file.saveImage: could not save " + path
+	return null
+end function
 
 return Image
