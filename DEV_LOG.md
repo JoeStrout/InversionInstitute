@@ -29,3 +29,19 @@ So what I really need is a TTFont class that mimics the BMFFont API.  Then I sho
 Man, getting fonts to render right side up in my PixelDisplay texture was a real bear.  I did finally manage it, by (1) transforming the view matrix, (2) disabling backface culling, and (3) flushing the render queue immediately, but what a pain.  So I decided to flip the way the PixelDisplay texture is stored.  It was always a compromise: some operations needed to flip Y, and others did not.  But the new arrangement is a better compromise: drawing operations (lines, rectangles, etc.) need to flip Y, but direct-access operations (pixel, getTexture, and especially font drawing) do not.
 
 Lots of good progress today!  The editor is basically complete, and I've also got the drawing and objectives modules working.  The next step is to get those mode buttons (especially EDIT/TEST) to appear.  Then I will be able to hook up the simulation, and see how it performs.
+
+
+## Mar 19 2026
+
+I got those buttons working (it seems like our current Soda support for Sprite does not include non-uniformly scaled sprites, plus I needed to print via the new ttFonts class).  And with very little extra effort, got the pixelLogicSim working too.
+
+So now we have the complete edit-test pipeline going!  Woohoo!
+
+I posted an update (the first in years) to the Steam commuinty and itch.io:
+
+https://store.steampowered.com/news/app/2145480/view/520867483423343055
+
+https://joestrout.itch.io/inversion-institute/devlog/1463585/rumors-of-our-demise-have-been-greatly-exaggerated
+
+I also updated the puzzle guide at https://steamcommunity.com/sharedfiles/filedetails/?id=2880784525 a bit; I'll need to do more at some point.
+

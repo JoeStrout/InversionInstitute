@@ -3,6 +3,7 @@
 // ...and:   https://realhet.wordpress.com/2015/09/02/bitmap-logic-simulator/
 
 import "miscUtil"
+ensureImport "soda"
 ensureImport "mathUtil"
 ensureImport "displays"
 ensureImport "progressDisplay"
@@ -171,7 +172,7 @@ resetAlpha = function
 				displays.simGfx.setPixel x, y, c[:7] + "FF"
 			end if
 		end for
-		print floor(100*y/maxY) + "%"; text.row = text.row+1
+		print floor(100*y/maxY) + "%"
 	end for
 end function
 
@@ -262,6 +263,7 @@ analyze = function
 	outer.crossings = []		// list of [x,y] coordinates
 	outer.totalInk = 0
 	progressDisplay.setup displays.edSprite
+	yield
 		
 	// Find all the gates.
 //	print "Finding gates"
@@ -282,6 +284,7 @@ analyze = function
 			nodes.push node
 		end for
 		progressDisplay.setPercent 75 + 25*y/maxY
+		if y % 4 == 0 then yield
 	end for
 //	print "Found " + nodes.len + " nodes"
 	
@@ -292,7 +295,7 @@ analyze = function
 		for i in range(gates.len - 1)
 			if i % 10 == 0 then
 				print (100 - floor(100*i/gates.len)) + "%"
-				text.row = text.row + 1
+				//text.row = text.row + 1
 			end if
 			g = gates[i]
 			t = g.type
@@ -436,7 +439,6 @@ if locals == globals then
 	analyze
 	print "Ready!"
 	wait
-	text.clear
 	while not key.pressed("escape")
 		update
 	end while

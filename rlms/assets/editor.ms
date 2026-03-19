@@ -13,7 +13,7 @@ ensureImport "rect"
 ensureImport "displays"
 ensureImport "drawing"
 ensureImport "objectives"
-//ensureImport "pixelLogicSim"; sim = pixelLogicSim
+ensureImport "pixelLogicSim"; sim = pixelLogicSim
 //ensureImport "music"
 //ensureImport "gameData"
 
@@ -227,15 +227,15 @@ end function
 
 Button.update = function(pressed=false)
 	if pressed then
-		self.bgSprite.image = Tool.btnDownImg
+		self.bgSprite.image = self.btnDownImg
 		self.bgSprite.tint = "#666666"
 		self.iconSprite.tint = self.iconPressedTint
 	else if self.isDown then
-		self.bgSprite.image = Tool.btnDownImg
+		self.bgSprite.image = self.btnDownImg
 		self.bgSprite.tint = color.white
 		self.iconSprite.tint = self.iconDownTint
 	else
-		self.bgSprite.image = Tool.btnUpImg
+		self.bgSprite.image = self.btnUpImg
 		self.bgSprite.tint = color.white
 		self.iconSprite.tint = self.iconUpTint
 	end if
@@ -400,7 +400,7 @@ end  function
 
 drawHelp = function(helpStr)
 	helpArea.fill gfx, bgColor
-//	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY, 1, color.silver
+	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY, 1, color.silver
 end function
 
 makeTools = function
@@ -875,17 +875,23 @@ ModeButton = new Button
 ModeButton.iconUpTint = color.black
 ModeButton.iconPressedTint = color.gray
 ModeButton.iconDownTint = color.white
+ModeButton.btnDownImg = file.loadImage(resourceDir + "toolButtonWideDown.png")
+ModeButton.btnUpImg = file.loadImage(resourceDir + "toolButtonWideUp.png")
+
 ModeButton.init = function(label, left, bottom)
 	self.bgSprite = new Sprite
-	self.bgSprite.image = Tool.btnUpImg
-	self.bgSprite.scale = [2, 0.5]
-	self.bgSprite.x = left + Tool.btnUpImg.width*2/2
-	self.bgSprite.y = bottom + Tool.btnUpImg.height*0.5/2
+	self.bgSprite.image = ModeButton.btnUpImg
+	self.bgSprite.x = left + ModeButton.btnUpImg.width/2
+	self.bgSprite.y = bottom + ModeButton.btnUpImg.height/2
 	alwaysSprites.push self.bgSprite
 	
-	scratch.clear color.clear
-//	scratch.print label, 0, 0, color.white, "small"
-	labelImg = scratch.getImage(0, 0, 8*label.len, 14)
+	w = smallPrinter.boldFont.width(label)
+	scratch.clear color.clear, w, 14
+	oldGfx = gfx; globals.gfx = scratch
+	smallPrinter.boldFont.print label, 0, 0
+	globals.gfx = oldGfx
+	labelImg = scratch.getImage
+
 	self.iconSprite = new Sprite
 	self.iconSprite.image = labelImg
 	self.iconSprite.x = self.bgSprite.x
@@ -894,7 +900,7 @@ ModeButton.init = function(label, left, bottom)
 	alwaysSprites.push self.iconSprite
 	
 	self.bgSprite.addBounds
-	
+
 	Button.instances.push self
 end function
 
@@ -916,7 +922,7 @@ exitButton.handleClick = function
 	if globals.hasIndex("returnFunc") then
 		returnFunc
 	else
-		text.row = 0; print; exit
+		exit
 	end if
 end function
 
@@ -961,7 +967,6 @@ setTestMode = function(enterTestMode = true)
 		spriteDisp.sprites = alwaysSprites + testSprites
 		sim.setup true
 		sim.analyze
-		text.clear
 		drawSimStats
 		if context.hasIndex("check") then checkButton.unhide else checkButton.hide
 		drawHelp "Click any ink to toggle it on or off."
