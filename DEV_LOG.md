@@ -45,3 +45,9 @@ https://joestrout.itch.io/inversion-institute/devlog/1463585/rumors-of-our-demis
 
 I also updated the puzzle guide at https://steamcommunity.com/sharedfiles/filedetails/?id=2880784525 a bit; I'll need to do more at some point.
 
+
+## Mar 20 2026
+
+Going to get our animated characters up and idling today.  ...There were two tricky bits here.  First, there was code in animatedCharacter.ms that was relying on the order of keys in a map, which worked in MS1 C#, but not in MS1 C++.  Would have worked fine with MS2, but it was easy enough to change the code so that order does not matter.
+
+Second, our Sprites were rotating the wrong way due to the inverted Y axis in raylib.  That's fixed now too.  Both Alicia and Baab are on the job!

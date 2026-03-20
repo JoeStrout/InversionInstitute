@@ -128,7 +128,7 @@ Sprite.draw = function(offsetX=0, offsetY=0)
 	destRect = [self.x + offsetX, h - self.y - offsetY, destWidth, destHeight]
 	origin = [destWidth * 0.5, destHeight * 0.5]
 	raylib.DrawTexturePro self.image.texture, srcRect, destRect,
-		origin, self.rotation, self.tint
+		origin, -self.rotation, self.tint
 end function
 
 Sprite.worldBounds = function

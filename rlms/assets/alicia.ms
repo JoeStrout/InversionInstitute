@@ -3,10 +3,11 @@
 // at the Inversion Institute, and the player's main interface.
 
 import "miscUtil"
+ensureImport "soda"
 ensureImport "displays"
 ensureImport "animatedCharacter"
 
-globals.Alicia = animatedCharacter.load("/usr/pics/Girl5")
+globals.Alicia = animatedCharacter.load("pics/Girl5")
 Alicia.setScale 0.3, false
 Alicia.setXY 200,100
 
@@ -94,8 +95,7 @@ end function
 
 if locals == globals then
 	displays.setupVN
-	displays.vnBackground.drawImage file.loadImage("/usr/pics/Backgrounds/castle day.png")
-	print "Here goes..."
+	displays.vnBackground.drawImage file.loadImage("pics/Backgrounds/castle day.png")
 	Alicia.addSpritesToList displays.vnCharacters.sprites
 	//Alicia.setExpression eyebrows.sad, eyes.normal, mouth.dismay
 	while not key.pressed("escape")

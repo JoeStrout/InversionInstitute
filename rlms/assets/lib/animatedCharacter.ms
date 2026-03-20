@@ -58,7 +58,7 @@ end function
 
 CharPart.addSpritesToList = function(spriteList)
 	sprites = self.allSprites
-	sprites.sort "z", false	
+	sprites.sort "z", false
 	for s in sprites; spriteList.push s; end for
 end function
 
@@ -72,6 +72,7 @@ end function
 makeObjFromMap = function(m, z=0)
 	noob = new CharPart
 	noob.init
+	// Loop once for specific value keeps we need
 	for kv in m
 		if kv.key == "x" then noob.local.x = val(kv.value) * 100
 		if kv.key == "y" then noob.local.y = val(kv.value) * 100
@@ -85,6 +86,9 @@ makeObjFromMap = function(m, z=0)
 			noob.sprite.z = z
 			noob.sprite.name = kv.value
 		end if
+	end for
+	// Then, loop again, finding child nodes
+	for kv in m
 		if kv.value isa map then
 			child = makeObjFromMap(kv.value, z)
 			child.name = kv.key

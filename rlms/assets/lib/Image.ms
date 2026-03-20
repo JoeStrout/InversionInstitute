@@ -141,7 +141,9 @@ file.loadImage = function(path)
 		print "file.loadImage: could not load " + path
 		return null
 	end if
-	return Image.FromRaylibImage(rImg)
+	result = Image.FromRaylibImage(rImg)
+	result.path = path
+	return result
 end function
 
 file.saveImage = function(path, image, quality=80)

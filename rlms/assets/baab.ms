@@ -1,22 +1,23 @@
-// This file defines the Alicia character.
-// She's the main mathematician (and becomes the first computer scientist)
-// at the Inversion Institute, and the player's main interface.
+// This file defines the Baab character.
+// He's a tinkerer who's good at interfacing magic ink with the real world.
 
 import "miscUtil"
+ensureImport "soda"
 ensureImport "displays"
 ensureImport "animatedCharacter"
 
-globals.Alicia = animatedCharacter.load("/usr/pics/Girl5")
-Alicia.setScale 0.3, false
-Alicia.setXY 200,100
+globals.Baab = animatedCharacter.load("pics/Man2")
+Baab.setScale 0.32, false
+Baab.setXY 700,0
+Baab.setAnimLength 4
 
 bodyParts = animatedCharacter.spriteSheets[0]
 faceParts = animatedCharacter.spriteSheets[1]
 animatedCharacter.spriteSheets = []
 
-eyesSprite = Alicia.find("eyesImg").sprite
-eyebrowSprite = Alicia.find("eyebrowImg").sprite
-mouthSprite = Alicia.find("mouthImg").sprite
+eyesSprite = Baab.find("eyesImg").sprite
+eyebrowSprite = Baab.find("eyebrowImg").sprite
+mouthSprite = Baab.find("mouthImg").sprite
 
 eyes = {}
 eyes.normal = faceParts.Eyes1.image
@@ -32,20 +33,18 @@ eyebrows.mad = faceParts.Eyebrow3.image
 mouth = {}
 mouth.smile = faceParts.Mouth1.image
 mouth.normal = faceParts.Mouth2.image
-mouth.small = faceParts.Mouth3.image
-mouth.flat = faceParts.Mouth4.image
-mouth.frown = faceParts.Mouth5.image
-mouth.smallFrown = faceParts.Mouth6.image
-mouth.openSmile = faceParts.Mouth7.image
-mouth.joy = faceParts.Mouth8.image	// (BIG open smile)
-mouth.oh = faceParts.Mouth9.image	// (small round)
-mouth.openFrown = faceParts.Mouth10.image
-mouth.dismay = faceParts.Mouth11.image
-mouth.bigOh = faceParts.Mouth12.image	// (like WTF?)
+mouth.huh = faceParts.Mouth3.image
+mouth.frown = faceParts.Mouth4.image
+mouth.frown2 = faceParts.Mouth5.image
+mouth.openSmile = faceParts.Mouth6.image
+mouth.joy = faceParts.Mouth7.image	// (BIG open smile)
+mouth.oh = faceParts.Mouth8.image	// (small round)
+mouth.bigOh = faceParts.Mouth9.image	// (like WTF?)
+mouth.smallOpen = faceParts.Mouth10.image
 
-Alicia.nonblinkingEyes = eyes.normal
+Baab.nonblinkingEyes = eyes.normal
 
-Alicia.setExpression = function(eyebrows, eyes, mouth)
+Baab.setExpression = function(eyebrows, eyes, mouth)
 	eyebrowSprite.image = eyebrows
 	eyesSprite.image = eyes
 	mouthSprite.image = mouth
@@ -58,7 +57,7 @@ LeftArm = {}
 LeftArm.normal = 0
 LeftArm.showing = 1		// turned outward, as if showing something
 
-Alicia.setLeftArm = function(armMode)
+Baab.setLeftArm = function(armMode)
 	arm = self.find("leftArm")
 	armImg = arm.find("leftArmImg")
 	if armMode == LeftArm.showing then
@@ -74,7 +73,7 @@ end function
 
 blinkIdx = 0
 
-Alicia.animate = function
+Baab.animate = function
 	super.animate
 	outer.blinkIdx = blinkIdx - 1
 	if blinkIdx < 0 then
@@ -94,12 +93,11 @@ end function
 
 if locals == globals then
 	displays.setupVN
-	displays.vnBackground.drawImage file.loadImage("/usr/pics/Backgrounds/castle day.png")
-	print "Here goes..."
-	Alicia.addSpritesToList displays.vnCharacters.sprites
-	//Alicia.setExpression eyebrows.sad, eyes.normal, mouth.dismay
+	displays.vnBackground.drawImage file.loadImage("pics/Backgrounds/castle day.png")
+	Baab.addSpritesToList displays.vnCharacters.sprites
+	//Baab.setExpression eyebrows.sad, eyes.normal, mouth.dismay
 	while not key.pressed("escape")
-		Alicia.animate
+		Baab.animate
 		yield
 	end while
 	key.clear
