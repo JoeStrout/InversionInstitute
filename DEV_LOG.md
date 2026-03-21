@@ -51,3 +51,15 @@ I also updated the puzzle guide at https://steamcommunity.com/sharedfiles/filede
 Going to get our animated characters up and idling today.  ...There were two tricky bits here.  First, there was code in animatedCharacter.ms that was relying on the order of keys in a map, which worked in MS1 C#, but not in MS1 C++.  Would have worked fine with MS2, but it was easy enough to change the code so that order does not matter.
 
 Second, our Sprites were rotating the wrong way due to the inverted Y axis in raylib.  That's fixed now too.  Both Alicia and Baab are on the job!
+
+
+## Mar 21 2026
+
+I've just about got all the pieces in place to start connecting it all together.  However, the Mini Micro version used a lot of `cd` and `load`/`run` to get from section to section of the game.  Raylib-miniscript doesn't support this yet.
+
+And actually, currently import can't quite substitute in this case either, because we only search assets and assets/lib for files to import.  There is no equivalent of `env.importPaths` or `env.MS_IMPORT_PATH` in Raylib-MiniScript yet.
+
+One possible way out: have rlms search the current script directory, the script directory's `lib` folder, and finally assets/lib (these three are analogous to what command-line MiniScript does by default -- maybe even call them the same thing?).  Then add a `run` command which takes a file path, and updates MS_SCRIPT_DIR, so that subsequent imports automatically go relative to that.  And of course `run` would also load and run the current program.
+
+
+
