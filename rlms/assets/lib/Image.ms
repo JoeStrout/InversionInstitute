@@ -100,7 +100,9 @@ Image.setPixel = function(x, y, color)
 end function
 
 // Extract a rectangular sub-region as a new Image.
-Image.getImage = function(left, bottom, width, height)
+Image.getImage = function(left=0, bottom=0, width, height)
+	if width == null then width = self.width - left
+	if height == null then height = self.height - bottom
 	ry = self.height - bottom - height
 	subImg = rl.ImageFromImage(self._img, [left, ry, width, height])
 	return Image.FromRaylibImage(subImg)

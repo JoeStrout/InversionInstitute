@@ -167,6 +167,7 @@ PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, sr
 	if height == null then height = img.height
 	if srcWidth == null then srcWidth = img.width
 	if srcHeight == null then srcHeight = img.height
+	if width <= 0 or height <= 0 or srcWidth <= 0 or srcHeight <= 0 then return
 	// Create a temp texture from the image
 	tex = rl.LoadTextureFromImage(img._img)
 	// Source rect in texture coords (y=0 at top).

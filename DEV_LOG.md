@@ -61,5 +61,11 @@ And actually, currently import can't quite substitute in this case either, becau
 
 One possible way out: have rlms search the current script directory, the script directory's `lib` folder, and finally assets/lib (these three are analogous to what command-line MiniScript does by default -- maybe even call them the same thing?).  Then add a `run` command which takes a file path, and updates MS_SCRIPT_DIR, so that subsequent imports automatically go relative to that.  And of course `run` would also load and run the current program.
 
+Implemented that, and it seems to be working.
+
+Fixed a bug in Image.getImage (it was not properly applying defaults), which was causing margin protection to not work.  So, margin protection is working now!
+
+You can run toc.ms, which takes you straight to chapter 4; run through the intro scene, and then get all the way to the editor, which functions properly.  Real progress.  Another day or so of this, and we could have the full game loop functional.  Then it's only things like the title and options screen remaining.  (And background music/sfx -- still need to make a Soda class for Sound.)
+
 
 
