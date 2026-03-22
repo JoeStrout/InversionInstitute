@@ -97,11 +97,8 @@ end function
 
 switchToEditor = function
 	music.playEditor
-	text.color = color.clear
-	cd "/usr/game"
-	load "editor"
-	text.color = color.silver
-	run
+	assetsDir = file.child(env.MS_EXE_DIR, "assets")
+	run file.child(assetsDir, "editor.ms")
 end function
 
 playSunRiseOrSet = function(startAlpha, endAlpha)

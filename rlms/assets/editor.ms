@@ -73,6 +73,8 @@ if not globals.hasIndex("context") then
 	context.update = null		// (called every time through main loop)
 end if
 context.objectivesDrawn = false
+print "context: " + context
+print "map.indexes: " + map.indexes
 context.isFreePlay = not context.get("number")
 if not context.hasIndex("margin") then context.margin = Rect.Make(0, 0, picW, picH)
 if not globals.hasIndex("clip") then clip = null

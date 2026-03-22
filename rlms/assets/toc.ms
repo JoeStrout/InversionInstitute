@@ -3,15 +3,30 @@
 // ...in other words, this module knows about all the chapters in the game,
 // and has some utility functions for switching between them.
 
+import "miscUtil"
+ensureImport "soda"
+ensureImport "gameData"
+ensureImport "json"
+
 chapters = []		// ordered list of chapters
 chapterByNum = {}	// map from chapter number to chapter
 
+chaptersFolder = function
+	path = file.child(env.MS_EXE_DIR, "assets")
+	path = file.child(path, "chapters")
+	outer.chaptersFolder = path	// memoize!
+	return path
+end function
+
 // load chapter metadata
 reload = function
+	env.MS_IMPORT_PATH = "$MS_SCRIPT_DIR:$MS_SCRIPT_DIR/lib:$MS_EXE_DIR/assets/lib:$MS_EXE_DIR/assets"
 	outer.chapters = []
 	outer.chapterByNum = {}
-	for folder in file.children("/usr/chapters")
-		f = file.open("/usr/chapters/" + folder + "/context.ms", "r")
+	for folderName in file.children(chaptersFolder)
+		folderPath = file.child(chaptersFolder, folderName)
+		contextPath = file.child(folderPath, "context.ms")
+		f = file.open(contextPath, "r")
 		if f == null or f isa string then continue
 		data = {"number":null, "folderName":null, "title":null}
 		while not f.atEnd
@@ -24,6 +39,7 @@ reload = function
 				data.done = gameData.get("ch" + data.number + ".done")
 				chapters.push data
 				chapterByNum[data.number] = data
+				//print data
 				break
 			end if
 		end while
@@ -44,17 +60,22 @@ reload
 startChapter = function(chapterNum)
 	if chapterNum == null then chapterNum = gameData.data.curChapter
 	ch = chapterByNum[chapterNum]
-	cd "/usr/chapters/" + ch.folderName
-	//text.color = color.clear
-	load "introScene"
-	//text.color = color.gray  // at least during debugging
-	run
+	path = file.child(env.MS_EXE_DIR, "assets")
+	path = file.child(path, "chapters")
+	path = file.child(path, ch.folderName)
+	print "toc.startChapter: path = " + path
+	run file.child(path, "introScene.ms")
 end function
 
 returnToTitle = function
 	text.color = color.clear
 	cd "/usr/game"
 	load "title"
-	//text.color = color.gray  // at least during debugging
+	text.color = color.gray  // at least during debugging
 	run
 end function
+
+if locals == globals then
+	print json.indexes
+	startChapter 4
+end if

@@ -2,6 +2,9 @@
 // binary (0/1) numeric display.
 
 import "miscUtil"
+print "MS_IMPORT_PATH: " + env.MS_IMPORT_PATH
+print "MS_SCRIPT_DIR: " + env.MS_SCRIPT_DIR
+print "MS_EXE_DIR: " + env.MS_EXE_DIR
 ensureImport "scene"
 ensureImport "objectives"
 import "findErrors"

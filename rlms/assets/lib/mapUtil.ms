@@ -1,6 +1,8 @@
 // Map Utilities.
 //	This module adds some additional methods to the `map` type.
 
+print "RUNNING MAPUTIL!"
+
 // get: look up the value for an index in this map, but if the given
 // index is not found, return a default value instead.  Works with
 // inherited values, too.
