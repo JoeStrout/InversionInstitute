@@ -10,7 +10,7 @@ raylib.SetTraceLogLevel raylib.LOG_WARNING
 import "importUtil"
 
 ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
-  "SpriteDisplay", "mouse", "key"]
+  "SpriteDisplay", "mouse", "key", "color"]
 
 Display.Initialize
 

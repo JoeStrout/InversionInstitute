@@ -9,9 +9,9 @@ import "context"
 ch = "ch" + context.number
 if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch] = {}
 
-display(0).mode = displayMode.off
+display(0).setMode displayMode.off
 
-scene.prepare context.number, "chapters/" + context.folderName
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 Leo.present = true
 Alicia.present = false
 Baab.present = false

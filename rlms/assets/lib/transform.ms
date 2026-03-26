@@ -154,7 +154,7 @@ Transform.pprint = function(indent=0)
 end function
 
 Transform.debugDisplay = function
-	display(6).mode = displayMode.sprite
+	display(6).setMode displayMode.sprite
 	if self.hasIndex("sprite") then
 		if display(6).sprites.indexOf(self.sprite) == null then display(6).sprites.push self.sprite
 		self.applyToSprite
@@ -167,7 +167,7 @@ end function
 
 if locals == globals then
 	clear; gfx.clear color.clear
-	display(6).mode = displayMode.sprite; display(6).clear
+	display(6).setMode displayMode.sprite; display(6).clear
 
 	base = Transform.make(480, 320, 0, 2, "base")
 	base.sprite = new Sprite

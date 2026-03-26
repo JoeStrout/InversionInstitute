@@ -10,7 +10,7 @@ if not gameData.data.hasIndex("ch3") or not gameData.data.ch3 then gameData.data
 
 if not globals.hasIndex("sim") then
 	displays.setupEditorSim
-	display(0).mode = displayMode.solidColor; display(0).color = color.black
+	display(0).setMode displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
 	circuitPic = gameData.loadCircuitForChapter(context.number)
 	if circuitPic == null then
@@ -26,7 +26,7 @@ end if
 
 errors = findErrors.check
 
-display(0).mode = displayMode.off
+display(0).setMode displayMode.off
 
 scene.prepare 3, "chapters/3.or"
 if not errors then

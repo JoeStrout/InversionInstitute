@@ -111,7 +111,7 @@ load = function(dirPath)
 end function
 
 test = function
-	display(6).mode = displayMode.sprite; display(6).clear
+	display(6).setMode displayMode.sprite; display(6).clear
 	character = load("/usr/pics/Girl5")
 	character.setScale 0.3, false
 	character.setXY 200,120

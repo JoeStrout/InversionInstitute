@@ -12,7 +12,7 @@ if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
 
 demoTablet = file.loadImage("pics/ui/DemoTablet.png")
 lineToHeartPix = new drawing.PixelDrawing
-display(6).mode = displayMode.pixel
+display(6).setMode displayMode.pixel
 display(6).clear color.clear
 lineToHeartPix.load "lineToHeart.txt", display(6), 340, 100, 8
 lineToHeartPix.draw = function

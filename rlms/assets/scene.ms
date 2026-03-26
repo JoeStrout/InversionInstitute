@@ -1,6 +1,7 @@
 // General code and utilities related to cut scenes.
 
 import "miscUtil"
+ensureImport "soda"
 ensureImport "displays"
 ensureImport "alicia"
 ensureImport "baab"
@@ -14,6 +15,7 @@ characters = [Alicia, Baab, Leo]
 for c in characters; c.present = false; end for
 
 prepare = function(chapterNum, chapterPath)
+	print "Preparing chapter " + chapterNum + ", path: " + chapterPath
 	displays.setupVN
 	Baab.present = false
 	Leo.present = false
@@ -21,15 +23,13 @@ prepare = function(chapterNum, chapterPath)
 	globals.playSteps = []
 	globals.returnFunc = function
 		gameData.saveCircuitForChapter(chapterNum, circuitPic)
-		cd chapterPath
-		text.color = color.clear; load "returnScene"
-		text.color = color.gray; run
+		run file.child(chapterPath, "returnScene.ms")
 	end function
 	music.playNovel
 end function
 
 playOneStep = function(curStep)
-	f = playSteps[curStep]
+	f = @playSteps[curStep]
 	f
 	for character in characters
 		if character.present and not character.onStage then
@@ -102,7 +102,8 @@ switchToEditor = function
 end function
 
 playSunRiseOrSet = function(startAlpha, endAlpha)
-	display(1).mode = displayMode.sprite
+	print "Fading sunrise/set from " + startAlpha + " to " + endAlpha
+	display(1).setMode displayMode.sprite
 	sprDisp = display(1)
 	sprDisp.clear
 	
@@ -134,4 +135,9 @@ end function
 playSunrise = function
 	playSunRiseOrSet 0, 255
 end function	
+
+if locals == globals then
+	playSunset
+	playSunrise
+end if
 

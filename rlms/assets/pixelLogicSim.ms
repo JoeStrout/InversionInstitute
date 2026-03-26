@@ -70,7 +70,7 @@ Node.add = function(x, y, fullColor)
 	coordToNode[y * mapW + x] = self
 end function
 Node.prepImage = function
-	display(7).mode = displayMode.pixel
+	display(7).setMode displayMode.pixel
 	g = display(7)
 	g.clear color.clear, mapW, mapH
 	if self.indices == null then self.indices = self.coords.indexes
@@ -94,7 +94,7 @@ Node.prepImage = function
 	self.sprite.x = self.sprite.origX * displays.simGfx.scale - displays.simGfx.scrollX
 	self.sprite.y = self.sprite.origY * displays.simGfx.scale - displays.simGfx.scrollY
 	display(4).sprites.push self.sprite
-	display(7).mode = displayMode.off
+	display(7).setMode displayMode.off
 end function
 Node.draw = function
 	if not self.sprite then self.prepImage

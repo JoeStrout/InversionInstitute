@@ -76,6 +76,6 @@ returnToTitle = function
 end function
 
 if locals == globals then
-	print json.indexes
-	startChapter 4
+	toc = new globals
+	startChapter 5
 end if

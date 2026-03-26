@@ -9,7 +9,7 @@ if not gameData.data.hasIndex("ch1") or not gameData.data.ch1 then gameData.data
 
 if not globals.hasIndex("sim") then
 	displays.setupEditorSim
-	display(0).mode = displayMode.solidColor; display(0).color = color.black
+	display(0).setMode displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
 	circuitPic = gameData.loadCircuitForChapter(1)
 	if circuitPic == null then
@@ -25,7 +25,7 @@ end if
 
 demoTablet = file.loadImage("pics/ui/DemoTablet.png")
 
-display(0).mode = displayMode.off
+display(0).setMode displayMode.off
 
 CrossingDwg = {}
 CrossingDwg.images = []

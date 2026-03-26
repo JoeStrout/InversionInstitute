@@ -63,3 +63,12 @@ fromList = function(rgbaList)
 	end if
 	return s
 end function
+
+rgba = function(r, g, b, a=255)
+	return "#" + 
+	  _hexDigits[floor(r /16)] + _hexDigits[r % 16] +
+	  _hexDigits[floor(g /16)] + _hexDigits[g % 16] +
+	  _hexDigits[floor(b /16)] + _hexDigits[b % 16] +
+	  _hexDigits[floor(a /16)] + _hexDigits[a % 16]
+end function
+	  

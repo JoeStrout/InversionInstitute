@@ -68,4 +68,17 @@ Fixed a bug in Image.getImage (it was not properly applying defaults), which was
 You can run toc.ms, which takes you straight to chapter 4; run through the intro scene, and then get all the way to the editor, which functions properly.  Real progress.  Another day or so of this, and we could have the full game loop functional.  Then it's only things like the title and options screen remaining.  (And background music/sfx -- still need to make a Soda class for Sound.)
 
 
+## Mar 26 2026
+
+Making rapid progress now:
+
+- Added the FileHandle class to raylib-miniscript, which was missing (it's also massing from command-line MiniScript, filed as #198; we'll fix that in MiniScript 2.0).
+- Changed all the `d.mode = foo` display mode changes to `d.setMode foo`.  Unfortunately I can't think of a good way to make the old code compatible here, as we don't have any way to intercept an assignment within MiniScript itself.
+- Fixed the way the chapter folder is found in the various introScene and returnScene chapter files.
+
+So now, starting with chapter 4 or 5 via toc.ms, you can play the puzzles and advance from chapter to chapter.  Even the sun set/rise (e.g. between chapters 4 and 5) works as intended and looks beautiful.
+
+I did notice one bug: on one of the puzzles (I think it was 6 or so), I went in with it already solved, and immediately exited — which should have worked; but I didn't see it run the check, and Alice said that I hadn't solved it, and sent me back to the editor.  There I just clicked Check and Test, and then exited, and Alice agreed it was solved.  But that shouldn't be necessary; it's supposed to check automatically.
+
+And I had an idea about the progress display shown while analyzing the grid: instead of the current vertical progress bar (meant to look like a jar filling up with mana or something), it should just be an hour glass, draining sand.  That will be much more obvious as to what it is and what it means.  I just need to find or make some good artwork for it.
 

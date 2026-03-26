@@ -149,6 +149,7 @@ Sprite.contains = function(x, y)
 end function
 
 SpriteDisplay = new Display
+SpriteDisplay.mode = 5
 SpriteDisplay.scrollX = 0
 SpriteDisplay.scrollY = 0
 SpriteDisplay.sprites = null

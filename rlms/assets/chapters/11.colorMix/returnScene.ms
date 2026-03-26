@@ -11,7 +11,7 @@ if not gameData.data.hasIndex(ch) or not gameData.data[ch] then gameData.data[ch
 
 if not globals.hasIndex("sim") then
 	displays.setupEditorSim
-	display(0).mode = displayMode.solidColor; display(0).color = color.black
+	display(0).setMode displayMode.solidColor; display(0).color = color.black
 	import "pixelLogicSim"; sim = pixelLogicSim
 	circuitPic = gameData.loadCircuitForChapter(context.number)
 	if circuitPic == null then
@@ -27,9 +27,9 @@ end if
 
 errors = findErrors.check
 
-display(0).mode = displayMode.off
+display(0).setMode displayMode.off
 
-scene.prepare context.number, "chapters/" + context.folderName
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 Baab.present = true
 Alicia.present = true
 
