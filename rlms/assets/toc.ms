@@ -11,9 +11,12 @@ ensureImport "json"
 chapters = []		// ordered list of chapters
 chapterByNum = {}	// map from chapter number to chapter
 
+assetsFolder = function
+	return file.child(env.MS_EXE_DIR, "assets")
+end function
+
 chaptersFolder = function
-	path = file.child(env.MS_EXE_DIR, "assets")
-	path = file.child(path, "chapters")
+	path = file.child(assetsFolder, "chapters")
 	outer.chaptersFolder = path	// memoize!
 	return path
 end function
@@ -64,18 +67,16 @@ startChapter = function(chapterNum)
 	path = file.child(path, "chapters")
 	path = file.child(path, ch.folderName)
 	print "toc.startChapter: path = " + path
+	globals.chapterPath = path
 	run file.child(path, "introScene.ms")
 end function
 
 returnToTitle = function
-	text.color = color.clear
-	cd "/usr/game"
-	load "title"
-	text.color = color.gray  // at least during debugging
-	run
+	globals.chapterPath = ""
+	run file.child(assetsFolder, "title")
 end function
 
 if locals == globals then
 	toc = new globals
-	startChapter 5
+	startChapter 1
 end if

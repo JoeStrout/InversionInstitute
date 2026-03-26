@@ -7,14 +7,14 @@ ensureImport "scene"
 ensureImport "objectives"
 import "context"
 
-scene.prepare 1, "chapters/1.intro"
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 if not gameData.data.hasIndex("ch1") then gameData.data.ch1 = {}
 
 demoTablet = file.loadImage("pics/ui/DemoTablet.png")
 lineToHeartPix = new drawing.PixelDrawing
 display(6).setMode displayMode.pixel
 display(6).clear color.clear
-lineToHeartPix.load "lineToHeart.txt", display(6), 340, 100, 8
+lineToHeartPix.load file.child(chapterPath, "lineToHeart.txt"), display(6), 340, 100, 8
 lineToHeartPix.draw = function
 	step = self.curStep % 200
 	if step == 0 then

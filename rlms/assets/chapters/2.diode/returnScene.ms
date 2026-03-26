@@ -28,7 +28,7 @@ errors = findErrors.check
 
 display(0).setMode displayMode.off
 
-scene.prepare 2, "chapters/2.diode"
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 if not errors then
 	gameData.data.ch2.done = true
 	gameData.writeToDisk

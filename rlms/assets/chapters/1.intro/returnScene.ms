@@ -67,7 +67,7 @@ GateDwg.update = function
 end function
 
 
-scene.prepare 1, "chapters/1.intro"
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 
 objectivesDrawn = false
 wasInTestMode = false

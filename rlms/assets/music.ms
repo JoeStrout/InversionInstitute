@@ -1,6 +1,7 @@
 // This module manages background music.
 
 import "miscUtil"
+ensureImport "soda"
 ensureImport "qa"
 ensureImport "mathUtil"
 ensureImport "gameData"
@@ -67,7 +68,6 @@ fadeOut = function
 end function
 
 playSong = function(soundOrName)
-	print "music.playSong not yet implemented"; return
 	if soundOrName isa string then
 		if not sounds[soundOrName] then
 			sounds[soundOrName] = file.loadSound(paths[soundOrName])
@@ -127,7 +127,7 @@ if locals == globals then
 			if k == "3" then playEditor
 			if k == "q" then
 				stop
-				break
+				exit
 			end if
 		end if
 	end while

@@ -16,7 +16,7 @@ Alicia.present = true
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "You did so well with that task for Mr. Guttersnape, " +
+	drawing.drawSpeech "You did so well with that task for Mr. Guttersnipe, " +
 	"we have another task for you today.",
 		drawing.Speaker.Left, "Alicia"
 end function

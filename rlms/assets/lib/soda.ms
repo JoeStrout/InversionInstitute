@@ -10,15 +10,16 @@ raylib.SetTraceLogLevel raylib.LOG_WARNING
 import "importUtil"
 
 ensureImport ["Display", "Image", "SolidColorDisplay", "PixelDisplay",
-  "SpriteDisplay", "mouse", "key", "color"]
+  "SpriteDisplay", "mouse", "key", "color", "Sound"]
 
 Display.Initialize
 
 update = function(beginEndRaylibDrawing = true)
 	if beginEndRaylibDrawing then raylib.BeginDrawing
 	Display.RenderAll
-	mouse.update
 	if beginEndRaylibDrawing then raylib.EndDrawing
+	mouse.update
+	Sound.UpdateAll
 end function
 
 // Override (actually, shadow) the `yield` intrinsic to do our standard

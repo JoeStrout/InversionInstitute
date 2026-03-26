@@ -82,3 +82,6 @@ I did notice one bug: on one of the puzzles (I think it was 6 or so), I went in 
 
 And I had an idea about the progress display shown while analyzing the grid: instead of the current vertical progress bar (meant to look like a jar filling up with mana or something), it should just be an hour glass, draining sand.  That will be much more obvious as to what it is and what it means.  I just need to find or make some good artwork for it.
 
+Next steps: main menu and sound.  Oh, and I will also need to find all the chapter files that try to load some special image, and make those work (just fixing the paths).
+
+Main menu (title.ms) is now working; so is Sound (new soda class, wraps both sound and music from Raylib's point of view).

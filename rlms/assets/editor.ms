@@ -1046,7 +1046,7 @@ mouseWasDown = mouse.button
 setMode kModeDraw
 while true
 	yield
-//	music.update
+	music.update
 	
 	pp = paintPixelAtXY(mouse)
 	gfx.fillRect 860, 0, 100, 20, bgColor

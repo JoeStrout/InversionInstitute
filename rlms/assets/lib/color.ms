@@ -71,4 +71,7 @@ rgba = function(r, g, b, a=255)
 	  _hexDigits[floor(b /16)] + _hexDigits[b % 16] +
 	  _hexDigits[floor(a /16)] + _hexDigits[a % 16]
 end function
-	  
+
+lerp = function(c1, c2, t)
+	return fromList(raylib.ColorLerp(c1, c2, t))
+end function

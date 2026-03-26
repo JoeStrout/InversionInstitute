@@ -7,7 +7,7 @@ ensureImport "objectives"
 import "findErrors"
 import "context"
 
-scene.prepare 2, "chapters/2.diode"
+scene.prepare context.number, file.child(toc.chaptersFolder, context.folderName)
 if not gameData.data.hasIndex("ch2") or not gameData.data.ch2 then gameData.data.ch2 = {}
 
 Alicia.present = true

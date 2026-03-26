@@ -113,6 +113,7 @@ PixelDrawing.load = function(path, gfx, left, bottom, scale=5)
 	self.bottom = bottom
 	self.scale = scale
 	lines = file.readLines(path)
+	if lines == null then print "could not read " + path else print "read " + lines.len + " lines from " + path
 	qa.assert(lines)
 	self.steps = []
 	for line in lines
