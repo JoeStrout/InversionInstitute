@@ -2,7 +2,7 @@
 // (but heavily modified).
 
 import "miscUtil"
-import "soda"
+ensureImport "soda"
 
 ensureImport "listUtil"
 //ensureImport "textUtil"
@@ -14,8 +14,8 @@ ensureImport "displays"
 ensureImport "drawing"
 ensureImport "objectives"
 ensureImport "pixelLogicSim"; sim = pixelLogicSim
-//ensureImport "music"
-//ensureImport "gameData"
+ensureImport "music"
+ensureImport "gameData"
 
 modeHelp = {}
 
@@ -343,8 +343,8 @@ prepareScreen = function
 	area = paintArea.offset(gfx.scrollX, gfx.scrollY)
 	area.fill gfx, color.clear
 	area.grow(1,1).frame gfx, color.black, 4, -4
-	backdrop.clear color.black
-	drawGrid
+	backdrop.color = color.red // HACK; color.black
+//	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
 	font = bigPrinter.boldFont
 	if not context.isFreePlay then
@@ -728,7 +728,7 @@ toolFuncs[kModeDrawRect] = function(pp, justDown)
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
-	Rect.fromPoints(startPos, curPos).frame fatbits, foreColor, 1
+	Rect.MakeFromPoints(startPos, curPos).frame fatbits, foreColor, 1
 	restoreMargins
 end function
 
@@ -742,7 +742,7 @@ toolFuncs[kModeFillRect] = function(pp, justDown)
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
-	Rect.fromPoints(startPos, curPos).fill fatbits, foreColor
+	Rect.MakeFromPoints(startPos, curPos).fill fatbits, foreColor
 	restoreMargins
 end function
 
@@ -756,7 +756,7 @@ toolFuncs[kModeDrawEllipse] = function(pp, justDown)
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
-	Rect.fromPoints(startPos, curPos).frameEllipse fatbits, foreColor, 1
+	Rect.MakeFromPoints(startPos, curPos).frameEllipse fatbits, foreColor, 1
 	restoreMargins
 end function
 
@@ -770,7 +770,7 @@ toolFuncs[kModeFillEllipse] = function(pp, justDown)
 	fatbits.drawImage picAtStart
 	startPos = posAtStart
 	curPos = pp
-	Rect.fromPoints(startPos, curPos).fillEllipse fatbits, foreColor
+	Rect.MakeFromPoints(startPos, curPos).fillEllipse fatbits, foreColor
 	restoreMargins
 end function
 
@@ -793,7 +793,7 @@ toolFuncs[kModeSelect] = function(pp, justDown)
 	if pp == selectionAnchor then
 		deselect
 	else
-		newSel = Rect.fromPoints(selectionAnchor, pp)
+		newSel = Rect.MakeFromPoints(selectionAnchor, pp)
 		if newSel.width == 0 then newSel.width = 1
 		if newSel.height == 0 then newSel.height = 1
 		if newSel == selection then return
@@ -957,6 +957,11 @@ drawSimStats = function
 	y = y - 20
 	helpFont.printRight "Total Ink:", x,y, 1, color.silver
 	helpFont.print str(sim.totalInk), x + gap,y, 1, color.white
+	
+	y = y - 20
+	helpFont.printRight "Core Area:", x,y, 1, color.silver
+	helpFont.print str(sim.coreArea.area), x + gap,y, 1, color.white
+	
 end function
 
 setTestMode = function(enterTestMode = true)

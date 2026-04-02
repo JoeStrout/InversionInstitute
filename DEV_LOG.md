@@ -85,3 +85,41 @@ And I had an idea about the progress display shown while analyzing the grid: ins
 Next steps: main menu and sound.  Oh, and I will also need to find all the chapter files that try to load some special image, and make those work (just fixing the paths).
 
 Main menu (title.ms) is now working; so is Sound (new soda class, wraps both sound and music from Raylib's point of view).
+
+
+## Mar 27 2026
+
+I'm overdue for an update.  Steam does NOT make it easy to find, but here's the link for posting a Steam community update:
+
+	https://steamcommunity.com/games/2145480/partnerevents/
+
+So, new updated posted here:
+
+https://store.steampowered.com/news/app/2145480/view/492720801006485750
+https://joestrout.itch.io/inversion-institute/devlog/1471374/major-progress-on-inversion-institute-refit
+
+I also studied the analysis code that runs before we can run the simulation (i.e., while the progress indicator is up), and found a way to speed that up substantially.  So now it takes about 0.7 seconds to analyze the Chapter 7 (majority rule) circuit on my machine.
+
+Also, I implemented the feature where we calculate the smallest box that can contain all of the user's gates, and display this as "core area".  So we now have three metrics: gate count, total ink, core area.  We could log these to a server and show where you land on a histogram of all solutions.
+
+
+## Apr 02 2026
+
+I've updated the soda module to automatically initialize the window.  Now I'm working on making all the animations in Chapter 1 cutscenes work.  I've also had to adjust the speech dialog position when it gets too tall (they're a little taller now than they were before, thanks to the proper line spacing).
+
+Another issue: checkboxes (empty and checked) are not part of this font, so they're not drawing properly on the objectives.
+
+And for that matter, the text is much too thin/light on the objectives.  I need to find a font that renders better at such small sizes.
+
+...ah, no, it turns out that the font wasn't the problem.  The problem was our font rendering; the standard blend mode causes the font to punch alpha holes in the pixel layer, allowing the color underneath to peek through.  Fixed with this trick around the font rendering (in ttFonts.ms):
+```
+	// Use normal color blending for RGB, but MAX mode for alpha,
+	// so that our font rendering doesn't punch holes in the pixel layer.
+	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
+	rl.BeginBlendMode 7
+```
+
+The checkboxes are still an issue, though.  Raylib fonts don't include any sort of fallback or character-sprite system (unlike Unity's TMPro system).  Do I want to build that into ttFonts, or just handle these checkboxes specially?  Hmm.
+
+I think I'll make this a feature of objectives.ms: a printWithBullet method, that draws a bullet image first and then the text next to it.
+

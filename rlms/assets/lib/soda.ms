@@ -6,6 +6,7 @@
 // point where you want it to render).
 
 raylib.SetTraceLogLevel raylib.LOG_WARNING
+if not raylib.IsWindowReady then raylib.InitWindow 960, 640  // create the window
 
 import "importUtil"
 

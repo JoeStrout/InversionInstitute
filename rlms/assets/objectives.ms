@@ -13,6 +13,9 @@ smallFont = smallPrinter.boldFont
 bgColor = "#666666"
 textColor = color.silver
 
+checkboxEmpty = file.loadImage("pics/ui/checkboxEmpty.png")
+checkboxChecked = file.loadImage("pics/ui/checkboxChecked.png")
+
 cursorX = area.left + 4
 cursorY = area.top + 20
 
@@ -27,8 +30,21 @@ erase = function(drawTitle = true)
 end function
 
 print = function(s, color=null)
+	if s[:2] == "☐ " then
+		printWithBullet checkboxEmpty, s[2:], color
+	else if s[:2] == "☑ " then
+		printWithBullet checkboxChecked, s[2:], color
+	else
+		if color == null then color = textColor
+		outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width - 12, color)
+	end if
+end function
+
+printWithBullet = function(bulletImg, s, color=null)
+	gfx.drawImage bulletImg, cursorX, cursorY - 1
+	w = bulletImg.width + 2
 	if color == null then color = textColor
-	outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width - 12, color)
+	outer.cursorY = smallFont.printWrapped(s, cursorX + w, cursorY, area.width - 12 - w, color)
 end function
 
 printErr = function(s)

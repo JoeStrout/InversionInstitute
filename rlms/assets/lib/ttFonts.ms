@@ -4,6 +4,9 @@
 
 rl = raylib
 
+import "miscUtil"
+ensureImport "stringUtil"
+
 TTFont = {}
 TTFont._font = null  // Raylib font
 TTFont._size = 0	 // loaded point size
@@ -42,7 +45,12 @@ end function
 // far to shift the cursor.
 TTFont.printChar = function(c, x=480, y=320, scale=1, tint="#FFFFFF")
 	rl.BeginTextureMode gfx._renderTex
+	// Use normal color blending for RGB, but MAX mode for alpha,
+	// so that our font rendering doesn't punch holes in the pixel layer.
+	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
+	rl.BeginBlendMode 7
 	rl.DrawTextCodepoint self._font, c.code, [x, gfx.height - y - self.ascent * scale], self._size * scale, tint
+	rl.EndBlendMode
 	rl.EndTextureMode
 	info = rl.GetGlyphInfo(self._font, c.code)
 	return info.advanceX
@@ -51,8 +59,13 @@ end function
 // Print the given string to gfx at the given location.
 TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
 	rl.BeginTextureMode gfx._renderTex
+	// Use normal color blending for RGB, but MAX mode for alpha,
+	// so that our font rendering doesn't punch holes in the pixel layer.
+	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
+	rl.BeginBlendMode 7
 	size = self._size * scale
 	rl.DrawTextEx self._font, s, [x, gfx.height - y - self.ascent * scale], size, 0, tint
+	rl.EndBlendMode
 	rl.EndTextureMode
 end function
 

@@ -195,8 +195,13 @@ drawSpeechBox = function(speaker=0, height=150, name="Someone")
 	middle = 480
 	width = 600
 	left = middle - width/2
-	right = middle + width/2	
+	right = middle + width/2
+	if height > 200 then
+		bottom = 280 - height
+		if bottom < 20 then bottom = 20
+	end if
 	speechBoxImage.draw displays.vnSpeech, left, bottom, width, height
+	print "Drawing speech with bottom=" + bottom + ", height=" + height
 	
 	if name then
 		nameWidth = font.width(name)

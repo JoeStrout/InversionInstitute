@@ -82,7 +82,7 @@ setupEditorSim = function(picW=80, picH=64, scale=9)
 	outer.simGfx = edFatbits
 
 	// backdrop: area that appears behind the fat-bits drawing (and preview area)
-	display(6).setMode displayMode.pixel
+	display(6).setMode displayMode.solidColor
 	outer.edBackdrop = display(6)
 	edBackdrop.color = "#444444"
 

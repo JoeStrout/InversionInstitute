@@ -16,6 +16,12 @@ Rect.midX = function; return self.left + self.width/2; end function
 
 Rect.midY = function; return self.bottom + self.height/2; end function
 
+Rect.area = function; return self.width * self.height; end function
+
+Rect.str = function
+	return "Rect(" + self.left + ", " + self.bottom + ", " + self.width + ", " + self.height + ")"
+end function
+
 Rect.Make = function(left, bottom, width, height)
 	r = new Rect
 	r.left = left
@@ -34,7 +40,7 @@ Rect.MakeFromCenter = function(midX, midY, width=0, height=0)
 	return r
 end function
 
-Rect.fromPoints = function(p0, p1)
+Rect.MakeFromPoints = function(p0, p1)
 	if p0 == null then
 		if p1 == null then return null
 		return Rect.MakeFromCenter(p1.x, p1.y)
@@ -63,6 +69,17 @@ end function
 
 Rect.grow = function(dwidth, dheight)
 	return Rect.Make(self.left, self.bottom, self.width + dwidth, self.height + dheight)
+end function
+
+Rect.expandToContain = function(pt)
+	right = self.left + self.width
+	top = self.bottom + self.height
+	if pt.x < self.left then self.left = pt.x
+	if pt.x > right then right = pt.x
+	if pt.y < self.bottom then self.bottom = pt.y
+	if pt.y > top then top = pt.y
+	self.width = right - self.left
+	self.height = top - self.bottom
 end function
 
 Rect.contains = function(pt)

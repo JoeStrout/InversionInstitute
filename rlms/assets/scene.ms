@@ -19,6 +19,7 @@ prepare = function(chapterNum, chapterPath)
 	displays.setupVN
 	Baab.present = false
 	Leo.present = false
+	globals.chapterPath = chapterPath
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function

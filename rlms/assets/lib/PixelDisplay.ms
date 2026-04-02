@@ -26,7 +26,11 @@ PixelDisplay._renderTex = null
 PixelDisplay._beginDraw = function(alphaBlend = false)
 	rl.BeginTextureMode self._renderTex
 	if alphaBlend then
-		rl.BeginBlendMode 5				// BLEND_ALPHA_PREMULTIPLY
+//		rl.BeginBlendMode 5				// BLEND_ALPHA_PREMULTIPLY
+		// Use normal color blending for RGB, but MAX mode for alpha,
+		// so that we don't punch holes in the pixel layer.
+		rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
+		rl.BeginBlendMode 7
 	else
 		rl.rlSetBlendFactors 1, 0, 32774    // GL_ONE, GL_ZERO, GL_FUNC_ADD
 		rl.BeginBlendMode 6                 // BLEND_CUSTOM
@@ -174,6 +178,7 @@ PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, sr
 	srcY = img.height - srcBottom - srcHeight
 	src = [srcLeft, srcY, srcWidth, srcHeight]
 	dest = [left, self.height - bottom - height, width, height]
+
 	self._beginDraw true  // (alpha blend)
 	rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
 	self._endDraw

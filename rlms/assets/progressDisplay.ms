@@ -7,6 +7,8 @@ bgImage = file.loadImage("pics/ui/ProgressBackground.png")
 fillImage = file.loadImage("pics/ui/ProgressBlue.png")
 shineImage = file.loadImage("pics/ui/ProgressShine.png")
 
+hourglass = file.loadImage("pics/ui/Hourglass.png")
+
 tempG = null
 
 fillForPercent = function(percent)
@@ -26,27 +28,30 @@ setup = function(disp)
 	Base.y = 320
 	Base.scale = 0.5
 
+	// HACK for now, just show the empty hourglass
 	outer.bgSprite = new Base
-	bgSprite.image = bgImage
+	bgSprite.image = hourglass // bgImage
 	disp.sprites.push bgSprite
-	
-	outer.fillSprite = new Base
-	fillSprite.image = fillForPercent(0)
-	disp.sprites.push fillSprite
-	
-	outer.shineSprite = new Base
-	shineSprite.image = shineImage
-	disp.sprites.push shineSprite
+//	
+//	outer.fillSprite = new Base
+//	fillSprite.image = fillForPercent(0)
+//	disp.sprites.push fillSprite
+//	
+//	outer.shineSprite = new Base
+//	shineSprite.image = shineImage
+//	disp.sprites.push shineSprite
 end function
 
 setPercent = function(percent)
-	fillSprite.image = fillForPercent(percent)
+	print "Progress: " + round(percent) + "%"
+	// HACKED out:
+	//fillSprite.image = fillForPercent(percent)
 end function
 
 close = function
 	display.sprites.removeVal bgSprite
-	display.sprites.removeVal fillSprite
-	display.sprites.removeVal shineSprite
+	//display.sprites.removeVal fillSprite
+	//display.sprites.removeVal shineSprite
 end function
 
 if locals == globals then

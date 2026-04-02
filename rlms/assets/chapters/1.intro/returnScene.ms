@@ -27,12 +27,27 @@ demoTablet = file.loadImage("pics/ui/DemoTablet.png")
 
 display(0).setMode displayMode.off
 
+loadChapterImage = function(name)
+	if not globals.hasIndex("chapterPath") or not chapterPath then
+		print "Error: chapterPath not defined"
+		print stackTrace
+		exit
+	end if
+	path = file.child(chapterPath, name)
+	img = file.loadImage(path)
+	if not img then
+		print "Error: unable to load image: " + path
+		exit
+	end if
+	return img
+end function
+
 CrossingDwg = {}
 CrossingDwg.images = []
-CrossingDwg.images.push file.loadImage("Crossing0.png")
-CrossingDwg.images.push file.loadImage("Crossing1.png")
+CrossingDwg.images.push loadChapterImage("Crossing0.png")
+CrossingDwg.images.push loadChapterImage("Crossing1.png")
 CrossingDwg.images.push CrossingDwg.images[0]
-CrossingDwg.images.push file.loadImage("Crossing2.png")
+CrossingDwg.images.push loadChapterImage("Crossing2.png")
 CrossingDwg.curIndex = -1
 CrossingDwg.nextUpdateTime = 0
 CrossingDwg.draw = function
@@ -48,10 +63,10 @@ CrossingDwg.update = function
 end function
 
 GateDwg = {}
-GateDwg.editMode = file.loadImage("Gate0.png")
+GateDwg.editMode = loadChapterImage("Gate0.png")
 GateDwg.images = []
-GateDwg.images.push file.loadImage("Gate1.png")
-GateDwg.images.push file.loadImage("Gate2.png")
+GateDwg.images.push loadChapterImage("Gate1.png")
+GateDwg.images.push loadChapterImage("Gate2.png")
 GateDwg.curIndex = -1
 GateDwg.nextUpdateTime = 0
 GateDwg.draw = function

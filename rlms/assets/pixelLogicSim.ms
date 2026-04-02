@@ -190,7 +190,7 @@ createNodeAt = function(x,y)
 		if c == "#000000FF" or c[-2:] != "FF" then continue
 		
 		displays.simGfx.setPixel x, y, c[:7] + "F0"
-		outer.totalInk = totalInk + 1
+		outer.totalInk += 1
 		node.add x, y, c
 		
 		// push immediate neighbors
@@ -215,35 +215,38 @@ findGates = function
 	result = []
 	for y in range(1, maxY-1)
 		for x in range(1, maxX-1)
-			// gates always have a black pixel in the middle
-			if displays.simGfx.pixel(x,y) != "#000000FF" then continue
-			// if we have that, check the pattern of surrounding pixels
+			// gates always have a black pixel in the middle,
+			// and a white pixel in each orthogonal direction
+			if displays.simGfx.pixel(x-1,y) == "#000000FF" or 
+			   displays.simGfx.pixel(x,  y) != "#000000FF" or
+			   displays.simGfx.pixel(x+1,y) == "#000000FF" or 
+			   displays.simGfx.pixel(x,y-1) == "#000000FF" or 
+			   displays.simGfx.pixel(x,y+1) == "#000000FF" then continue
+			// if we have that, check the pattern of surrounding corners
 			pat = []
-			for j in range(y-1, y+1)
-				for i in range(x-1, x+1)
-					c = displays.simGfx.pixel(i,j)
-					if c == "#000000FF" or c == crossingColor then pat.push "0" else pat.push "1"
-				end for				
+			for delta in [[-1,-1], [1,-1], [-1,1], [1,1]]
+				c = displays.simGfx.pixel(x+delta[0], y+delta[1])
+				if c == "#000000FF" or c == crossingColor then pat.push "0" else pat.push "1"
 			end for
 			pat = pat.join("")
-			if pat == "000000000" then continue
-			// print pat
-			if pat == "010101010" then  // crossing
+			if pat == "0000" then  // crossing
 				result.push Gate.make(x, y, 0)
 				displays.simGfx.setPixel x, y, crossingColor
 				crossings.push [x,y]
-			else if pat == "110101110" then  // NOT (East)
+			else if pat == "1010" then  // NOT (East)
 				result.push Gate.make(x, y, 4)
-			else if pat == "111101010" then // NOT (North)
+			else if pat == "1100" then // NOT (North)
 				result.push Gate.make(x, y, 3)
-			else if pat == "011101011" then // NOT (West)
+			else if pat == "0101" then // NOT (West)
 				result.push Gate.make(x, y, 2)
-			else if pat == "010101111" then // NOT (South)
+			else if pat == "0011" then // NOT (South)
 				result.push Gate.make(x, y, 1)
 			end if
 		end for
-		progressDisplay.setPercent 75*y/maxY
-		//print floor(100*y/maxY) + "%"; text.row = text.row+1
+		if y % 16 == 0 then
+			progressDisplay.setPercent 75*y/maxY
+			yield
+		end if
 	end for
 	return result
 end function
@@ -259,19 +262,51 @@ analyze = function
 	// been assigned to nodes.
 	//print "Resetting alpha" ...actually, let's don't
 	//resetAlpha				we'll instead just require opaque images for now
+
+	if globals.hasIndex("context") and context.hasIndex("margin") then
+		margin = context.margin
+	else
+		margin = Rect.Make(0, 0, circuitPic.width, circuitPic.height)
+	end if
+	print "Margin: " + margin.str
+
+	startTime = time
 	
 	outer.crossings = []		// list of [x,y] coordinates
 	outer.totalInk = 0
 	progressDisplay.setup displays.edSprite
 	yield
-		
+	
+	area = null
+	
+	printWithTime = function(s)
+		print s + " (" + round(time - startTime, 2) + " s)"
+	end function
+	
 	// Find all the gates.
-//	print "Finding gates"
+	printWithTime "Finding gates"
 	outer.gates = findGates		// list of Gate objects
-//	print "Found " + gates.len + " gates"
+	printWithTime "Found " + gates.len + " gates"
+	outer.coreArea = null
+	for gate in gates
+		if not margin.contains(gate) then continue
+		if coreArea == null then
+			outer.coreArea = Rect.MakeFromPoints(gate, gate)
+		else
+			coreArea.expandToContain gate
+		end if
+	end for
+	if coreArea == null then
+		outer.coreArea = Rect.Make(32,32,0,0)
+	else
+		coreArea.width += 1
+		coreArea.height += 1
+	end if
+	print "Core area: " + coreArea.str + ", area = " + coreArea.area
+	
 	
 	// Create nodes.
-//	print "Creating nodes"
+	printWithTime "Creating nodes"
 	outer.nodes = []			// list of Node objects
 	for y in yrange
 		for x in xrange
@@ -283,14 +318,17 @@ analyze = function
 			// print "Got node at " + x + "," + y + " with " + node.coords.len + " pixels"
 			nodes.push node
 		end for
-		progressDisplay.setPercent 75 + 25*y/maxY
-		if y % 4 == 0 then yield
+		if y % 16 == 0 then
+			progressDisplay.setPercent 75 + 25*y/maxY
+			yield
+		end if
 	end for
-//	print "Found " + nodes.len + " nodes"
+	printWithTime "Found " + nodes.len + " nodes"
 	
 	// Then, take out all the crossing gates, and set them back to black.
 	// And for the NOT gates, hook up their inputs and outputs.
-//	print "Cleaning up"
+	// TODO: also calculate the total area of crossings and gates
+	printWithTime "Cleaning up"
 	if gates.len > 0 then
 		for i in range(gates.len - 1)
 			if i % 10 == 0 then
@@ -324,6 +362,7 @@ analyze = function
 		n.setOn false, false
 	end for
 	progressDisplay.close
+	printWithTime "analyze complete"
 	//	outer.toDo = nodes[:]
 end function
 
