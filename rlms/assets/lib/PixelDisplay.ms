@@ -165,25 +165,40 @@ PixelDisplay.getImage = function(left=0, bottom=0, width, height)
 	return Image.FromRaylibImage(subImg)
 end function
 
-// Draw an Image onto this PixelDisplay.
-PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, srcLeft=0, srcBottom=0, srcWidth=null, srcHeight=null)
-	if width == null then width = img.width
-	if height == null then height = img.height
-	if srcWidth == null then srcWidth = img.width
-	if srcHeight == null then srcHeight = img.height
+PixelDisplay._drawTexture = function(tex, left, bottom, width=null, height=null, srcLeft=0, srcBottom=0, srcWidth=null, srcHeight=null)
+	if width == null then width = tex.width
+	if height == null then height = tex.height
+	if srcWidth == null then srcWidth = tex.width
+	if srcHeight == null then srcHeight = tex.height
 	if width <= 0 or height <= 0 or srcWidth <= 0 or srcHeight <= 0 then return
-	// Create a temp texture from the image
-	tex = rl.LoadTextureFromImage(img._img)
 	// Source rect in texture coords (y=0 at top).
-	srcY = img.height - srcBottom - srcHeight
+	srcY = tex.height - srcBottom - srcHeight
 	src = [srcLeft, srcY, srcWidth, srcHeight]
 	dest = [left, self.height - bottom - height, width, height]
 
 	self._beginDraw true  // (alpha blend)
 	rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
 	self._endDraw
+end function
+
+// Draw an Image onto this PixelDisplay.
+PixelDisplay.drawImage = function(img, left, bottom, width=null, height=null, srcLeft=0, srcBottom=0, srcWidth=null, srcHeight=null)
+	tex = rl.LoadTextureFromImage(img._img)
+	rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
+	self._drawTexture tex, left, bottom, width, height, srcLeft, srcBottom, srcWidth, srcHeight
 	rl.UnloadTexture tex
 end function
+
+// Use the image to tile the given destination rect, repeating as many
+// times as needed.  Useful for repeated patterns.
+PixelDisplay.patternFill = function(img, left, bottom, width=null, height=null, srcLeft=0, srcBottom=0)
+	tex = rl.LoadTextureFromImage(img._img)
+	rl.SetTextureWrap tex, rl.TEXTURE_WRAP_REPEAT
+	rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
+	self._drawTexture tex, left, bottom, width, height, srcLeft, srcBottom, width, height
+	rl.UnloadTexture tex
+end function
+	
 
 // Draw this PixelDisplay to the screen (call during BeginDrawing/EndDrawing).
 // Uses negative source height to flip the render texture vertically.

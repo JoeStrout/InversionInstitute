@@ -121,5 +121,7 @@ And for that matter, the text is much too thin/light on the objectives.  I need 
 
 The checkboxes are still an issue, though.  Raylib fonts don't include any sort of fallback or character-sprite system (unlike Unity's TMPro system).  Do I want to build that into ttFonts, or just handle these checkboxes specially?  Hmm.
 
-I think I'll make this a feature of objectives.ms: a printWithBullet method, that draws a bullet image first and then the text next to it.
+I think I'll make this a feature of objectives.ms: a printWithBullet method, that draws a bullet image first and then the text next to it.  ...Yes, that looks great and is easy to use.
+
+I've made a mock-up of the histogram interface.  The idea is to show this after a successful test, and give you the opportunity to "Continue Editing" or "Exit to Story".
 
