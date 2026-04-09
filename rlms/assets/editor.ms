@@ -16,6 +16,7 @@ ensureImport "objectives"
 ensureImport "pixelLogicSim"; sim = pixelLogicSim
 ensureImport "music"
 ensureImport "gameData"
+ensureImport "doneDialog"
 
 modeHelp = {}
 
@@ -273,8 +274,8 @@ Button.checkEvents = function
 			self.update self.bgSprite.contains(mouse)
 			yield
 		end while
-		if self.bgSprite.contains(mouse) then self.handleClick
 		self.update
+		if self.bgSprite.contains(mouse) then self.handleClick
 	end if
 end function
 
@@ -917,16 +918,18 @@ if context.isFreePlay then
 	saveButton.handleClick = @doSave
 end if
 
-exitButton = new ModeButton
-exitButton.init "EXIT", paintArea.right - 72, paintArea.top + 14
-exitButton.handleClick = function
+exitToStory = function
 	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 	if globals.hasIndex("returnFunc") then
 		returnFunc
 	else
 		exit
 	end if
-end function
+end function	
+
+exitButton = new ModeButton
+exitButton.init "EXIT", paintArea.right - 72, paintArea.top + 14
+exitButton.handleClick = @exitToStory
 
 editModeButton = new ModeButton
 editModeButton.init "EDIT", paletteArea.midX - 80, paintArea.top + 14
@@ -942,7 +945,13 @@ end function
 checkButton = new ModeButton
 checkButton.init "CHECK", paletteArea.midX, 20
 checkButton.handleClick = function
-	if context.hasIndex("check") then context.check
+	if context.hasIndex("check") then
+		success = context.check
+		if success then
+			doneDialog.present
+			if doneDialog.exitToStory then exitToStory else setTestMode false
+		end if
+	end if	
 end function
 checkButton.hide
 
