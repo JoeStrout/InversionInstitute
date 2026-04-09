@@ -159,6 +159,12 @@ But then I remembered that raylib-miniscript doesn't have any http support.  So 
 
 It's basically working, but our first pass at the server storage did not clearly define who was going to decide the histogram bins.  I'm changing it now so that the bin width and starting point (i.e. minimum value for the second bin) for all three metrics are part of the puzzles table, and the server returns exactly the data we need to display, so the client (game) code stays simple.
 
+OK, that's all working; basic histograms are up and stumbling about.  Here's a laundry list for next time:
+
+- Add value labels to the histograms.
+- Add triangle-line indicator of user's current scores.
+- Fix screen trash in help area (not erasing quite enough).
+- Lighten the red error text shown when check fails.
 
 
 
