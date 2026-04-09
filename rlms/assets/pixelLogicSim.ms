@@ -290,8 +290,9 @@ analyze = function
 	outer.coreArea = null
 	for gate in gates
 		if not margin.contains(gate) then continue
+		print "Found gate at " + gate.x + ", " + gate.y
 		if coreArea == null then
-			outer.coreArea = Rect.MakeFromPoints(gate, gate)
+			outer.coreArea = Rect.MakeFromPoints(gate, gate, 0)
 		else
 			coreArea.expandToContain gate
 		end if

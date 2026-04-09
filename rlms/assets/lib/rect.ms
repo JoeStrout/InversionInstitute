@@ -40,7 +40,7 @@ Rect.MakeFromCenter = function(midX, midY, width=0, height=0)
 	return r
 end function
 
-Rect.MakeFromPoints = function(p0, p1)
+Rect.MakeFromPoints = function(p0, p1, padding=1)
 	if p0 == null then
 		if p1 == null then return null
 		return Rect.MakeFromCenter(p1.x, p1.y)
@@ -48,17 +48,17 @@ Rect.MakeFromPoints = function(p0, p1)
 	r = new Rect
 	if p0.x < p1.x then
 		r.left = p0.x
-		r.width = p1.x - p0.x + 1
+		r.width = p1.x - p0.x + padding
 	else
 		r.left = p1.x
-		r.width = p0.x - p1.x + 1
+		r.width = p0.x - p1.x + padding
 	end if
 	if p0.y < p1.y then
 		r.bottom = p0.y
-		r.height = p1.y - p0.y + 1
+		r.height = p1.y - p0.y + padding
 	else
 		r.bottom = p1.y
-		r.height = p0.y - p1.y + 1
+		r.height = p0.y - p1.y + padding
 	end if
 	return r
 end function

@@ -125,3 +125,31 @@ I think I'll make this a feature of objectives.ms: a printWithBullet method, tha
 
 I've made a mock-up of the histogram interface.  The idea is to show this after a successful test, and give you the opportunity to "Continue Editing" or "Exit to Story".
 
+
+## Apr 09 2026
+
+I'm starting today on the backend server for histogram data.  This is written in Go, almost entirely by Claude (Sonnet) since that's not a core area for me.
+
+Its all in the scoreserver folder.  I need to define each puzzle before the server will allow submissions for it.  For example, I can seed a new DB with:
+
+go run ./cmd/seed --puzzle-id 7 --margin-x 18 --margin-y 0 --margin-w 44 --margin-h 64 --title "Test Puzzle"
+  
+...or just add an additional one with:
+
+sqlite3 dev.db "INSERT INTO puzzles VALUES(1,'v1','v1','Chapter 1',1,datetime('now'));" 
+
+(though actually that command above needs to be updated with the margin rect.)
+  
+View the available puzzles with:
+
+	sqlite3 dev.db
+	SELECT * FROM puzzles;
+
+(Use `.mode column` to make SQLite's output suck less.)
+
+Now we need a puzzle with known metrics for testing.  I'll use my circuit-7.png solution, which has 10 gates, total ink = 433, and core area = 247.  I can run the scoring test for that by doing:
+
+go test ./internal/scoring/... -v -run TestMetrics_realCircuit7
+
+It failed at first because we had forgotten about excluding gates outside the editable area (i.e., in the margin).
+
