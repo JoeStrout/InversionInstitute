@@ -23,7 +23,6 @@ prepare = function(chapterNum, chapterPath)
 	globals.curDrawing = null		// (something with .draw and .update functions)
 	globals.playSteps = []
 	globals.returnFunc = function
-		gameData.saveCircuitForChapter chapterNum, circuitPic
 		run file.child(chapterPath, "returnScene.ms")
 	end function
 	music.playNovel

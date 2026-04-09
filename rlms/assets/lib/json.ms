@@ -286,7 +286,7 @@ end function
 
 // General utility data structures
 
-_eol = char(13)
+_eol = char(10)
 _hexDigitMap = {}
 for i in range(0,15)
 	if i < 10 then

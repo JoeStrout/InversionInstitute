@@ -12,29 +12,29 @@ type SubmitRequest struct {
 
 // SubmitResponse is returned by POST /api/v1/submit-solution.
 type SubmitResponse struct {
-	Accepted         bool              `json:"accepted"`
-	Error            string            `json:"error,omitempty"`
-	PuzzleID         int               `json:"puzzle_id,omitempty"`
-	PuzzleVersion    string            `json:"puzzle_version,omitempty"`
-	ScoringVersion   string            `json:"scoring_version,omitempty"`
-	BucketSetVersion string            `json:"bucket_set_version,omitempty"`
-	CanonicalMetrics *MetricValues     `json:"canonical_metrics,omitempty"`
-	BestMetrics      *MetricValues     `json:"best_metrics,omitempty"`
-	SampleCount      int               `json:"sample_count,omitempty"`
-	Percentiles      *MetricPercentiles `json:"percentiles,omitempty"`
+	Accepted         bool                     `json:"accepted"`
+	Error            string                   `json:"error,omitempty"`
+	PuzzleID         int                      `json:"puzzle_id,omitempty"`
+	PuzzleVersion    string                   `json:"puzzle_version,omitempty"`
+	ScoringVersion   string                   `json:"scoring_version,omitempty"`
+	CanonicalMetrics *MetricValues            `json:"canonical_metrics,omitempty"`
+	BestMetrics      *MetricValues            `json:"best_metrics,omitempty"`
+	SampleCount      int                      `json:"sample_count,omitempty"`
+	Percentiles      *MetricPercentiles       `json:"percentiles,omitempty"`
+	BinConfig        map[string]BinSpec       `json:"bin_config,omitempty"`
 	Histograms       map[string][]BucketEntry `json:"histograms,omitempty"`
 }
 
 // HistogramsResponse is returned by GET /api/v1/puzzles/{id}/histograms.
 type HistogramsResponse struct {
-	PuzzleID         int               `json:"puzzle_id"`
-	PuzzleVersion    string            `json:"puzzle_version"`
-	ScoringVersion   string            `json:"scoring_version"`
-	BucketSetVersion string            `json:"bucket_set_version"`
-	SampleCount      int               `json:"sample_count"`
-	Histograms       map[string][]BucketEntry `json:"histograms"`
-	PlayerBestMetrics *MetricValues    `json:"player_best_metrics,omitempty"`
-	Percentiles      *MetricPercentiles `json:"percentiles,omitempty"`
+	PuzzleID          int                      `json:"puzzle_id"`
+	PuzzleVersion     string                   `json:"puzzle_version"`
+	ScoringVersion    string                   `json:"scoring_version"`
+	SampleCount       int                      `json:"sample_count"`
+	PlayerBestMetrics *MetricValues            `json:"player_best_metrics,omitempty"`
+	Percentiles       *MetricPercentiles       `json:"percentiles,omitempty"`
+	BinConfig         map[string]BinSpec       `json:"bin_config,omitempty"`
+	Histograms        map[string][]BucketEntry `json:"histograms,omitempty"`
 }
 
 // PuzzlesResponse is returned by GET /api/v1/puzzles.
@@ -60,6 +60,14 @@ type MetricPercentiles struct {
 	Gates    float64 `json:"gates"`
 	TotalInk float64 `json:"total_ink"`
 	CoreArea float64 `json:"core_area"`
+}
+
+// BinSpec describes the display bin configuration for one metric.
+// BinStart is the minimum value of the second bin (bin 0 is a catch-all for
+// everything below it).  BinSize is the width of each regular bin.
+type BinSpec struct {
+	BinStart int `json:"bin_start"`
+	BinSize  int `json:"bin_size"`
 }
 
 type BucketEntry struct {

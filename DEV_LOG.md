@@ -153,3 +153,12 @@ go test ./internal/scoring/... -v -run TestMetrics_realCircuit7
 
 It failed at first because we had forgotten about excluding gates outside the editable area (i.e., in the margin).
 
+But with that fixed, all the tests are passing.  I've created a scoreserver/USAGE.md document to remind my future self how to use this thing, but it's pretty straightforward.  Running it on localhost for testing.
+
+But then I remembered that raylib-miniscript doesn't have any http support.  So I just did a sidequest to add that, as well as file.loadRaw (which it was also lacking, though fortunately it already had the RawData class).  And I pulled in a MiniScript base64 implementation from another project.  So we should have all the pieces we need now.
+
+It's basically working, but our first pass at the server storage did not clearly define who was going to decide the histogram bins.  I'm changing it now so that the bin width and starting point (i.e. minimum value for the second bin) for all three metrics are part of the puzzles table, and the server returns exactly the data we need to display, so the client (game) code stays simple.
+
+
+
+

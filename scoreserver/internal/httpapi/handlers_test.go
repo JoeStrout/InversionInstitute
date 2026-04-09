@@ -36,7 +36,8 @@ func makeTestServer(t *testing.T) (*httpapi.Server, func()) {
 		t.Fatalf("open db: %v", err)
 	}
 
-	// Seed a test puzzle.
+	// Seed a test puzzle with bin config set so histograms are populated.
+	intPtr := func(v int) *int { return &v }
 	if err := storage.InsertPuzzle(db, storage.Puzzle{
 		PuzzleID:       1,
 		PuzzleVersion:  "v1",
@@ -44,23 +45,17 @@ func makeTestServer(t *testing.T) (*httpapi.Server, func()) {
 		Title:          "Test Puzzle",
 		IsActive:       true,
 		CreatedAt:      time.Now(),
+		GatesBinStart:  intPtr(0),
+		GatesBinSize:   intPtr(1),
+		InkBinStart:    intPtr(10),
+		InkBinSize:     intPtr(10),
+		AreaBinStart:   intPtr(0),
+		AreaBinSize:    intPtr(10),
 	}); err != nil {
 		t.Fatalf("seed puzzle: %v", err)
 	}
 
-	cfg := &config.Config{
-		Buckets: config.BucketConfig{
-			Version: "v1",
-			TotalInk: []config.Bucket{
-				{MinInclusive: 0, MaxExclusive: 100, Label: "0-99"},
-				{MinInclusive: 100, MaxExclusive: 0, Label: "100+"},
-			},
-			CoreArea: []config.Bucket{
-				{MinInclusive: 0, MaxExclusive: 100, Label: "0-99"},
-				{MinInclusive: 100, MaxExclusive: 0, Label: "100+"},
-			},
-		},
-	}
+	cfg := &config.Config{}
 
 	srv := &httpapi.Server{
 		DB:      db,

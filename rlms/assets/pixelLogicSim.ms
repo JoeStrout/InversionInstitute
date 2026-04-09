@@ -284,13 +284,10 @@ analyze = function
 	end function
 	
 	// Find all the gates.
-	printWithTime "Finding gates"
 	outer.gates = findGates		// list of Gate objects
-	printWithTime "Found " + gates.len + " gates"
 	outer.coreArea = null
 	for gate in gates
 		if not margin.contains(gate) then continue
-		print "Found gate at " + gate.x + ", " + gate.y
 		if coreArea == null then
 			outer.coreArea = Rect.MakeFromPoints(gate, gate, 0)
 		else
@@ -303,8 +300,7 @@ analyze = function
 		coreArea.width += 1
 		coreArea.height += 1
 	end if
-	print "Core area: " + coreArea.str + ", area = " + coreArea.area
-	
+	//print "Core area: " + coreArea.str + ", area = " + coreArea.area
 	
 	// Create nodes.
 	printWithTime "Creating nodes"

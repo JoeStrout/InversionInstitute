@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS puzzles (
     margin_y             INTEGER NOT NULL DEFAULT 0,
     margin_w             INTEGER NOT NULL DEFAULT 80,
     margin_h             INTEGER NOT NULL DEFAULT 64,
+    -- histogram display bin config: bin_start = min value of 2nd bin,
+    -- bin_size = width of each regular bin.  NULL = not yet configured.
+    gates_bin_start      INTEGER,
+    gates_bin_size       INTEGER,
+    ink_bin_start        INTEGER,
+    ink_bin_size         INTEGER,
+    area_bin_start       INTEGER,
+    area_bin_size        INTEGER,
     PRIMARY KEY (puzzle_id, puzzle_version)
 );
 
@@ -116,19 +124,13 @@ CREATE TABLE IF NOT EXISTS histogram_counts (
     puzzle_id             INTEGER NOT NULL,
     puzzle_version        TEXT    NOT NULL,
     scoring_version       TEXT    NOT NULL,
-    bucket_set_version    TEXT    NOT NULL,
     metric_name           TEXT    NOT NULL,
+    -- Each row stores the count for one exact integer value.
+    -- min_value = exact metric value; max_value = min_value + 1 (always).
     min_value             INTEGER NOT NULL,
-    max_value             INTEGER,            -- NULL = open-ended top bucket
+    max_value             INTEGER,
     count                 INTEGER NOT NULL DEFAULT 0,
     updated_at            TEXT    NOT NULL,
-    PRIMARY KEY (
-        puzzle_id,
-        puzzle_version,
-        scoring_version,
-        bucket_set_version,
-        metric_name,
-        min_value
-    )
+    PRIMARY KEY (puzzle_id, puzzle_version, scoring_version, metric_name, min_value)
 );
 `

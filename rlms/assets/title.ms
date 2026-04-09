@@ -56,6 +56,8 @@ bigFont = ttFonts.TTFont.Load("fonts/NotoSerif-Bold.ttf", 48)
 //smallFont = bmfFonts.Font.load("fonts/minimicro-pro-16.bmf")
 smallFont = ttFonts.TTFont.Load("fonts/NotoSerif-Regular.ttf", 28)
 
+print "Game launched with installId " + gameData.data.installId
+
 welcomeMsg = "Welcome"
 if gameData.get("ch1.done") then welcomeMsg = welcomeMsg + " back"
 welcomeMsg = welcomeMsg + ", " + gameData.playerName + "!"

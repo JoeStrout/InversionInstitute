@@ -64,10 +64,22 @@ get = function(dotPath, default=null)
 	return m
 end function
 
+randomInstallId = function(length=20)
+	// generate a random probably-unique text string we can use
+	// to deduplicate puzzle solutions for the histograms
+	chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+	result = [0] * length
+	for i in result.indexes
+		result[i] = chars[chars.len * rnd]
+	end for
+	return result.join("")
+end function
+
 clearData = function
 	outer.data = {}
 	data.playerName = playerName
 	data.curChapter = 1
+	data.installId = randomInstallId
 	// ToDo: set any other defaults here
 end function
 
@@ -86,6 +98,13 @@ readFromDisk = function
 	if data.hasIndex("pronoun") and data.pronoun isa map then
 		outer.pronoun = outer.pronoun + data.pronoun
 	end if
+	// and ensure we have required items
+	anyChange = false
+	if not data.hasIndex("installId") then
+		data.installId = randomInstallId
+		anyChange = true
+	end if
+	if anyChange then writeToDisk
 end function
 
 writeToDisk = function
@@ -116,7 +135,14 @@ loadCircuitForChapter = function(chapterNum)
 end function
 
 saveCircuitForChapter = function(chapterNum, circuitPic)
-	file.saveImage circuitPathForChapter(chapterNum), circuitPic
+	path = circuitPathForChapter(chapterNum)
+	result = file.saveImage(path, circuitPic)
+	if result then
+		print "Error saving " + path
+		print result
+	else
+		print "Saved " + path
+	end if
 end function
 
 readFromDisk

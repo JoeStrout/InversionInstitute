@@ -919,7 +919,10 @@ if context.isFreePlay then
 end if
 
 exitToStory = function
-	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+	if not testMode then
+		globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+		gameData.saveCircuitForChapter context.number, circuitPic
+	end if
 	if globals.hasIndex("returnFunc") then
 		returnFunc
 	else
@@ -948,7 +951,8 @@ checkButton.handleClick = function
 	if context.hasIndex("check") then
 		success = context.check
 		if success then
-			doneDialog.present
+			gameData.saveCircuitForChapter context.number, circuitPic
+			doneDialog.present gameData.circuitPathForChapter(context.number)
 			if doneDialog.exitToStory then exitToStory else setTestMode false
 		end if
 	end if	

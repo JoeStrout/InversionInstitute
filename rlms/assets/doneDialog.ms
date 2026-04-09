@@ -5,6 +5,12 @@ if not globals.hasIndex("miscUtil") then import "miscUtil"
 ensureImport "soda"
 ensureImport "ttFonts"
 ensureImport "rect"
+ensureImport "json"
+ensureImport "base64"
+ensureImport "listUtil"
+
+postScoreUrl = "http://localhost:8080/api/v1/submit-solution"
+
 
 chartTitleFont = null
 dlogTitleFont = null
@@ -38,14 +44,23 @@ drawHistogram = function(rect, data, title)
 		outer.barPattern = file.loadImage("pics/patterns/HashLinesMedT.png")
 	end if
 	
-	bars = 9
+	counts = []
+	for entry in data
+		counts.push entry.count
+	end for
+	maxCount = counts.max
+	maxBarHeight = rect.height - 12
+	
+	bars = data.len
 	divs = bars - 1
-	barW = rect.width / 9
-	for i in range(1, divs)
+	barW = rect.width / bars
+	for i in range(1, divs+1)
 		x = rect.left + barW * i
 		gfx.line x, rect.bottom - 6, x, rect.bottom + 6
-		barH = round(rect.height * floor(rnd*10) / 10)
+		if i > counts.len then continue
+		barH = round(maxBarHeight * counts[i-1] / maxCount)
 		if barH <= 0 then continue
+		x -= barW
 		gfx.patternFill barPattern, x, rect.bottom, barW, barH
 		gfx.drawRect x, rect.bottom, barW, barH
 	end for
@@ -149,25 +164,61 @@ setup = function
 
 	exitBtn = SimpleTextButton.Make("Exit to Story", 480, 80)
 	exitBtn.action = @closeAndExit
-
-	for btn in SimpleTextButton.Instances; btn.draw; end for
-
-	histW = 216; gap = 20
-	histRect = Rect.Make(480 - histW/2 - gap - histW, 240, histW, 196)
-	drawHistogram histRect, [], "Inversion Glyphs"
-
-	histRect.left = 480 - histW/2
-	drawHistogram histRect, [], "Total Ink"
-
-	histRect.left = 480 + histW/2 + gap
-	drawHistogram histRect, [], "Total Ink"
 end function
 
-present = function
+prepareServerPackage = function(circuitPath)
+	data = {}
+	data.puzzle_id = context.number
+	data.puzzle_version = "v1"  // for now, it's always v1
+	data.install_id = gameData.data.installId
+	data.client_platform = version.hostName
+	pngData = file.loadRaw(circuitPath)
+	if pngData == null then
+		print "Unable to load PNG at " + circuitPath
+		return null
+	end if
+	data.solution_png_base64 = base64.toBase64(pngData)
+	return json.toJSON(data)
+end function
+
+drawHistograms = function(histogramData)
+	print "Histogram data (glyphs):"
+	print histogramData.gates
+	histW = 216; gap = 20
+	histRect = Rect.Make(480 - histW/2 - gap - histW, 240, histW, 196)
+	drawHistogram histRect, histogramData.gates, "Inversion Glyphs"
+	
+	print "Histogram data (total ink):"
+	print histogramData.total_ink
+	histRect.left = 480 - histW/2
+	drawHistogram histRect, histogramData.total_ink, "Total Ink"
+	
+	print "Histogram data (core area):"
+	print histogramData.core_area
+	histRect.left = 480 + histW/2 + gap
+	drawHistogram histRect, histogramData.core_area, "Core Area"
+end function
+
+present = function(circuitPath)
 	display(1).setMode displayMode.pixel
 	globals.gfx = display(1)
 	gfx.clear color.clear
 	setup
+
+	requestBody = prepareServerPackage(circuitPath)
+	print "REQUEST:"
+	print requestBody
+	requestHeaders = {"Content-Type": "application/json"}
+	result = http.post(postScoreUrl, requestBody, requestHeaders)
+	resultData = json.parse(result)
+	print "RESULT:"
+	pprint resultData
+	if resultData != null and resultData.hasIndex("histograms") then
+		drawHistograms resultData.histograms
+	end if
+		
+	for btn in SimpleTextButton.Instances; btn.draw; end for
+	
 	print "Starting doneDialog loop"
 	while not done
 		yield
@@ -180,7 +231,12 @@ end function
 
 test = function
 	clear
-	present
+	globals.context = {}
+	context.number = 7
+	globals.gameData = {}
+	gameData.data = {}
+	gameData.data.installId = "TestyMcTester"
+	present "../scoreserver/internal/scoring/testdata/circuit-7.png"
 end function
 
 if locals == globals then test

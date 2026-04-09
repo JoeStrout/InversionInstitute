@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"scoreserver/internal/config"
-	"scoreserver/internal/histogram"
 	"scoreserver/internal/scoring"
 	"scoreserver/internal/storage"
 )
@@ -47,7 +46,6 @@ func errorResponse(w http.ResponseWriter, status int, errCode string) {
 func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	ip := RemoteIP(r)
 
-	// Rate limit by IP.
 	if !s.Limiter.ByIP.Allow(ip) {
 		errorResponse(w, http.StatusTooManyRequests, "rate_limited")
 		return
@@ -59,19 +57,16 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Rate limit by install ID.
 	if req.InstallID != "" && !s.Limiter.ByInstall.Allow(req.InstallID) {
 		errorResponse(w, http.StatusTooManyRequests, "rate_limited")
 		return
 	}
 
-	// Validate required fields.
 	if req.PuzzleID == 0 || req.PuzzleVersion == "" || req.InstallID == "" || req.SolutionPNGBase64 == "" {
 		errorResponse(w, http.StatusBadRequest, "missing_fields")
 		return
 	}
 
-	// Verify puzzle exists and is active.
 	puzzle, err := storage.GetActivePuzzle(s.DB, req.PuzzleID, req.PuzzleVersion)
 	if err == sql.ErrNoRows {
 		errorResponse(w, http.StatusUnprocessableEntity, "unknown_puzzle_version")
@@ -83,14 +78,12 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode base64 PNG.
 	pngBytes, err := base64.StdEncoding.DecodeString(req.SolutionPNGBase64)
 	if err != nil {
 		errorResponse(w, http.StatusBadRequest, "invalid_base64")
 		return
 	}
 
-	// Decode and validate PNG dimensions.
 	rawImg, err := scoring.DecodePNG(pngBytes)
 	if err != nil {
 		code := "invalid_png"
@@ -101,7 +94,6 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Normalize and compute metrics using the puzzle's margin.
 	img := scoring.Normalize(rawImg)
 	metrics := scoring.ComputeMetrics(img, puzzle.MarginRect(scoring.CanonicalHeight))
 	solutionHash := scoring.ContentHash(img)
@@ -116,7 +108,6 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 	ipHash := HashIP(r.RemoteAddr)
 
-	// Run the full submit pipeline inside a transaction.
 	tx, err := s.DB.Begin()
 	if err != nil {
 		log.Printf("begin tx: %v", err)
@@ -125,7 +116,6 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	// Insert submission row.
 	sub := storage.Submission{
 		PuzzleID:          req.PuzzleID,
 		PuzzleVersion:     req.PuzzleVersion,
@@ -148,7 +138,6 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Read existing player state.
 	state, err := storage.GetPlayerState(tx, req.PuzzleID, req.PuzzleVersion, req.InstallID)
 	if err != nil {
 		log.Printf("get player state: %v", err)
@@ -156,10 +145,8 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bsv := s.Cfg.Buckets.Version
-
 	if state == nil {
-		// First submission: create state, add histogram counts for all three metrics.
+		// First submission — add histogram counts for all three metrics.
 		state = &storage.PlayerPuzzleState{
 			PuzzleID:       req.PuzzleID,
 			PuzzleVersion:  req.PuzzleVersion,
@@ -191,23 +178,21 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 			SubmissionCount: 1,
 		}
 
-		if err := s.incrementHistogram(tx, puzzle, bsv, "gates", metrics.Gates, nil); err != nil {
-			log.Printf("histogram gates: %v", err)
-			errorResponse(w, http.StatusInternalServerError, "internal_error")
-			return
-		}
-		if err := s.incrementHistogram(tx, puzzle, bsv, "total_ink", metrics.TotalInk, s.Cfg.Buckets.TotalInk); err != nil {
-			log.Printf("histogram total_ink: %v", err)
-			errorResponse(w, http.StatusInternalServerError, "internal_error")
-			return
-		}
-		if err := s.incrementHistogram(tx, puzzle, bsv, "core_area", metrics.CoreArea, s.Cfg.Buckets.CoreArea); err != nil {
-			log.Printf("histogram core_area: %v", err)
-			errorResponse(w, http.StatusInternalServerError, "internal_error")
-			return
+		for _, mc := range []struct {
+			name  string
+			value int
+		}{
+			{"gates", metrics.Gates},
+			{"total_ink", metrics.TotalInk},
+			{"core_area", metrics.CoreArea},
+		} {
+			if err := adjustHistogram(tx, puzzle, mc.name, mc.value, +1); err != nil {
+				log.Printf("histogram %s: %v", mc.name, err)
+				errorResponse(w, http.StatusInternalServerError, "internal_error")
+				return
+			}
 		}
 	} else {
-		// Update latest.
 		state.LatestSubmissionID = subID
 		state.LatestSolutionHash = solutionHash
 		state.LatestGates = metrics.Gates
@@ -216,40 +201,46 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		state.LatestSubmittedAt = now
 		state.SubmissionCount++
 
-		// Check each metric for improvement and adjust histograms accordingly.
-		if metrics.Gates < state.BestGates {
-			if err := s.shiftHistogram(tx, puzzle, bsv, "gates",
-				state.BestGates, nil, metrics.Gates, nil); err != nil {
-				log.Printf("shift histogram gates: %v", err)
+		type improvement struct {
+			metric   string
+			oldValue int
+			newValue int
+			better   bool
+		}
+		improvements := []improvement{
+			{"gates", state.BestGates, metrics.Gates, metrics.Gates < state.BestGates},
+			{"total_ink", state.BestTotalInk, metrics.TotalInk, metrics.TotalInk < state.BestTotalInk},
+			{"core_area", state.BestCoreArea, metrics.CoreArea, metrics.CoreArea < state.BestCoreArea},
+		}
+		for _, imp := range improvements {
+			if !imp.better {
+				continue
+			}
+			if err := adjustHistogram(tx, puzzle, imp.metric, imp.oldValue, -1); err != nil {
+				log.Printf("shift histogram %s (decrement): %v", imp.metric, err)
 				errorResponse(w, http.StatusInternalServerError, "internal_error")
 				return
 			}
+			if err := adjustHistogram(tx, puzzle, imp.metric, imp.newValue, +1); err != nil {
+				log.Printf("shift histogram %s (increment): %v", imp.metric, err)
+				errorResponse(w, http.StatusInternalServerError, "internal_error")
+				return
+			}
+		}
+
+		if improvements[0].better {
 			state.BestGates = metrics.Gates
 			state.BestGatesSubmissionID = subID
 			state.BestGatesSolutionHash = solutionHash
 			state.BestGatesAt = now
 		}
-		if metrics.TotalInk < state.BestTotalInk {
-			if err := s.shiftHistogram(tx, puzzle, bsv, "total_ink",
-				state.BestTotalInk, s.Cfg.Buckets.TotalInk,
-				metrics.TotalInk, s.Cfg.Buckets.TotalInk); err != nil {
-				log.Printf("shift histogram total_ink: %v", err)
-				errorResponse(w, http.StatusInternalServerError, "internal_error")
-				return
-			}
+		if improvements[1].better {
 			state.BestTotalInk = metrics.TotalInk
 			state.BestInkSubmissionID = subID
 			state.BestInkSolutionHash = solutionHash
 			state.BestInkAt = now
 		}
-		if metrics.CoreArea < state.BestCoreArea {
-			if err := s.shiftHistogram(tx, puzzle, bsv, "core_area",
-				state.BestCoreArea, s.Cfg.Buckets.CoreArea,
-				metrics.CoreArea, s.Cfg.Buckets.CoreArea); err != nil {
-				log.Printf("shift histogram core_area: %v", err)
-				errorResponse(w, http.StatusInternalServerError, "internal_error")
-				return
-			}
+		if improvements[2].better {
 			state.BestCoreArea = metrics.CoreArea
 			state.BestAreaSubmissionID = subID
 			state.BestAreaSolutionHash = solutionHash
@@ -269,8 +260,7 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Build response.
-	resp, err := s.buildHistogramResponse(puzzle, bsv)
+	resp, err := s.buildHistogramResponse(puzzle)
 	if err != nil {
 		log.Printf("build histogram response: %v", err)
 		errorResponse(w, http.StatusInternalServerError, "internal_error")
@@ -278,11 +268,10 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, SubmitResponse{
-		Accepted:         true,
-		PuzzleID:         req.PuzzleID,
-		PuzzleVersion:    req.PuzzleVersion,
-		ScoringVersion:   puzzle.ScoringVersion,
-		BucketSetVersion: bsv,
+		Accepted:       true,
+		PuzzleID:       req.PuzzleID,
+		PuzzleVersion:  req.PuzzleVersion,
+		ScoringVersion: puzzle.ScoringVersion,
 		CanonicalMetrics: &MetricValues{
 			Gates:    metrics.Gates,
 			TotalInk: metrics.TotalInk,
@@ -295,6 +284,7 @@ func (s *Server) handleSubmit(w http.ResponseWriter, r *http.Request) {
 		},
 		SampleCount: resp.SampleCount,
 		Percentiles: resp.Percentiles,
+		BinConfig:   resp.BinConfig,
 		Histograms:  resp.Histograms,
 	})
 }
@@ -346,15 +336,13 @@ func (s *Server) handleHistograms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bsv := s.Cfg.Buckets.Version
-	resp, err := s.buildHistogramResponse(puzzle, bsv)
+	resp, err := s.buildHistogramResponse(puzzle)
 	if err != nil {
 		log.Printf("build histogram response: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
-	// Attach player best if install_id was provided.
 	if installID != "" {
 		tx, err := s.DB.Begin()
 		if err == nil {
@@ -373,88 +361,120 @@ func (s *Server) handleHistograms(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// incrementHistogram adds +1 to the bucket for the given metric value.
-// cfgBuckets is nil for gates (exact bins).
-func (s *Server) incrementHistogram(tx *sql.Tx, puzzle *storage.Puzzle, bsv, metric string, value int, cfgBuckets []config.Bucket) error {
-	minVal, maxVal, err := resolveBucket(metric, value, cfgBuckets)
-	if err != nil {
-		return err
-	}
+// adjustHistogram adds delta (+1 or -1) to the exact-value bin for a metric.
+func adjustHistogram(tx *sql.Tx, puzzle *storage.Puzzle, metric string, value, delta int) error {
+	maxVal := value + 1
 	return storage.AdjustHistogramCount(tx,
-		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion, bsv,
-		metric, minVal, maxVal, +1)
+		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion,
+		metric, value, &maxVal, delta)
 }
 
-// shiftHistogram decrements the old bucket and increments the new bucket.
-func (s *Server) shiftHistogram(tx *sql.Tx, puzzle *storage.Puzzle, bsv, metric string,
-	oldValue int, oldCfg []config.Bucket,
-	newValue int, newCfg []config.Bucket) error {
+// aggregateBins collapses exact histogram rows into the 9 display bins defined
+// by binStart and binSize.
+//
+// Bin layout:
+//
+//	[0]       catch-all low  — all values < binStart         (min_value = 0)
+//	[1]..[7]  regular bins   — [binStart+i*binSize, binStart+(i+1)*binSize)
+//	[8]       catch-all high — all values >= binStart+7*binSize
+func aggregateBins(exact []storage.HistogramBucket, binStart, binSize int) []BucketEntry {
+	counts := make([]int, 9)
+	for _, b := range exact {
+		v := b.MinValue
+		var idx int
+		switch {
+		case v < binStart:
+			idx = 0
+		case v >= binStart+7*binSize:
+			idx = 8
+		default:
+			idx = (v-binStart)/binSize + 1
+		}
+		counts[idx] += b.Count
+	}
 
-	oldMin, oldMax, err := resolveBucket(metric, oldValue, oldCfg)
-	if err != nil {
-		return err
+	entries := make([]BucketEntry, 9)
+	for i := range entries {
+		minVal := 0
+		if i > 0 {
+			minVal = binStart + (i-1)*binSize
+		}
+		entries[i] = BucketEntry{MinValue: minVal, Count: counts[i]}
 	}
-	newMin, newMax, err := resolveBucket(metric, newValue, newCfg)
-	if err != nil {
-		return err
-	}
-	// Only move if the bucket actually changed.
-	if oldMin == newMin {
-		return nil
-	}
-	if err := storage.AdjustHistogramCount(tx,
-		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion, bsv,
-		metric, oldMin, oldMax, -1); err != nil {
-		return err
-	}
-	return storage.AdjustHistogramCount(tx,
-		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion, bsv,
-		metric, newMin, newMax, +1)
+	return entries
 }
 
-// resolveBucket returns the (minVal, maxVal) for a metric value.
-func resolveBucket(metric string, value int, cfgBuckets []config.Bucket) (int, *int, error) {
-	if metric == "gates" {
-		min, max := histogram.BucketForGates(value)
-		return min, max, nil
+// deriveDefaultBins computes a fallback (binStart, binSize) from exact
+// histogram data so a histogram can be shown even before the admin has
+// configured explicit bin values.  binSize is always at least 1.
+func deriveDefaultBins(exact []storage.HistogramBucket) (binStart, binSize int) {
+	if len(exact) == 0 {
+		return 0, 1
 	}
-	min, max, err := histogram.BucketForConfigured(value, cfgBuckets)
-	return min, max, err
+	minVal := exact[0].MinValue
+	maxVal := exact[len(exact)-1].MinValue
+	span := maxVal - minVal
+	binSize = (span + 6) / 7 // ceil(span / 7)
+	if binSize < 1 {
+		binSize = 1
+	}
+	return minVal, binSize
 }
 
-// buildHistogramResponse fetches all three histograms and computes totals/percentiles.
-func (s *Server) buildHistogramResponse(puzzle *storage.Puzzle, bsv string) (*HistogramsResponse, error) {
-	metrics := []string{"gates", "total_ink", "core_area"}
+// buildHistogramResponse fetches exact histogram rows and aggregates them into
+// 9 display bins.  If a metric has no configured bin spec, one is derived
+// automatically from the observed data range.
+func (s *Server) buildHistogramResponse(puzzle *storage.Puzzle) (*HistogramsResponse, error) {
+	type metricCfg struct {
+		name  string
+		start *int
+		size  *int
+	}
+	metrics := []metricCfg{
+		{"gates", puzzle.GatesBinStart, puzzle.GatesBinSize},
+		{"total_ink", puzzle.InkBinStart, puzzle.InkBinSize},
+		{"core_area", puzzle.AreaBinStart, puzzle.AreaBinSize},
+	}
+
 	histograms := make(map[string][]BucketEntry)
-	rawBuckets := make(map[string][]storage.HistogramBucket)
+	binConfig := make(map[string]BinSpec)
 
-	for _, m := range metrics {
-		buckets, err := storage.GetHistogram(s.DB,
-			puzzle.PuzzleID, puzzle.PuzzleVersion,
-			puzzle.ScoringVersion, bsv, m)
+	for _, mc := range metrics {
+		exact, err := storage.GetHistogram(s.DB,
+			puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion, mc.name)
 		if err != nil {
 			return nil, err
 		}
-		rawBuckets[m] = buckets
-		entries := make([]BucketEntry, len(buckets))
-		for i, b := range buckets {
-			entries[i] = BucketEntry{MinValue: b.MinValue, Count: b.Count}
+		if len(exact) == 0 {
+			continue
 		}
-		histograms[m] = entries
+		var start, size int
+		if mc.start != nil && mc.size != nil {
+			start, size = *mc.start, *mc.size
+		} else {
+			start, size = deriveDefaultBins(exact)
+		}
+		histograms[mc.name] = aggregateBins(exact, start, size)
+		binConfig[mc.name] = BinSpec{BinStart: start, BinSize: size}
 	}
 
 	sampleCount, err := storage.SampleCount(s.DB,
-		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion, bsv)
+		puzzle.PuzzleID, puzzle.PuzzleVersion, puzzle.ScoringVersion)
 	if err != nil {
 		return nil, err
 	}
 
+	var binConfigOut map[string]BinSpec
+	if len(binConfig) > 0 {
+		binConfigOut = binConfig
+	}
+
 	return &HistogramsResponse{
-		PuzzleID:         puzzle.PuzzleID,
-		PuzzleVersion:    puzzle.PuzzleVersion,
-		ScoringVersion:   puzzle.ScoringVersion,
-		BucketSetVersion: bsv,
-		SampleCount:      sampleCount,
-		Histograms:       histograms,
+		PuzzleID:       puzzle.PuzzleID,
+		PuzzleVersion:  puzzle.PuzzleVersion,
+		ScoringVersion: puzzle.ScoringVersion,
+		SampleCount:    sampleCount,
+		BinConfig:      binConfigOut,
+		Histograms:     histograms,
 	}, nil
 }
