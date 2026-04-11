@@ -166,5 +166,19 @@ OK, that's all working; basic histograms are up and stumbling about.  Here's a l
 - Fix screen trash in help area (not erasing quite enough).
 - Lighten the red error text shown when check fails.
 
+## Apr 11 2026
 
+As a reminder, I need to start the score server each time I sit down to work with:
+
+```bash
+cd scoreserver
+go run ./cmd/server --config config.local.yaml
+```
+
+But then I can just run assets/doneDialog with miniscript-raylib to test the histogram functionality.  I've added labels to the charts; they look great in a 12-point font.
+
+So now I need to show the user's current scores, which I'm going to display both on the chart titles and as graphical indicators.  I can get these as sim.gates.len, sim.totalInk, and sim.coreArea.area, where sim = pixelLogicSim.   ...And that's now working great.  So these items are done:
+
+- Add value labels to the histograms. ✔️
+- Add triangle-line indicator of user's current scores. ✔️
 

@@ -11,39 +11,57 @@ ensureImport "listUtil"
 
 postScoreUrl = "http://localhost:8080/api/v1/submit-solution"
 
-
+backgroundImage = null
 chartTitleFont = null
+numLabelsFont = null
 dlogTitleFont = null
 buttonFont = null
 barPattern = null
+valueMarker = null
 
 drawBackground = function
-	img = file.loadImage("pics/ui/Parchment-400x300.png")
+	loadResources
+	img = backgroundImage
 	gfx.drawImage img, 480-img.width, 320-img.height, img.width*2, img.height*2
-	img.release
 end function
 
 drawTitle = function
-	if dlogTitleFont == null then
-		outer.dlogTitleFont = ttFonts.TTFont.Load("fonts/MorrisRoman-Black.ttf", 64)
-	end if
 	dlogTitleFont.printCentered "Challenge Complete!", 480, 500, 1, color.black
 end function
 
-drawHistogram = function(rect, data, title)
-	gfx.color = color.black
-	gfx.line rect.left, rect.bottom, rect.right, rect.bottom
-	gfx.line rect.left, rect.bottom, rect.left, rect.top
+loadResources = function
+	if backgroundImage == null then
+		outer.backgroundImage = file.loadImage("pics/ui/Parchment-400x300.png")
+	end if
 	
+	if dlogTitleFont == null then
+		outer.dlogTitleFont = ttFonts.TTFont.Load("fonts/MorrisRoman-Black.ttf", 64)
+	end if
+
 	if chartTitleFont == null then
 		outer.chartTitleFont = ttFonts.TTFont.Load("fonts/MorrisRoman-Black.ttf", 20)
 	end if
-	chartTitleFont.printCentered title, rect.midX, rect.top, 1, color.black
+
+	if numLabelsFont == null then
+		outer.numLabelsFont = ttFonts.TTFont.Load("fonts/MorrisRoman-Black.ttf", 12)
+	end if
 
 	if barPattern == null then
 		outer.barPattern = file.loadImage("pics/patterns/HashLinesMedT.png")
 	end if
 	
+	if valueMarker == null then
+		outer.valueMarker = file.loadImage("pics/ui/HistoValueMarker.png")
+	end if
+end function
+
+drawHistogram = function(rect, data, title, curValue)
+	gfx.color = color.black
+	gfx.line rect.left, rect.bottom, rect.right, rect.bottom
+	gfx.line rect.left, rect.bottom, rect.left, rect.top
+	
+	chartTitleFont.printCentered title + ": " + curValue, rect.midX, rect.top, 1, color.black
+
 	counts = []
 	for entry in data
 		counts.push entry.count
@@ -51,19 +69,48 @@ drawHistogram = function(rect, data, title)
 	maxCount = counts.max
 	maxBarHeight = rect.height - 12
 	
+	integers = data.len > 2 and (data[2].min_value == data[1].min_value + 1)
+	
 	bars = data.len
 	divs = bars - 1
 	barW = rect.width / bars
+	valX = rect.right - barW/2
+	if data[1].min_value > curValue then valX = rect.left + barW/2
 	for i in range(1, divs+1)
 		x = rect.left + barW * i
-		gfx.line x, rect.bottom - 6, x, rect.bottom + 6
+		gfx.line x, rect.bottom - 4, x, rect.bottom + 6
 		if i > counts.len then continue
+		if i < counts.len then
+			s = str(data[i].min_value)
+			if integers then
+				if i == counts.len-1 then s += "+"
+				numLabelsFont.printCentered s, x + barW/2, rect.bottom - 20, 1, color.black	
+				if data[i].min_value == curValue then valX = x + barW/2
+				if i == 1 then
+					numLabelsFont.printCentered "<" + s, x - barW/2, rect.bottom - 20, 1, color.black	
+				end if
+			else
+				numLabelsFont.printCentered s, x, rect.bottom - 20, 1, color.black
+				curMin = data[i].min_value
+				prevMin = data[i-1].min_value
+				if prevMin <= curValue < curMin then
+					valX = x - barW + barW * (curValue - prevMin) / (curMin - prevMin)
+					if i == 1 then valX = x - barW/2
+				end if
+			end if
+		end if
 		barH = round(maxBarHeight * counts[i-1] / maxCount)
 		if barH <= 0 then continue
 		x -= barW
 		gfx.patternFill barPattern, x, rect.bottom, barW, barH
 		gfx.drawRect x, rect.bottom, barW, barH
 	end for
+	
+	if valX != null then
+		gfx.line valX, rect.top - valueMarker.height + 2, valX, rect.bottom, color.black, 2
+		gfx.drawImage valueMarker, valX - valueMarker.width/2, rect.top - valueMarker.height
+	end if
+	
 end function
 
 NORMAL = "NORMAL"
@@ -182,21 +229,23 @@ prepareServerPackage = function(circuitPath)
 end function
 
 drawHistograms = function(histogramData)
+	sim = pixelLogicSim
+	
 	print "Histogram data (glyphs):"
 	print histogramData.gates
 	histW = 216; gap = 20
 	histRect = Rect.Make(480 - histW/2 - gap - histW, 240, histW, 196)
-	drawHistogram histRect, histogramData.gates, "Inversion Glyphs"
+	drawHistogram histRect, histogramData.gates, "Inversion Glyphs", sim.gates.len
 	
 	print "Histogram data (total ink):"
 	print histogramData.total_ink
 	histRect.left = 480 - histW/2
-	drawHistogram histRect, histogramData.total_ink, "Total Ink"
+	drawHistogram histRect, histogramData.total_ink, "Total Ink", sim.totalInk
 	
 	print "Histogram data (core area):"
 	print histogramData.core_area
 	histRect.left = 480 + histW/2 + gap
-	drawHistogram histRect, histogramData.core_area, "Core Area"
+	drawHistogram histRect, histogramData.core_area, "Core Area", sim.coreArea.area
 end function
 
 present = function(circuitPath)
@@ -231,11 +280,16 @@ end function
 
 test = function
 	clear
+	// shim our needed modules for testing
 	globals.context = {}
 	context.number = 7
 	globals.gameData = {}
 	gameData.data = {}
 	gameData.data.installId = "TestyMcTester"
+	globals.pixelLogicSim = {}
+	pixelLogicSim.gates = [42]*11
+	pixelLogicSim.totalInk = 304
+	pixelLogicSim.coreArea = Rect.Make(0, 0, 25, 10)
 	present "../scoreserver/internal/scoring/testdata/circuit-7.png"
 end function
 
