@@ -356,7 +356,7 @@ prepareScreen = function
 		font.print s, 10, 642 + font.sizeOver
 	end if
 	objectives.area = Rect.Make(750,10, 208,410)
-	outer.helpArea = Rect.Make(paintArea.left, 0, paintArea.right, paintArea.bottom-2)
+	outer.helpArea = Rect.Make(paintArea.left, 0, paintArea.right, paintArea.bottom+1)
 end function
 
 drawGrid = function
@@ -403,7 +403,7 @@ end  function
 
 drawHelp = function(helpStr)
 	helpArea.fill gfx, bgColor
-	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY, 1, color.silver
+	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY - 3, 1, color.silver
 end function
 
 makeTools = function
@@ -951,6 +951,7 @@ checkButton.handleClick = function
 	if context.hasIndex("check") then
 		success = context.check
 		if success then
+			wait 1
 			gameData.saveCircuitForChapter context.number, circuitPic
 			doneDialog.present gameData.circuitPathForChapter(context.number)
 			if doneDialog.exitToStory then exitToStory else setTestMode false

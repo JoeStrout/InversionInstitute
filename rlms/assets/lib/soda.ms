@@ -31,3 +31,12 @@ globals.yield = function
 	outer.update
 	intrinsics.yield
 end function
+
+// And similar for `wait`.
+globals.wait = function(duration=1)
+	endTime = time + duration
+	while time < endTime
+		intrinsics.yield
+		outer.update
+	end while
+end function

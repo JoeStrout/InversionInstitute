@@ -11,8 +11,10 @@ store-media/SteamKeys
 updateitch
 updatesteam
 *(old)
-rlms/.claude
+.claude
+*/.claude
 localNotes
+*/*/__pycache__/
 scoreserver/dev.db
 scoreserver/dev.db-shm
 scoreserver/dev.db-wal

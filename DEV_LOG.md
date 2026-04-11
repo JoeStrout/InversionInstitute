@@ -182,3 +182,16 @@ So now I need to show the user's current scores, which I'm going to display both
 - Add value labels to the histograms. ✔️
 - Add triangle-line indicator of user's current scores. ✔️
 
+And with a little more work, also done:
+
+- Fix screen trash in help area (not erasing quite enough). ✔️
+- Lighten the red error text shown when check fails. ✔️
+
+On that last one, I lightened it *and* added a black shadow to make it stand out better against the gray background.
+
+I need to start adjusting the histogram bins and ranges, though.  For chapter 6, I've used 16 glyphs, 549 ink, and 1118 area.  It could have been made a lot more compact, but this is where I am at the moment, and I'm off the chart on all three measures.  The scoreserver/scripts/configure_bins.sh script appears to have a bug.  The update process is pretty straightforward -- we no longer pre-bin things in the DB, but instead just store the count per exact measure -- but I'd still like a script so I don't have to remember the table and field names.
+
+But it turns out Claude was trying to use features of bash 4.x, while macOS uses bash 3.2.  This led to all manner of hardship.  Throwing that script out and rewriting it in Python.  That works much better.
+
+I've noticed another thing to fix in the editor though: the grid lines are not drawing consistently, and when you use the selection tool, it leaves screen trash behind.
+

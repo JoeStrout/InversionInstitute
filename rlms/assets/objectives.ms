@@ -29,30 +29,32 @@ erase = function(drawTitle = true)
 	outer.cursorY = y - 30
 end function
 
-print = function(s, color=null)
+print = function(s, color=null, shadow=false)
 	if s[:2] == "☐ " then
-		printWithBullet checkboxEmpty, s[2:], color
+		printWithBullet checkboxEmpty, s[2:], color, shadow
 	else if s[:2] == "☑ " then
-		printWithBullet checkboxChecked, s[2:], color
+		printWithBullet checkboxChecked, s[2:], color, shadow
 	else
 		if color == null then color = textColor
-		outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width - 12, color)
+		if shadow then smallFont.printWrapped(s, cursorX+1, cursorY-1, area.width-12-1, "#000000")
+		outer.cursorY = smallFont.printWrapped(s, cursorX, cursorY, area.width-12, color)
 	end if
 end function
 
-printWithBullet = function(bulletImg, s, color=null)
+printWithBullet = function(bulletImg, s, color=null, shadow=false)
 	gfx.drawImage bulletImg, cursorX, cursorY - 1
 	w = bulletImg.width + 2
 	if color == null then color = textColor
-	outer.cursorY = smallFont.printWrapped(s, cursorX + w, cursorY, area.width - 12 - w, color)
+	if shadow then smallFont.printWrapped(s, cursorX + w+1, cursorY-1, area.width-12-w, "#000000")
+	outer.cursorY = smallFont.printWrapped(s, cursorX + w, cursorY, area.width-12-w, color)
 end function
 
 printErr = function(s)
-	print s, "#AA0000"
+	print s, "#FF0000", true
 end function
 
 printSuccess = function(s)
-	print s, "#00FF00"
+	print s, "#00FF00", true
 end function
 
 if locals == globals then
