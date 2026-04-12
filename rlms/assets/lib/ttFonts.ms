@@ -7,10 +7,34 @@ rl = raylib
 import "miscUtil"
 ensureImport "stringUtil"
 
+Emoji = {}
+Emoji.image = null	  // image to draw
+Emoji.ascent = null   // pixels between baseline and top of image; defaults to image height
+
+Emoji.release = function
+	if self.image then self.image.release
+	self.image = null
+end function
+
+Emoji.Make = function(imageOrPath, ascent=null)
+	noob = new self
+	if imageOrPath isa string then imageOrPath = file.loadImage(imageOrPath)
+	if not imageOrPath isa Image then
+		print "Invalid image/path in Emoji.Make"
+		print stackTrace
+		exit
+	end if
+	noob.image = imageOrPath
+	if ascent then noob.ascent = ascent else noob.ascent = noob.image.height
+	return noob
+end function
+
 TTFont = {}
 TTFont._font = null  // Raylib font
 TTFont._size = 0	 // loaded point size
 TTFont.ascent = 0    // font ascent (best estimate)
+
+TTFont.emoji = {}  // key: character or string; value: Emoji object
 
 TTFont.Load = function(path, size=24)
 	// ToDo: provide a way to load more (non-ASCII) characters, perhaps
@@ -39,6 +63,9 @@ TTFont.unload = function
 		rl.UnloadFont(self._font)
 		self._font = null
 	end if
+	for emoji in self.emoji.values
+		if emoji.image then emoji.image.release
+	end for		
 end function
 
 // Render (draw) the given character to gfx, and return how
@@ -49,7 +76,19 @@ TTFont.printChar = function(c, x=480, y=320, scale=1, tint="#FFFFFF")
 	// so that our font rendering doesn't punch holes in the pixel layer.
 	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
 	rl.BeginBlendMode 7
-	rl.DrawTextCodepoint self._font, c.code, [x, gfx.height - y - self.ascent * scale], self._size * scale, tint
+	
+	if self.emoji.hasIndex(c) then
+		emoji = self.emoji[c]
+		tex = emoji.image.texture
+		rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
+		src = [0, 0, emoji.image.width, emoji.image.height]
+		dest = [x, gfx.height - y - emoji.ascent,
+		  emoji.image.width * scale, emoji.image.height * scale]
+		rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
+	else
+		rl.DrawTextCodepoint self._font, c.code, [x, gfx.height - y - self.ascent * scale], self._size * scale, tint
+	end if
+	
 	rl.EndBlendMode
 	rl.EndTextureMode
 	info = rl.GetGlyphInfo(self._font, c.code)
@@ -58,13 +97,57 @@ end function
 
 // Print the given string to gfx at the given location.
 TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
+	if not s then return
 	rl.BeginTextureMode gfx._renderTex
 	// Use normal color blending for RGB, but MAX mode for alpha,
 	// so that our font rendering doesn't punch holes in the pixel layer.
 	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
 	rl.BeginBlendMode 7
 	size = self._size * scale
-	rl.DrawTextEx self._font, s, [x, gfx.height - y - self.ascent * scale], size, 0, tint
+	
+	if not self.emoji then
+		// No emoji defined; take fast path
+		rl.DrawTextEx self._font, s, [x, gfx.height - y - self.ascent * scale], size, 0, tint
+	else
+		// Emoji defined; need to draw non-emoji substrings and emoji separately
+		emojiKeys = self.emoji.indexes
+		startIdx = 0
+		// Advance until we reach an emoji, or end of string
+		endIdx = startIdx
+		while endIdx < s.len
+			for emk in emojiKeys
+				if s[endIdx:endIdx + emk.len] == emk then
+					// found an emoji!  Draw the string up to that point...
+					if endIdx > startIdx then
+						substr = s[startIdx:endIdx]
+						rl.DrawTextEx self._font, substr, 
+						  [x, gfx.height - y - self.ascent * scale], size, 0, tint
+						x += rl.MeasureTextEx(self._font, substr, self._size * scale, 0).x
+					end if
+					// then draw the emoji image
+					emoji = self.emoji[emk]
+					tex = emoji.image.texture
+					rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
+					src = [0, 0, emoji.image.width, emoji.image.height]
+					dest = [x, gfx.height - y - emoji.ascent,
+					  emoji.image.width * scale, emoji.image.height * scale]
+					rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
+					x += round(dest[2])
+					startIdx = endIdx + emk.len
+					endIdx = startIdx
+					continue
+				end if
+			end for
+			endIdx += 1
+		end while
+		if startIdx < s.len then
+			// Draw last part of string
+			substr = s[startIdx:]
+			rl.DrawTextEx self._font, substr, 
+			  [x, gfx.height - y - self.ascent * scale], size, 0, tint
+		end if
+	end if
+
 	rl.EndBlendMode
 	rl.EndTextureMode
 end function
@@ -81,6 +164,7 @@ end function
 
 // Return the width of the given string in this font.
 TTFont.width = function(s, scale=1)
+	// ToDo: add support for emoji here.
 	return rl.MeasureTextEx(self._font, s, self._size * scale, 0).x
 end function
 

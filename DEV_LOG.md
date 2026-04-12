@@ -221,5 +221,9 @@ Bugs (and minor features) for today:
 - ...and I want to show width x height when dragging a selection/rect/ellipse tool. ✔️
 - Ellipse tools seem imprecise (wiggle around as you drag). ✔️
 - Chapter 2 objectives are running off the screen. ✔️
-- Some objectives (like Ch.2) are using right-arrow glyphs, which we don't have.
+- Some objectives (like Ch.2) are using right-arrow glyphs, which we don't have. ✔️
+
+To tackle that last one, I added support for emoji (as either specific Unicode characters, or Markdown-style strings like ":arrow:") to TTFont.  It's now easy to add whatever custom glyphs we want to any font, and very easy to use them too.  I do need to go back and support for it to the `.width` function, though -- that will probably involve refactoring the `print` code too, extracting a method to split a string into a series of regular text substrings and Emoji.  But this solves the immediate problem, and I'm out of time for today.
+
+
 

@@ -7,6 +7,7 @@ ensureImport "qa"
 ensureImport "markup"
 
 TTFont = ttFonts.TTFont
+Emoji = ttFonts.Emoji
 
 fontName = "fonts/EBGaramond"
 
@@ -21,6 +22,15 @@ smallPrinter.font = TTFont.Load(fontName + "-Regular.ttf", 22)
 smallPrinter.boldFont = TTFont.Load(fontName + "-Bold.ttf", 22)
 smallPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 22)
 smallPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 22)
+
+for font in [smallPrinter.font, smallPrinter.boldFont, smallPrinter.italicFont, smallPrinter.boldItalicFont]
+	font.emoji["☑"] = Emoji.Make(file.loadImage("pics/ui/checkboxChecked.png"))
+	font.emoji["☐"] = Emoji.Make(file.loadImage("pics/ui/checkboxEmpty.png"))
+	font.emoji[":boxChecked:"] = font.emoji["☑"] 
+	font.emoji[":boxEmpty:"] = font.emoji["☐"] 
+	font.emoji["→"] = Emoji.Make(file.loadImage("pics/ui/rightArrowGlyph.png"))
+	font.emoji[":arrow:"] = font.emoji["→"] 
+end for
 
 globals.font = bigPrinter.font
 
