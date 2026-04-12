@@ -95,6 +95,35 @@ TTFont.printChar = function(c, x=480, y=320, scale=1, tint="#FFFFFF")
 	return info.advanceX
 end function
 
+// Given a string, split into a list of plain strings and Emoji.
+TTFont._splitIntoParts = function(s)
+	if not s or not self.emoji then return [s]
+	result = []
+	startIdx = 0
+	endIdx = startIdx
+	emojiKeys = self.emoji.indexes
+	while endIdx < s.len
+		for emk in emojiKeys
+			if s[endIdx:endIdx + emk.len] == emk then
+				// found an emoji!  Grab the string up to that point...
+				if endIdx > startIdx then
+					result.push s[startIdx:endIdx]
+				end if
+				// then grab the Emoji object
+				result.push self.emoji[emk]
+				// and advance past the emoji
+				startIdx = endIdx + emk.len
+				endIdx = startIdx - 1
+				break
+			end if
+		end for
+		endIdx += 1
+	end while
+	// Grab last part of string
+	if startIdx < s.len then result.push s[startIdx:]
+	return result
+end function
+
 // Print the given string to gfx at the given location.
 TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
 	if not s then return
@@ -105,48 +134,21 @@ TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
 	rl.BeginBlendMode 7
 	size = self._size * scale
 	
-	if not self.emoji then
-		// No emoji defined; take fast path
-		rl.DrawTextEx self._font, s, [x, gfx.height - y - self.ascent * scale], size, 0, tint
-	else
-		// Emoji defined; need to draw non-emoji substrings and emoji separately
-		emojiKeys = self.emoji.indexes
-		startIdx = 0
-		// Advance until we reach an emoji, or end of string
-		endIdx = startIdx
-		while endIdx < s.len
-			for emk in emojiKeys
-				if s[endIdx:endIdx + emk.len] == emk then
-					// found an emoji!  Draw the string up to that point...
-					if endIdx > startIdx then
-						substr = s[startIdx:endIdx]
-						rl.DrawTextEx self._font, substr, 
-						  [x, gfx.height - y - self.ascent * scale], size, 0, tint
-						x += rl.MeasureTextEx(self._font, substr, self._size * scale, 0).x
-					end if
-					// then draw the emoji image
-					emoji = self.emoji[emk]
-					tex = emoji.image.texture
-					rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
-					src = [0, 0, emoji.image.width, emoji.image.height]
-					dest = [x, gfx.height - y - emoji.ascent,
-					  emoji.image.width * scale, emoji.image.height * scale]
-					rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
-					x += round(dest[2])
-					startIdx = endIdx + emk.len
-					endIdx = startIdx
-					continue
-				end if
-			end for
-			endIdx += 1
-		end while
-		if startIdx < s.len then
-			// Draw last part of string
-			substr = s[startIdx:]
-			rl.DrawTextEx self._font, substr, 
+	for part in self._splitIntoParts(s)
+		if part isa Emoji then
+			tex = part.image.texture
+			rl.SetTextureFilter tex, rl.TEXTURE_FILTER_POINT
+			src = [0, 0, part.image.width, part.image.height]
+			dest = [x, gfx.height - y - part.ascent,
+			  part.image.width * scale, part.image.height * scale]
+			rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
+			x += round(dest[2])	
+		else
+			rl.DrawTextEx self._font, part, 
 			  [x, gfx.height - y - self.ascent * scale], size, 0, tint
+			x += rl.MeasureTextEx(self._font, part, size, 0).x		
 		end if
-	end if
+	end for
 
 	rl.EndBlendMode
 	rl.EndTextureMode
@@ -164,8 +166,15 @@ end function
 
 // Return the width of the given string in this font.
 TTFont.width = function(s, scale=1)
-	// ToDo: add support for emoji here.
-	return rl.MeasureTextEx(self._font, s, self._size * scale, 0).x
+	width = 0
+	for part in self._splitIntoParts(s)
+		if part isa Emoji then
+			width += round(part.image.width * scale)	
+		else
+			width += rl.MeasureTextEx(self._font, part, self._size * scale, 0).x		
+		end if
+	end for
+	return width
 end function
 
 // Return the number of characters of the given string that

@@ -225,5 +225,6 @@ Bugs (and minor features) for today:
 
 To tackle that last one, I added support for emoji (as either specific Unicode characters, or Markdown-style strings like ":arrow:") to TTFont.  It's now easy to add whatever custom glyphs we want to any font, and very easy to use them too.  I do need to go back and support for it to the `.width` function, though -- that will probably involve refactoring the `print` code too, extracting a method to split a string into a series of regular text substrings and Emoji.  But this solves the immediate problem, and I'm out of time for today.
 
+(Edited to add: I found more time today; refactoring and `width` complete.)
 
 
