@@ -60,8 +60,10 @@ picH = circuitPic.height
 marginPic = circuitPic.getImage
 resourceDir = "pics/fatbits/"
 helpFont = objectives.smallFont
+coordinateFont = ttFonts.TTFont.Load("fonts/NotoSans-Regular.ttf", 12)
 selectionAnchor = null
 picAtStart = null
+posAtStart = null
 
 testSprites = []		// UI sprites needed only in simulation mode
 editSprites = []	// UI sprites needed only in edit mode
@@ -325,6 +327,7 @@ Tool.handleClick = function
 end function
 
 modesWithSize = [kModeErase, kModePaint]
+modesWithExtent = [kModeDrawRect, kModeFillRect, kModeDrawEllipse, kModeFillEllipse]
 setMode = function(newMode)
 	globals.mode = newMode
 	globals.drawErases = false
@@ -345,7 +348,7 @@ prepareScreen = function
 	area.fill gfx, color.clear
 	area.grow(1,1).frame gfx, color.black, 4, -4
 	backdrop.color = color.red // HACK; color.black
-//	drawGrid
+	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
 	font = bigPrinter.boldFont
 	if not context.isFreePlay then
@@ -360,19 +363,6 @@ prepareScreen = function
 end function
 
 drawGrid = function
-	// Select current image
-	img = circuitPic
-//	// Calculate backdrop rectangle
-//	if img.width >= 80 then maxWidth = 80 else maxWidth = img.width
-//	if img.height >= 64 then maxHeight = 64 else maxHeight = img.height
-//	backdropRect = Rect.Make(
-//	    paintArea.midX - (maxWidth / 2)*ps,
-//	    paintArea.midY - (maxHeight / 2)*ps,
-//	    maxWidth * ps,
-//	    maxHeight * ps).offset(gfx.scrollX, gfx.scrollY)
-//	// Fill backdrop area
-//	backdropRect.fill backdrop, "#FF00FF"//backdrop.color
-
 	// Draw lines for individual "fat" pixels
 	gfx.color = "#88888866"
 	area = paintArea.offset(gfx.scrollX, gfx.scrollY)
@@ -406,6 +396,11 @@ drawHelp = function(helpStr)
 	helpFont.printCentered helpStr, helpArea.midX, helpArea.midY - 3, 1, color.silver
 end function
 
+drawCoordString = function(coordStr="")
+	gfx.fillRect 0, 0, 50, helpArea.top, bgColor
+	if coordStr then coordinateFont.print coordStr, 16, 14, 1, color.silver
+end function
+
 makeTools = function
 	tools = [
 	["Pencil", kModeDraw], ["Erase", kModeErase], ["Move", kModeMove], ["Select", kModeSelect],
@@ -431,8 +426,12 @@ end function
 // Find the X and Y screen locations for a given painting location.
 // (Inverse of paintPixelAtXY, above.)  This returns the CENTER of
 // the given fat pixel.
-xAtPaintPixel = function(pp); return (pp.x + 0.5) * ps - fatbits.scrollX; end function
-yAtPaintPixel = function(pp); return (pp.y + 0.5) * ps - fatbits.scrollY; end function
+xAtPaintPixel = function(pp)
+	return floor(paintArea.left + gfx.scrollX + (pp.x + 0.5) * ps)
+end function
+yAtPaintPixel = function(pp)
+	return floor(paintArea.bottom + gfx.scrollY + (pp.y + 0.5) * ps)
+end function
 
 // Set one pixel in our painting to a specific color.
 setPaintPixel = function(pos, c="#000000")
@@ -462,10 +461,10 @@ drawSelection = function
 	if selection == null then
 		drawGrid
 	else
-		if time % 1 > 0.9 then gfx.color = color.black else gfx.color = "#FF00FF"
+		if time % 0.5 > 0.25 then gfx.color = "#88FF88" else gfx.color = "#FF00FF"
 		left = xAtPaintPixel({"x":selection.left}) - floor(ps/2)
 		botm = yAtPaintPixel({"y":selection.bottom}) - floor(ps/2)
-		gfx.drawRect left + gfx.scrollX, botm + gfx.scrollY, selection.width * ps + 1, selection.height * ps + 1
+		gfx.drawRect left, botm, selection.width * ps + 1, selection.height * ps + 1
 	end if
 end function
 
@@ -1027,11 +1026,8 @@ handleClick = function(justDown)
 end function
 
 handleMouseUp = function
-	// The only case where we do something special on mouse-up is
-	// while pasting a selection:
-	if mode == kModePasting then
-		setMode kModeSelect
-	end if
+	globals.posAtStart = null
+	if mode == kModePasting then setMode kModeSelect
 end function
 
 showHelp = function
@@ -1068,14 +1064,22 @@ while true
 	music.update
 	
 	pp = paintPixelAtXY(mouse)
-	gfx.fillRect 860, 0, 100, 20, bgColor
+	gfx.fillRect 0, 0, 50, helpArea.top, bgColor
 	brushSprite.x = -9999
 	if pp.x >= 0 and pp.y >= 0 and pp.x < picW and pp.y < picH then
-		//gfx.print pp.x + "," + pp.y, 860, 3, color.silver, "small"
+		if mode == kModeSelect and selection != null then
+			drawCoordString selection.width + " x " + selection.height
+		else if posAtStart != null and modesWithExtent.contains(mode) then
+			drawCoordString (abs(posAtStart.x - pp.x)+1) + " x " + (abs(posAtStart.y - pp.y)+1)
+		else
+			drawCoordString pp.x + ", " + pp.y
+		end if
 		if modesWithSize.contains(mode) then
 			brushSprite.x = xAtPaintPixel(pp) - (not brushSize%2)*ps/2
 			brushSprite.y = yAtPaintPixel(pp) - (not brushSize%2)*ps/2
 		end if
+	else
+		drawCoordString ""
 	end if
 	if mode == kModePasting then updatePaste pp
 	

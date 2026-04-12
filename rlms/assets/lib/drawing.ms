@@ -17,10 +17,10 @@ bigPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 40)
 bigPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 40)
 
 globals.smallPrinter = new markup.BmfPrinter
-smallPrinter.font = TTFont.Load(fontName + "-Regular.ttf", 24)
-smallPrinter.boldFont = TTFont.Load(fontName + "-Bold.ttf", 24)
-smallPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 24)
-smallPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 24)
+smallPrinter.font = TTFont.Load(fontName + "-Regular.ttf", 22)
+smallPrinter.boldFont = TTFont.Load(fontName + "-Bold.ttf", 22)
+smallPrinter.italicFont = TTFont.Load(fontName + "-Italic.ttf", 22)
+smallPrinter.boldItalicFont = TTFont.Load(fontName + "-BoldItalic.ttf", 22)
 
 globals.font = bigPrinter.font
 

@@ -195,3 +195,31 @@ But it turns out Claude was trying to use features of bash 4.x, while macOS uses
 
 I've noticed another thing to fix in the editor though: the grid lines are not drawing consistently, and when you use the selection tool, it leaves screen trash behind.
 
+
+## Apr 12 2026
+
+A couple of feature ideas I'm pretty excited about:
+
+### Notebook
+
+In the editor, under the other tools, we should have a "Notebook" button (or perhaps "Notebook (12)" where 12 is the number of entries you have).  Whenever you have an active selection, there will also be an "Add" or "+" button; clicking that adds the current selection to your notebook, prompting you for a title.
+
+Opening the notebook brings up a scrolling alphabetized list of all your notebook entries, and clicking on one shows the circuit (at probably half the editor scale).  There's a delete button to delete it, and a "use" or "apply" or something that closes the notebook and applies that circuit as the pending paste (just like copy/paste).
+
+This simple feature allows you to build a library of reusable sub-circuits, which is a whole new axis of self-directed progression, and also makes solving the later challenges much easier (which means we can design harder later challenges!).
+
+A possible difficulty is that we're running out of room on the right; some of our objectives (like Ch.2) don't fit already.  Maybe we switch to a smaller font size, or reduce the space between the tool buttons and the color palette?
+
+### Keyboard Interface
+
+We could have some little bit patterns, perhaps made with the rightmost colors (magenta and white), which we watch for when scanning the circuit.  If found, we set the state of those nodes according to keyboard state.  We would support at least the four arrow keys, plus maybe Shift, Control, and Space.  Maybe numbers too?  This lets users make interactive circuits and little games.
+
+Bugs (and minor features) for today:
+- Grid lines are not drawing consistently. ✔️
+- Selection lines are leaving screen trash. ✔️
+- Coordinates are not drawing... and I want to move them to the lower-left corner. ✔️
+- ...and I want to show width x height when dragging a selection/rect/ellipse tool. ✔️
+- Ellipse tools seem imprecise (wiggle around as you drag). ✔️
+- Chapter 2 objectives are running off the screen. ✔️
+- Some objectives (like Ch.2) are using right-arrow glyphs, which we don't have.
+

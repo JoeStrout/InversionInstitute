@@ -108,6 +108,6 @@ end function
 Rect.frameEllipse = function(gfx, color=null, lineWidth=1, inset=0)
 	gfx.drawEllipse self.left+inset, self.bottom+inset,
 	   self.width-inset*2, self.height-inset*2,
-	   color, lineWidth
+	   color // TODO: , lineWidth
 end function
 

@@ -90,7 +90,7 @@ PixelDisplay.line = function(x1=0, y1=0, x2=960, y2=640, color, penSize=1)
 	color = colorToList(color)
 	self._beginDraw
 	h = 0.5  // offset to properly address pixel coordinates
-	rl.DrawLineEx([x1+h, self.height-y1+h], [x2+h, self.height-y2+h], penSize, color)
+	rl.DrawLineEx([x1+h, self.height-y1-h], [x2+h, self.height-y2-h], penSize, color)
 	self._endDraw
 end function
 
@@ -117,7 +117,9 @@ PixelDisplay.drawEllipse = function(left=0, bottom=0, width=100, height=100, col
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawEllipseLines left + width/2, self.height - bottom - height/2, width/2, height/2, color
+	wOver2 = floor(width/2)
+	rl.DrawEllipseLines floor(left) + wOver2, self.height - floor(bottom) - ceil(height/2),
+	   wOver2, floor(height/2), color
 	self._endDraw
 end function
 
@@ -126,7 +128,9 @@ PixelDisplay.fillEllipse = function(left=0, bottom=0, width=100, height=100, col
 	if color == null then color = self.color
 	color = colorToList(color)
 	self._beginDraw
-	rl.DrawEllipse left + width/2, self.height - bottom - height/2, width/2, height/2, color
+	wOver2 = floor(width/2)
+	rl.DrawEllipse floor(left) + wOver2, self.height - bottom - ceil(height/2),
+	   wOver2, floor(height/2), color
 	self._endDraw
 end function
 
