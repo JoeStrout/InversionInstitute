@@ -225,6 +225,9 @@ Bugs (and minor features) for today:
 
 To tackle that last one, I added support for emoji (as either specific Unicode characters, or Markdown-style strings like ":arrow:") to TTFont.  It's now easy to add whatever custom glyphs we want to any font, and very easy to use them too.  I do need to go back and support for it to the `.width` function, though -- that will probably involve refactoring the `print` code too, extracting a method to split a string into a series of regular text substrings and Emoji.  But this solves the immediate problem, and I'm out of time for today.
 
-(Edited to add: I found more time today; refactoring and `width` complete.)
+Edited to add: I found more time today; refactoring and `width` complete.
 
+I found yet more time, so I polished up the textField module (which required fleshing out the Soda key module), and then added both optionScreen and freeplay.  Both these screens could stand some polish; the title font is blocky, the buttons don't really fit the game aesthetic, etc.  But they're basically functional.
+
+One thing to think about: the Free Play list of named circuits is conceptually very similar to the Notebook idea above.  The main difference is that the Notebook can contain smaller areas (rather than the full 80x64), and it's accessible while in the editor.  But once we have it, do we still need Free Play mode in its current form?  Or will that just be confusing?  Maybe we still have it, but it's a single scratch place, without the file management; you save stuff to your notebook instead.  🤔
 
