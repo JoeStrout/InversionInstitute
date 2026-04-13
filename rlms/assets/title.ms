@@ -7,6 +7,7 @@ ensureImport "displays"
 ensureImport "mathUtil"
 ensureImport "music"
 ensureImport "ttFonts"
+ensureImport "scene"
 
 raylib.SetExitKey 0  // disable automatic window closing
 
@@ -156,10 +157,7 @@ end function
 FreePlayButton.action = function
 	if self.locked then return
 	cleanUp
-	music.playEditor
-	cd "game"
-	load "freeplay"
-	run
+	scene.switchToFreeplay
 end function
 freePlayBtn = FreePlayButton.make
 freePlayBtn.x = 826

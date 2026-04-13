@@ -73,7 +73,7 @@ end function
 
 returnToTitle = function
 	globals.chapterPath = ""
-	run file.child(assetsFolder, "title")
+	run file.child(assetsFolder, "title.ms")
 end function
 
 if locals == globals then

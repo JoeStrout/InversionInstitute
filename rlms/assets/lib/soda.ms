@@ -22,6 +22,7 @@ update = function(beginEndRaylibDrawing = true)
 	Display.RenderAll
 	if beginEndRaylibDrawing then raylib.EndDrawing
 	mouse.update
+	key.update
 	Sound.UpdateAll
 end function
 

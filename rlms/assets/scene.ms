@@ -10,6 +10,7 @@ ensureImport "drawing"
 ensureImport "backgrounds"
 ensureImport "gameData"
 ensureImport "music"
+ensureImport "toc"
 
 characters = [Alicia, Baab, Leo]
 for c in characters; c.present = false; end for
@@ -98,6 +99,12 @@ switchToEditor = function
 	music.playEditor
 	assetsDir = file.child(env.MS_EXE_DIR, "assets")
 	run file.child(assetsDir, "editor.ms")
+end function
+
+switchToFreeplay = function
+	music.playEditor
+	assetsDir = file.child(env.MS_EXE_DIR, "assets")
+	run file.child(assetsDir, "freeplay.ms")
 end function
 
 playSunRiseOrSet = function(startAlpha, endAlpha)
