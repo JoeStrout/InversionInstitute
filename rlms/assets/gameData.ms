@@ -11,7 +11,7 @@ ensureImport "stringUtil"
 // Display name of the player, for use in dialogs etc.
 // (We might use some sanitized version of this as the game
 // folder name, too.)
-playerName = "Player"
+playerName = "Friend"
 pronoun = {}
 pronoun.they = "he"			// subjective
 pronoun.them = "him"		// objective

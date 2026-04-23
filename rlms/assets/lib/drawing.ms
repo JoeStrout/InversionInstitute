@@ -157,24 +157,9 @@ end function
 // Wrap a long text into multiple lines, breaking on words,
 // as needed to fit within the given width.  Return a list of strings.
 wrapLines = function(s="", width=550, font=null)
-	if not s then return [""]
 	if not font then font = globals.font
-	result = []
-	while true
-		lenToFit = font.lenToFit(s, width)
-		if lenToFit+1 >= s.len then
-			result.push s
-			break
-		end if
-		while lenToFit > 1
-			c = s[lenToFit+1]
-			if c <= " " then break
-			lenToFit = lenToFit - 1
-		end while
-		result.push s[:lenToFit+1]
-		s = s[lenToFit+1:].trimLeft
-	end while
-	return result
+	// Refactored to just call through:
+	return font.wrapLines(s, width)
 end function
 
 // Extend the font class to draw wrapped text, and return the next Y.

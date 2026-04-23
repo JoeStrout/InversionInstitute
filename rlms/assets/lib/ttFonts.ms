@@ -200,6 +200,17 @@ end function
 TTFont.wrapLines = function(s="", width=550)
 	if not s then return [""]
 	result = []
+
+	EOL = char(10)
+	result = []
+	if s.indexOf(EOL) != null then 
+		// handle paragraphs via recursion
+		for paragraph in s.split(EOL)
+			result += self.wrapLines(paragraph, width)
+		end for
+		return result
+	end if
+
 	while true
 		lenToFit = self.lenToFit(s, width)
 		if lenToFit+1 >= s.len then
@@ -220,6 +231,7 @@ end function
 TTFont.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
 	lines = self.wrapLines(s, wrapWidth)
 	for line in lines
+		print y + ": " + line
 		self.print line, x, y, 1, tint
 		y = y - self.lineHeight
 	end for
