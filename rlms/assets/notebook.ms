@@ -87,7 +87,7 @@ end function
 drawLetter = function
 	x = 120; y = 494; wrapWidth = 302
 	page1 = "Dear " + gameData.playerName + "," + char(10)*2 +
-	  "Master Leo has created this notebook, magically attached to your drafting " +
+	  "Master Leo has created this notebook, magically linked to your drafting " +
 	  "table.  To add a design, select it on your table, then open your notebook " +
 	  "and tap ""New from Selection"".  Or you can Copy and then tap ""New from " + 		
 	  "Clipboard""."
@@ -114,24 +114,39 @@ drawPreview = function
 		dh = img.height * scale
 		gfx.drawImage img, previewArea.midX - dw/2, previewArea.midY - dh/2, dw, dh		  
 	end if
-	gfx.clearClip	
+	gfx.clearClip
+	useBtn.hidden = false
+	deleteBtn.hidden = false
+	useBtn.draw
+	deleteBtn.draw
 end function
 
 setup = function
 	loadResources
-	gfx.drawImage backgroundImage, 
-	  480 - backgroundImage.width/2, 320 - backgroundImage.height/2
+	bgLeft = 480 - backgroundImage.width/2
+	bgBotm = 320 - backgroundImage.height/2
+	gfx.drawImage backgroundImage, bgLeft, bgBotm
 
 	SimpleTextButton.Instances = []
 	SimpleTextButton.font = buttonFont
 	
-	newClipBtn = SimpleTextButton.Make("New From Clipboard", 196, 182)
+	newClipBtn = SimpleTextButton.Make("New from Clipboard", 196, 182)
 //	newClipBtn.action = @newFromClipboard
 
-	newSelBtn = SimpleTextButton.Make("New From Selection", 366, 182)
+	newSelBtn = SimpleTextButton.Make("New from Selection", 366, 182)
 //	newSelBtn.action = @newFromSelection
 
-	for btn in SimpleTextButton.Instances; btn.draw; end for
+	outer.useBtn = SimpleTextButton.Make("Use", 600, 182)
+	useBtn.hidden = true
+	outer.deleteBtn = SimpleTextButton.Make("Delete", 759, 182)
+	deleteBtn.hidden = true
+
+	for btn in SimpleTextButton.Instances
+		b = btn.bounds
+		btn.background = backgroundImage.getImage(
+		  b.left - bgLeft, b.bottom - bgBotm, b.width, b.height)
+		btn.draw
+	end for
 end function
 
 

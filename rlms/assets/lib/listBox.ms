@@ -136,7 +136,6 @@ Listbox.rowAtY = function(y)
 end function
 
 Listbox.selectRow = function(rowIdx)
-	print "Selecting row " + rowIdx
 	for i in self.rows.indexes
 		self.rows[i].isSelected = (i == rowIdx)
 	end for
