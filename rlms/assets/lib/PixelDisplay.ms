@@ -19,12 +19,17 @@ PixelDisplay.scrollY = 0
 PixelDisplay.width = 960
 PixelDisplay.height = 640
 PixelDisplay._renderTex = null
+PixelDisplay._clip = null  // [left, bottom, width, height] in display coords, or null
 
 // Begin drawing to the render texture in "replace" blend mode,
 // so that drawn colors fully overwrite the destination (matching
 // Mini Micro behavior, where alpha < 255 does not blend).
 PixelDisplay._beginDraw = function(alphaBlend = false)
 	rl.BeginTextureMode self._renderTex
+	if self._clip != null then
+		c = self._clip
+		rl.BeginScissorMode c[0], self.height - c[1] - c[3], c[2], c[3]
+	end if
 	if alphaBlend then
 //		rl.BeginBlendMode 5				// BLEND_ALPHA_PREMULTIPLY
 		// Use normal color blending for RGB, but MAX mode for alpha,
@@ -39,6 +44,7 @@ end function
 
 PixelDisplay._endDraw = function
 	rl.EndBlendMode
+	if self._clip != null then rl.EndScissorMode
 	rl.EndTextureMode
 end function
 
@@ -202,7 +208,18 @@ PixelDisplay.patternFill = function(img, left, bottom, width=null, height=null, 
 	self._drawTexture tex, left, bottom, width, height, srcLeft, srcBottom, width, height
 	rl.UnloadTexture tex
 end function
-	
+
+// Limit drawing to a rectangular region.  Coordinates use the same
+// bottom-up system as other PixelDisplay methods.  Call clearClip to restore.
+PixelDisplay.setClip = function(left, bottom, width, height)
+	self._clip = [left, bottom, width, height]
+end function
+
+// Remove any clip region set by setClip.
+PixelDisplay.clearClip = function
+	self._clip = null
+end function
+
 
 // Draw this PixelDisplay to the screen (call during BeginDrawing/EndDrawing).
 // Uses negative source height to flip the render texture vertically.

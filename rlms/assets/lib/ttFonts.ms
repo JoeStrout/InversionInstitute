@@ -127,7 +127,7 @@ end function
 // Print the given string to gfx at the given location.
 TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
 	if not s then return
-	rl.BeginTextureMode gfx._renderTex
+	gfx._beginDraw
 	// Use normal color blending for RGB, but MAX mode for alpha,
 	// so that our font rendering doesn't punch holes in the pixel layer.
 	rl.rlSetBlendFactorsSeparate 770, 771, 0, 1, 32774, 32776
@@ -151,7 +151,7 @@ TTFont.print = function(s, x=20, y=320, scale=1, tint="#FFFFFF")
 	end for
 
 	rl.EndBlendMode
-	rl.EndTextureMode
+	gfx._endDraw
 end function
 
 // Print the given string to gfx, centered horizontally on the given x.

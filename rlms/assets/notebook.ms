@@ -3,32 +3,41 @@
 
 if not globals.hasIndex("miscUtil") then import "miscUtil"
 ensureImport "soda"
-ensureImport "ttFonts"
-ensureImport "rect"
-ensureImport "json"
-ensureImport "base64"
-ensureImport "listUtil"
-ensureImport "SimpleTextButton"
+ensureImport ["ttFonts", "rect", "listbox", "SimpleTextButton"]
+ensureImport ["json", "base64", "listUtil", "mathUtil"]
 
 backgroundImage = null
 letterFont = null
 listFont = null
 buttonFont = null
 done = false
+circuitList = null  // Listbox
+previewArea = Rect.Make(528, 212, 308, 287)
 
-Entry = {}
+Entry = new listbox.ListRow
 Entry.name = ""
 Entry.image = null
 Entry.width = function; return self.image.width; end function
 Entry.height = function; return self.image.height; end function
 
-Entry.Instances = []
+Entry.draw = function(g, x, y, width, height)
+	if self.isSelected then c = "#4444AA" else c = color.black
+	baseline = y + 10
+	listFont.print self.name, x, baseline, 1, c
+	sizeStr = self.width + " x " + self.height
+	listFont.printRight sizeStr, x + width, y + 10, 1, c
+	x0 = x + floor((listFont.width(self.name) + 10) / 7) * 7
+	x1 = x + width - listFont.width(sizeStr) - 5
+	for dotX in range(x0, x1, 7)
+		g.fillRect dotX-2, baseline, 2, 2, c
+	end for
+	//g.drawRect x, y, width, height, "#888888" // for debugging
+end function
 
-Entry.Add = function(name, image)
+Entry.Make = function(name, image)
 	noob = new Entry
 	noob.name = name
 	noob.image = image
-	self.Instances.push noob
 	return noob
 end function
 
@@ -48,7 +57,7 @@ loadResources = function
 	end if
 		
 	if listFont == null then
-		outer.listFont = ttFonts.TTFont.Load("fonts/EBGaramond-Regular.ttf", 24)
+		outer.listFont = ttFonts.TTFont.Load("fonts/EBGaramond-Regular.ttf", 34)
 	end if
 
 	if buttonFont == null then
@@ -57,12 +66,21 @@ loadResources = function
 end function
 
 loadEntries = function
-	for fname in file.children(gameData.notebookFolder)
+	if circuitList == null then
+		outer.circuitList = listbox.Listbox.Make(116, 220, 338, 273)
+		circuitList.rowHeight = 30
+		bgLeft = 480 - backgroundImage.width/2
+		bgBotm = 320 - backgroundImage.height/2
+		b = circuitList.bounds
+		circuitList.background = backgroundImage.getImage(
+		   b.left - bgLeft, b.bottom - bgBotm, b.width, b.height)
+	end if
+	for fname in file.children(gameData.notebookFolder).sort
 		if not fname.endsWith(".png") then continue
 		path = file.child(gameData.notebookFolder, fname)
 		img = file.loadImage(path)
 		if img == null then continue
-		Entry.Add (fname - ".png").replace("_", " "), img
+		circuitList.rows.push Entry.Make((fname - ".png").replace("_", " "), img)
 	end for
 end function
 
@@ -83,6 +101,20 @@ drawLetter = function
 	  "- Alicia"
 	letterFont.printWrapped page2, x, y, wrapWidth, color.black
   
+end function
+
+drawPreview = function
+	gfx.setClip previewArea.left, previewArea.bottom, previewArea.width, previewArea.height
+	gfx.drawImage backgroundImage, 
+	  480 - backgroundImage.width/2, 320 - backgroundImage.height/2
+	if circuitList and circuitList.selectedIdx != null then
+		img = circuitList.selectedRow.image
+		scale = mathUtil.min(previewArea.width / img.width, previewArea.height / img.height)
+		dw = img.width * scale
+		dh = img.height * scale
+		gfx.drawImage img, previewArea.midX - dw/2, previewArea.midY - dh/2, dw, dh		  
+	end if
+	gfx.clearClip	
 end function
 
 setup = function
@@ -110,15 +142,24 @@ present = function(circuitPath)
 	setup
 	loadEntries
 	
-	if not Entry.Instances then
+	if not circuitList.rows then
 		drawLetter
+		outer.circuitList = null
 	else
-	
+		circuitList.draw
 	end if
 	
+	lastSelIdx = null
 	while not done
 		yield
 		SimpleTextButton.UpdateAll
+		if circuitList and circuitList.handleMouse then
+			circuitList.draw
+			if circuitList.selectedIdx != lastSelIdx then
+				drawPreview
+				lastSelIdx = circuitList.selectedIdx
+			end if
+		end if
 		if key.pressed("escape") then close
 	end while
 end function

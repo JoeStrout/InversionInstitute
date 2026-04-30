@@ -28,12 +28,18 @@ State.WAITMOUSEUP = "WAITMOUSEUP" // (ignoring all events until button is releas
 
 Listbox = {}
 Listbox.bounds = Rect.Make(0, 0, 300, 300)
+Listbox.background = "#CCCCCC"  // color or Image to use as background, or null
 Listbox.rowHeight = 36
 Listbox.scrollbarWidth = 16
 Listbox.scroll = 0  // how many pixels our content is currently scrolled up
 Listbox.rows = null
 Listbox.state = State.IDLE
 Listbox.selectedIdx = null
+
+Listbox.selectedRow = function
+	if self.selectedIdx == null then return null
+	return self.rows[self.selectedIdx]
+end function
 
 Listbox.Make = function(left=0, bottom=0, width=300, height=300)
 	noob = new Listbox
@@ -95,6 +101,14 @@ end function
 Listbox.draw = function(g)
 	if g == null then g = gfx
 
+	g.setClip self.bounds.left, self.bounds.bottom, self.bounds.width, self.bounds.height
+	if self.background isa string then
+		self.bounds.fill g, self.background
+	else if self.background isa Image then
+		g.drawImage self.background,
+		  self.bounds.left, self.bounds.bottom, self.bounds.width, self.bounds.height
+	end if
+	
 	// draw rows
 	rowTop = self.bounds.top + self.scroll
 	rowWidth = self.bounds.width - self.scrollbarWidth
@@ -110,7 +124,9 @@ Listbox.draw = function(g)
 	self.drawScrollbar g
 	
 	// outline (for debugging)
-	self.bounds.frame g, "#888888"
+	// self.bounds.frame g, "#888888"
+	
+	g.clearClip
 end function
 
 Listbox.rowAtY = function(y)
@@ -210,10 +226,7 @@ test = function
 
 	while true
 		yield
-		if lb.handleMouse then
-			gfx.clear color.green
-			lb.draw gfx
-		end if
+		if lb.handleMouse then lb.draw gfx
 		if key.pressed("escape") then break
 	end while	
 end function
