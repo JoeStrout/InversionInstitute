@@ -231,3 +231,22 @@ I found yet more time, so I polished up the textField module (which required fle
 
 One thing to think about: the Free Play list of named circuits is conceptually very similar to the Notebook idea above.  The main difference is that the Notebook can contain smaller areas (rather than the full 80x64), and it's accessible while in the editor.  But once we have it, do we still need Free Play mode in its current form?  Or will that just be confusing?  Maybe we still have it, but it's a single scratch place, without the file management; you save stuff to your notebook instead.  🤔
 
+
+
+## Apr 30 2026
+
+I'm implementing the Notebook now.  One annoying little wrinkle: I want a book emoji on the label of the Notebook button, but because of the way ModeButton (derived from editor.Button) works, it comes out completely black unless I customize the "icon" image... and then the text remains black when pressed, so it's virtually unreadable against the background.
+
+I'm going to need to rework all the extra buttons in the editor at some point.  Not only is this caption-as-image system kind of stupid, but it's also not really in keeping with the II aesthetic.  The beveled buttons may be OK for the tool palette, but I should get something more parchmenty, or just use SimpleTextButton, for the other buttons.
+
+But for today, I just want to get the notebook working.
+
+I have the notebook opening and closing (and remembering the current page), and you can Use a circuit, placing it into your design.  This is already really useful, but only because I have a handful of subcircuits I hacked into my notebooks folder.  The next step is adding pages.  I'm thinking we need to do this:
+
+1. If there is a global clip image (which I want to rename "clipboard" to avoid confusing with the new PixelDisplay.setClip functionality), enable "New from Clipboard"; otherwise, disable it (draw it crossed out and unresponsive).
+2. The other button is always available, but changes between "New from Selection" and "New Full Circuit" depending on whether you have a current selection.
+
+Clicking either "New" button plops your circuit into the preview area, and creates a new row with a unique "Untitled" name.  We need to place an edit field over the row and let you type a name; and under the preview, we should have "Save" and "Cancel" buttons instead of the usual Use/Delete.
+
+The only thing missing here is an easy way to replace a previous design.  But I think that's probably OK -- you can just delete the old one, then create a new one of the same name.  It's probably not something you do commonly enough to require a faster method.
+

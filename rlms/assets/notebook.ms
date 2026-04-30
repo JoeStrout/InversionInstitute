@@ -75,12 +75,18 @@ loadEntries = function
 		circuitList.background = backgroundImage.getImage(
 		   b.left - bgLeft, b.bottom - bgBotm, b.width, b.height)
 	end if
+	selName = ""
+	if circuitList.selectedIdx != null then selName = circuitList.selectedRow.name
+	circuitList.rows = []
 	for fname in file.children(gameData.notebookFolder).sort
 		if not fname.endsWith(".png") then continue
 		path = file.child(gameData.notebookFolder, fname)
 		img = file.loadImage(path)
 		if img == null then continue
 		circuitList.rows.push Entry.Make((fname - ".png").replace("_", " "), img)
+		if circuitList.rows[-1].name == selName then
+			circuitList.selectedIdx = circuitList.rows.len - 1
+		end if
 	end for
 end function
 
@@ -130,6 +136,9 @@ setup = function
 	SimpleTextButton.Instances = []
 	SimpleTextButton.font = buttonFont
 	
+	closeBtn = SimpleTextButton.Make("X", 107, 511)
+	closeBtn.action = @close
+	
 	newClipBtn = SimpleTextButton.Make("New from Clipboard", 196, 182)
 //	newClipBtn.action = @newFromClipboard
 
@@ -138,6 +147,8 @@ setup = function
 
 	outer.useBtn = SimpleTextButton.Make("Use", 600, 182)
 	useBtn.hidden = true
+	useBtn.action = @useSelectedRow
+	
 	outer.deleteBtn = SimpleTextButton.Make("Delete", 759, 182)
 	deleteBtn.hidden = true
 
@@ -147,8 +158,18 @@ setup = function
 		  b.left - bgLeft, b.bottom - bgBotm, b.width, b.height)
 		btn.draw
 	end for
+	
+	drawPreview
 end function
 
+useSelectedRow = function
+	useCircuit circuitList.selectedRow
+end function
+
+// "Use" callback -- callers can replace this as desired.
+useCircuit = function(entry)
+	print "Using circuit: " + entry.name
+end function
 
 present = function(circuitPath)
 	display(1).setMode displayMode.pixel
@@ -165,6 +186,7 @@ present = function(circuitPath)
 	end if
 	
 	lastSelIdx = null
+	outer.done = false
 	while not done
 		yield
 		SimpleTextButton.UpdateAll
@@ -178,7 +200,6 @@ present = function(circuitPath)
 		if key.pressed("escape") then close
 	end while
 end function
-
 
 test = function
 	clear

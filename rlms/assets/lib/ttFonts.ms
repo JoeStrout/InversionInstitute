@@ -10,6 +10,7 @@ ensureImport "stringUtil"
 Emoji = {}
 Emoji.image = null	  // image to draw
 Emoji.ascent = null   // pixels between baseline and top of image; defaults to image height
+Emoji.applyColor = false  // if true, tint with text color; if false, don't
 
 Emoji.release = function
 	if self.image then self.image.release
@@ -84,7 +85,8 @@ TTFont.printChar = function(c, x=480, y=320, scale=1, tint="#FFFFFF")
 		src = [0, 0, emoji.image.width, emoji.image.height]
 		dest = [x, gfx.height - y - emoji.ascent,
 		  emoji.image.width * scale, emoji.image.height * scale]
-		rl.DrawTexturePro tex, src, dest, [0, 0], 0, [255, 255, 255, 255]
+		if emoji.applyColor then c = tint else c = rl.WHITE
+		rl.DrawTexturePro tex, src, dest, [0, 0], 0, c
 	else
 		rl.DrawTextCodepoint self._font, c.code, [x, gfx.height - y - self.ascent * scale], self._size * scale, tint
 	end if

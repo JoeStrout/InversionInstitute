@@ -17,6 +17,7 @@ ensureImport "pixelLogicSim"; sim = pixelLogicSim
 ensureImport "music"
 ensureImport "gameData"
 ensureImport "doneDialog"
+ensureImport "notebook"
 
 modeHelp = {}
 
@@ -61,6 +62,7 @@ marginPic = circuitPic.getImage
 resourceDir = "pics/fatbits/"
 helpFont = objectives.smallFont
 coordinateFont = ttFonts.TTFont.Load("fonts/NotoSans-Regular.ttf", 12)
+smallPrinter.boldFont.emoji[":book:"] = ttFonts.Emoji.Make("pics/ui/bookGlyph.png")
 selectionAnchor = null
 picAtStart = null
 posAtStart = null
@@ -410,7 +412,7 @@ makeTools = function
 	for i in tools.indexes
 		t = tools[i]
 		if t[0] == null then continue
-		Tool.Make t[0], 770 + 40*(i%4), 40 + 40*floor(i/4), t[1]
+		Tool.Make t[0], 770 + 40*(i%4), 35 + 40*floor(i/4), t[1]
 	end for
 end function
 makeTools
@@ -499,15 +501,18 @@ deleteSelection = function
 	end if
 end function
 
-paste = function
-	if not globals.hasIndex("clip") or clip == null then
-		print char(7) // Beep!
-		return
+paste = function(image=null)
+	if image == null then
+		if not globals.hasIndex("clip") or clip == null then
+			print char(7) // Beep!
+			return
+		end if
+		image = clip
 	end if
 	globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 	globals.mode = kModePasting
-	globals.pasted = clip
-	globals.clipMouseOffset = {"x": floor(clip.width/2), "y": floor(clip.height/2)}
+	globals.pasted = image
+	globals.clipMouseOffset = {"x": floor(image.width/2), "y": floor(image.height/2)}
 	drawHelp modeHelp[kModePasting]
 end function
 
@@ -816,7 +821,7 @@ palSelectionRing = new Sprite
 palSelectionRing.image = Image.create(22, 22, "#CCCCCC")
 editSprites.push palSelectionRing
 
-paletteArea = Rect.Make(766, 424, 164, 44) 
+paletteArea = Rect.Make(768, 440, 164, 44) 
 PalButton = new Sprite
 PalButton.image = Image.create(18, 18, color.white)
 PalButton.instances = []
@@ -882,11 +887,12 @@ ModeButton.btnUpImg = file.loadImage(resourceDir + "toolButtonWideUp.png")
 
 ModeButton.init = function(label, left, bottom)
 	self.bgSprite = new Sprite
-	self.bgSprite.image = ModeButton.btnUpImg
-	self.bgSprite.x = left + ModeButton.btnUpImg.width/2
-	self.bgSprite.y = bottom + ModeButton.btnUpImg.height/2
+	self.bgSprite.image = self.btnUpImg
+	self.bgSprite.x = left + self.btnUpImg.width/2
+	self.bgSprite.y = bottom + self.btnUpImg.height/2
 	alwaysSprites.push self.bgSprite
 	
+	self.label = label
 	w = smallPrinter.boldFont.width(label)
 	scratch.clear color.clear, w, 14
 	oldGfx = gfx; globals.gfx = scratch
@@ -905,17 +911,6 @@ ModeButton.init = function(label, left, bottom)
 
 	Button.instances.push self
 end function
-
-if context.isFreePlay then
-	// Free play mode: add Save As and Save buttons
-	saveAsButton = new ModeButton
-	saveAsButton.init "SAVE AS", paintArea.right - 72 - 88*2, paintArea.top + 14
-	saveAsButton.handleClick = @doSaveAs
-	
-	saveButton = new ModeButton
-	saveButton.init "SAVE", paintArea.right - 72 - 88*1, paintArea.top + 14
-	saveButton.handleClick = @doSave
-end if
 
 exitToStory = function
 	if not testMode then
@@ -958,6 +953,26 @@ checkButton.handleClick = function
 	end if	
 end function
 checkButton.hide
+
+notebookButton = new ModeButton
+notebookButton.btnDownImg = file.loadImage(resourceDir + "toolButtonExtraWideDown.png")
+notebookButton.btnUpImg = file.loadImage(resourceDir + "toolButtonExtraWideUp.png")
+notebookButton.init ":book: NOTEBOOK", paletteArea.left, paletteArea.bottom - 28
+// We need to customize our labelImg so the emoji doesn't come out black :|
+w = notebookButton.iconSprite.image.width
+scratch.clear color.clear, w, 14
+oldGfx = gfx; globals.gfx = scratch
+smallPrinter.boldFont.print notebookButton.label, 0, 0, 1, color.black
+globals.gfx = oldGfx
+notebookButton.iconSprite.image = scratch.getImage
+notebookButton.iconUpTint = color.white
+notebookButton.iconSprite.tint = notebookButton.iconUpTint
+// Grr.  ToDo: rework all these buttons.
+notebookButton.handleClick = function; notebook.present; end function
+notebook.useCircuit = function(entry)
+	notebook.close
+	paste entry.image
+end function
 
 drawSimStats = function
 	gfx.fillRect 760, 525, 192, 92, bgColor
