@@ -231,7 +231,6 @@ end function
 TTFont.printWrapped = function(s="", x, y, wrapWidth, tint="#FFFFFF")
 	lines = self.wrapLines(s, wrapWidth)
 	for line in lines
-		print y + ": " + line
 		self.print line, x, y, 1, tint
 		y = y - self.lineHeight
 	end for

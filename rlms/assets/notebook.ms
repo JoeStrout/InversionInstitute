@@ -18,17 +18,18 @@ done = false
 
 Entry = {}
 Entry.name = ""
-Entry.width = 0
-Entry.height = 0
+Entry.image = null
+Entry.width = function; return self.image.width; end function
+Entry.height = function; return self.image.height; end function
 
 Entry.Instances = []
 
-Entry.Add = function(name, width, height)
+Entry.Add = function(name, image)
 	noob = new Entry
 	noob.name = name
-	noob.width = width
-	noob.height = height
+	noob.image = image
 	self.Instances.push noob
+	return noob
 end function
 
 
@@ -55,6 +56,15 @@ loadResources = function
 	end if
 end function
 
+loadEntries = function
+	for fname in file.children(gameData.notebookFolder)
+		if not fname.endsWith(".png") then continue
+		path = file.child(gameData.notebookFolder, fname)
+		img = file.loadImage(path)
+		if img == null then continue
+		Entry.Add (fname - ".png").replace("_", " "), img
+	end for
+end function
 
 drawLetter = function
 	x = 120; y = 494; wrapWidth = 302
@@ -98,8 +108,13 @@ present = function(circuitPath)
 	globals.gfx = display(1)
 	gfx.clear color.clear
 	setup
+	loadEntries
 	
-	drawLetter
+	if not Entry.Instances then
+		drawLetter
+	else
+	
+	end if
 	
 	while not done
 		yield
@@ -114,10 +129,11 @@ test = function
 	// shim our needed modules for testing
 	globals.context = {}
 	context.number = 7
-	globals.gameData = {}
-	gameData.data = {}
-	gameData.playerName = "Testy"
-	gameData.data.installId = "TestyMcTester"
+	ensureImport "gameData"
+//	globals.gameData = {}
+//	gameData.data = {}
+//	gameData.playerName = "Testy"
+//	gameData.data.installId = "TestyMcTester"
 	present
 end function
 

@@ -43,9 +43,18 @@ if not file.exists(savedGamesFolder) then file.makedir savedGamesFolder
 gameFolder = file.child(savedGamesFolder, "default")
 if not file.exists(gameFolder) then file.makedir gameFolder
 
-// Path of the folder containing your free-play circuits
-freePlayFolder = file.child(gameFolder, "freeplay")
-if not file.exists(freePlayFolder) then file.makedir freePlayFolder
+// Path of the folder containing your notebook circuits
+notebookFolder = file.child(gameFolder, "notebook")
+oldFreeplayFolder = file.child(gameFolder, "freeplay")
+if not file.exists(notebookFolder) and file.exists(oldFreeplayFolder) then
+	print "Renaming old freeplay folder to notebook"
+	file.move oldFreeplayFolder, notebookFolder
+end if
+if not file.exists(notebookFolder) then
+	file.makedir notebookFolder
+	print "Creating notebook folder"
+end if
+print "notebookFolder: " + notebookFolder
 
 // Data map: this is the main repository of persistent data.
 // It gets stored in GRFON format, so should contain only
