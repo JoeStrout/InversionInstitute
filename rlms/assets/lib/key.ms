@@ -128,11 +128,11 @@ available = function
 end function
 
 get = function
-	if keyQueue then return keyQueue.pull
 	while true
+		if keyQueue then return keyQueue.pull
 		result = raylib.GetCharPressed
 		if result then return char(result)
-		yield	// ToDo: how to keep rendering while we wait?
+		yield
 	end while
 end function
 
@@ -161,6 +161,8 @@ _extraKeys[raylib.KEY_DOWN] = 20
 _extraKeys[raylib.KEY_HOME] = 1
 _extraKeys[raylib.KEY_END] = 5
 _extraKeys[raylib.KEY_ESCAPE] = 27
+_extraKeys[raylib.KEY_ENTER] = 10
+_extraKeys[raylib.KEY_KP_ENTER] = 3
 
 
 // In order to make all keys work properly, including ones that Raylib
@@ -170,3 +172,15 @@ update = function
 		if raylib.IsKeyPressed(kcode) then keyQueue.push char(_extraKeys[kcode])
 	end for
 end function
+
+if locals == globals then
+	import "soda"
+	globals.key = locals  // (so we're testing this stuff, not separate import)
+	print "Testing key.get: " 
+	while true
+		k = get
+		print "Pressed code " + k.code + ": " + k
+	end while
+end if
+
+

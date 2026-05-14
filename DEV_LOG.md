@@ -250,3 +250,7 @@ Clicking either "New" button plops your circuit into the preview area, and creat
 
 The only thing missing here is an easy way to replace a previous design.  But I think that's probably OK -- you can just delete the old one, then create a new one of the same name.  It's probably not something you do commonly enough to require a faster method.
 
+## May 14 2025
+
+Renamed clip to clipboard.  Now working on page creation/management in notebook.ms.
+

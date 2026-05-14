@@ -82,7 +82,7 @@ print "context: " + context
 print "map.indexes: " + map.indexes
 context.isFreePlay = not context.get("number")
 if not context.hasIndex("margin") then context.margin = Rect.Make(0, 0, picW, picH)
-if not globals.hasIndex("clip") then clip = null
+if not globals.hasIndex("clipboard") then globals.clipboard = null
 
 // Prepare displays
 displays.setupEditorSim picW, picH, ps
@@ -485,7 +485,7 @@ end function
 
 copy = function
 	if selection == null then return
-	globals.clip = grabSelection
+	globals.clipboard = grabSelection
 	drawGrid
 end function
 
@@ -503,11 +503,11 @@ end function
 
 paste = function(image=null)
 	if image == null then
-		if not globals.hasIndex("clip") or clip == null then
+		if not globals.hasIndex("clipboard") or clipboard == null then
 			print char(7) // Beep!
 			return
 		end if
-		image = clip
+		image = clipboard
 	end if
 	globals.picAtStart = fatbits.getImage(0, 0, picW, picH)
 	globals.mode = kModePasting
@@ -784,11 +784,11 @@ toolFuncs[kModeSelect] = function(pp, justDown)
 		if selection and selection.contains(pp) then
 			// drag the existing selection
 			left = selection.left; bottom = selection.bottom
-			savedClip = clip
+			savedClip = clipboard
 			copy; deleteSelection; paste
 			clipMouseOffset.x = pp.x - left
 			clipMouseOffset.y = pp.y - bottom
-			globals.clip = savedClip
+			globals.clipboard = savedClip
 			return
 		else
 			// start a new selection

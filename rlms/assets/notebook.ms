@@ -3,7 +3,7 @@
 
 if not globals.hasIndex("miscUtil") then import "miscUtil"
 ensureImport "soda"
-ensureImport ["ttFonts", "rect", "listbox", "SimpleTextButton"]
+ensureImport ["ttFonts", "rect", "listbox", "SimpleTextButton", "textField"]
 ensureImport ["json", "base64", "listUtil", "mathUtil"]
 
 backgroundImage = null
@@ -34,6 +34,46 @@ Entry.draw = function(g, x, y, width, height)
 	//g.drawRect x, y, width, height, "#888888" // for debugging
 end function
 
+EntryField = new TextField
+EntryField.font = listFont
+EntryField.maxLength = 25
+EntryField.textColor = color.black
+EntryField.cursorColor = "#666666"
+EntryField.selColor = "#8888FF"
+EntryField.backColor = "#F4D396"
+EntryField.borderColor = "#663300"
+
+EntryField.setSelText = function(s="")
+	if not s then return super.setSelText(s)
+	// filter out printable characters that cause mischief in filenames
+	for c in "/\{}?*'""`~:<>|$!&;()[]#%"
+		s = s.replace(c, "")
+	end for
+	if s then return super.setSelText(s)
+end function	
+
+Entry.edit = function(g, x, y, width, height)
+	sizeStr = self.width + " x " + self.height
+	sizeW = listFont.width(sizeStr) + 5
+	fieldW = width - sizeW + 8
+	print Rect.Make(x - 4, y - 4, fieldW, height + 4).str
+	
+	field = new EntryField
+	field.init Rect.Make(x, y, fieldW, height)
+	field.text = self.name
+	field.select
+	field.setFocus
+	field.draw
+	field.done = false
+	field.commit = function; self.done = true; end function
+	while not field.done
+		yield
+		field.update		
+	end while
+	self.name = field.text
+	field.close
+end function
+
 Entry.Make = function(name, image)
 	noob = new Entry
 	noob.name = name
@@ -58,6 +98,7 @@ loadResources = function
 		
 	if listFont == null then
 		outer.listFont = ttFonts.TTFont.Load("fonts/EBGaramond-Regular.ttf", 34)
+		EntryField.font = listFont
 	end if
 
 	if buttonFont == null then
@@ -90,13 +131,27 @@ loadEntries = function
 	end for
 end function
 
+clipboardAvailable = function
+	return globals.hasIndex("clipboard") and clipboard != null
+end function
+
+selectionAvailable = function
+	return globals.hasIndex("selection") and selection != null
+end function
+
+newFromSelCaption = function
+	if selectionAvailable then return "New from Selection"
+	return "New from Table"  // (whole circuit)
+end function
+
 drawLetter = function
 	x = 120; y = 494; wrapWidth = 302
+	
 	page1 = "Dear " + gameData.playerName + "," + char(10)*2 +
 	  "Master Leo has created this notebook, magically linked to your drafting " +
 	  "table.  To add a design, select it on your table, then open your notebook " +
-	  "and tap ""New from Selection"".  Or you can Copy and then tap ""New from " + 		
-	  "Clipboard""."
+	  "and tap """ + newFromSelCaption + """.  Or you can Copy and then tap " +
+	  """New from Clipboard""."
 	letterFont.printWrapped page1, x, y, wrapWidth, color.black
 	
 	x = 537
@@ -127,6 +182,32 @@ drawPreview = function
 	deleteBtn.draw
 end function
 
+addNewPage = function(circuitPic)
+	circuitList.rows.push Entry.Make("Untitled", circuitPic)
+	circuitList.selectRow circuitList.rows.len - 1
+	circuitList.scrollIntoView
+	circuitList.draw
+	drawPreview
+	circuitList.editRow
+	selRow = circuitList.rows[circuitList.selectedIdx]
+	circuitList.rows.sort "name" // (Note: sorts lowercase after all uppercase)
+	circuitList.selectRow circuitList.rows.indexOf(selRow)
+	circuitList.scrollIntoView
+	circuitList.draw
+end function
+
+newFromClipboard = function
+	addNewPage clipboard
+end function
+
+newFromSelection = function
+	pic = circuitPic
+	if selectionAvailable then
+		pic = pic.getImage(selection.left, selection.bottom, selection.width, selection.height)
+	end if
+	addNewPage pic
+end function
+
 setup = function
 	loadResources
 	bgLeft = 480 - backgroundImage.width/2
@@ -140,10 +221,11 @@ setup = function
 	closeBtn.action = @close
 	
 	newClipBtn = SimpleTextButton.Make("New from Clipboard", 196, 182)
-//	newClipBtn.action = @newFromClipboard
+	newClipBtn.enabled = clipboardAvailable
+	newClipBtn.action = @newFromClipboard
 
-	newSelBtn = SimpleTextButton.Make("New from Selection", 366, 182)
-//	newSelBtn.action = @newFromSelection
+	newSelBtn = SimpleTextButton.Make(newFromSelCaption, 366, 182)
+	newSelBtn.action = @newFromSelection
 
 	outer.useBtn = SimpleTextButton.Make("Use", 600, 182)
 	useBtn.hidden = true

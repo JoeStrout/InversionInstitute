@@ -19,6 +19,10 @@ ListRow.draw = function(g, x, y, width, height)
 	if self.isSelected then c = "#FF00FF" else c = "#FF8888"
 	g.drawEllipse x, y, width, height, c
 end function
+ListRow.edit = function(g, x, y, width, height)
+	// override me too!
+	print "No row edit function available for " + self
+end function
 
 State = {}
 State.IDLE = "IDLE"
@@ -37,7 +41,7 @@ Listbox.state = State.IDLE
 Listbox.selectedIdx = null
 
 Listbox.selectedRow = function
-	if self.selectedIdx == null then return null
+	if self.selectedIdx == null or self.selectedIdx >= self.rows.len then return null
 	return self.rows[self.selectedIdx]
 end function
 
@@ -95,8 +99,34 @@ Listbox.moveScrollThumb = function(pixels)
 	newScroll = mathUtil.clamp(newScroll, 0, self.maxScroll)
 	if newScroll == self.scroll then return false
 	self.scroll = newScroll
+	print "new scroll: " + newScroll
 	return true
 end function	
+
+Listbox.scrollIntoView = function(row=null)
+	if row == null then row = self.selectedIdx
+	if row == null then return
+	print "scrollIntoView " + row
+	rowTop = row * self.rowHeight
+	rowBottom = rowTop + self.rowHeight
+	if rowTop < self.scroll then
+		self.scroll = row * self.rowHeight
+		print "scroll up to " + self.scroll
+		return true
+	else if rowBottom > self.scroll + self.bounds.height then
+		self.scroll = rowBottom - self.bounds.height
+		print "scroll down to " + self.scroll
+		if self.scroll < 0 then self.scroll = 0
+		return true
+	else
+		print "No scroll needed"
+		print "scroll: " + self.scroll
+		print "row * rowHeight: " + row * self.rowHeight
+		print "(row + 1) * self.rowHeight: " + ((row + 1) * self.rowHeight)
+		print "self.scroll + self.bounds.height: " + (self.scroll + self.bounds.height)
+	end if
+	return false
+end function
 
 Listbox.draw = function(g)
 	if g == null then g = gfx
@@ -140,6 +170,16 @@ Listbox.selectRow = function(rowIdx)
 		self.rows[i].isSelected = (i == rowIdx)
 	end for
 	self.selectedIdx = rowIdx
+end function
+
+Listbox.editRow = function(rowIdx=null, g)
+	if g == null then g = gfx
+	if rowIdx == null then rowIdx = self.selectedIdx
+	if rowIdx == null then return
+	rowTop = self.bounds.top + self.scroll - rowIdx * self.rowHeight
+	rowBottom = rowTop - self.rowHeight
+	rowWidth = self.bounds.width - self.scrollbarWidth
+	self.rows[rowIdx].edit gfx, self.bounds.left, rowBottom, rowWidth, self.rowHeight
 end function
 
 Listbox.addToScroll = function(delta)

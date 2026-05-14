@@ -9,6 +9,7 @@ SimpleTextButton.state = NORMAL
 SimpleTextButton.Instances = []
 SimpleTextButton.background = null  // color, Image, or null
 SimpleTextButton.hidden = false  // if true, draws background, but no text
+SimpleTextButton.enabled = true
 
 SimpleTextButton.Make = function(text, x, y)
 	if self.font == null then self.font = ttFonts.TTFont.Load("fonts/MorrisRoman-Black.ttf", 48)
@@ -43,7 +44,9 @@ SimpleTextButton.draw = function
 	end if
 	if self.hidden then return
 	
-	if self.state == HOVER then
+	if not self.enabled then
+		c = "#666666"
+	else if self.state == HOVER then
 		c = "#0088FF"
 	else if self.state == PRESSED then
 		c = "#008888"
@@ -51,6 +54,11 @@ SimpleTextButton.draw = function
 		c = color.black
 	end if
 	self.font.printCentered self.text, self.x, self.y, 1, c
+	if not self.enabled then
+		w = self.font.width(self.text)
+		y = self.y + self.font.ascent * 0.25
+		gfx.line self.x - w/2 - 5, y, self.x + w/2 + 5, y, c
+	end if
 end function
 
 SimpleTextButton.action = function
@@ -59,7 +67,7 @@ end function
 
 SimpleTextButton.update = function
 	doAction = false
-	hover = self.contains(mouse) and not self.hidden
+	hover = self.contains(mouse) and self.enabled and not self.hidden
 	if hover and mouse.button then
 		// track until mouse released!
 		while mouse.button

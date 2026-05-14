@@ -8,6 +8,8 @@ ensureImport "mathUtil"
 ensureImport "ttFonts"
 ensureImport "qa"
 
+min = @mathUtil.min; max = @mathUtil.max
+
 globals.TextField = {}
 TextField.backColor = color.black
 TextField.borderColor = color.gray
@@ -118,6 +120,7 @@ end function
 TextField.handleKey = function(k)
 	code = k.code
 	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
+	print "^" * ctrl + code
 	if k >= " " and code != 127 then
 		self.setSelText k
 	else if code == 8 then		// backspace
@@ -146,6 +149,8 @@ TextField.handleKey = function(k)
 		self.focusNext key.pressed("left shift") or key.pressed("right shift")
 	else if code == 25 then		// shift-tab
 		self.focusNext true
+	else if code == 10 or code == 3 or code == 13 then // return/enter
+		self.commit
 	else
 		print "Unknown key code: " + code
 	end if
@@ -244,7 +249,13 @@ TextField.update = function
 	end if
 end function
 
+TextField.commit = function
+	// Override me!
+	self.select
+end function
+
 TextField.focusNext = function(orActuallyPrevious=false)
+	self.commit
 	idx = instances.indexOf(self)
 	if orActuallyPrevious then
 		idx = (idx + instances.len - 1) % instances.len
@@ -255,13 +266,13 @@ TextField.focusNext = function(orActuallyPrevious=false)
 	instances[idx].select
 end function
 
-TextField.updateAll = function
+TextField.UpdateAll = function
 	for inst in instances
 		inst.update
 	end for
 end function
 
-TextField.closeAll = function
+TextField.CloseAll = function
 	for inst in instances[:]
 		inst.close
 	end for
@@ -379,8 +390,10 @@ TextField.recomputeSelRect = function
 	if not self.offsets then self.recomputeOffsets
 	left = self.offsets[self.selStart]
 	right = self.offsets[self.selEnd] + 1
-	bottom = self.bounds.midY + self.font.sizeOver * 0.4 - self.font.sizeUnder - 2
-	top = self.bounds.midY - self.font.sizeOver * 0.6 + 1
+	bottom = max(self.bounds.midY + self.font.sizeOver * 0.4 - self.font.sizeUnder - 2,
+	  self.bounds.bottom + 1)
+	top = min(self.bounds.midY - self.font.sizeOver * 0.6 + 1, 
+	  self.bounds.top - 1)
 	self.selRect = Rect.Make(left, bottom, right - left, top - bottom)
 	self.cursorStartTime = time
 end function
