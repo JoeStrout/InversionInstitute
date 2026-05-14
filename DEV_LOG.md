@@ -256,4 +256,9 @@ Renamed clip to clipboard.  Now working on page creation/management in notebook.
 
 ...OK, looking good now!  You can always do either "New from Selection" or "New from Table", and if you've copied something you can also do "New from Clipboard".  New entries are saved to disk and auto-selected.  If you specify an existing file name, it replaces it.  You can Use or Delete existing entries, and if you delete them all, Alicia's note reappears.  I think the notebook is done!
 
+Posting an update via https://steamcommunity.com/games/2145480/partnerevents
+Update: https://store.steampowered.com/news/app/2145480/view/525376260116840580
+And also on itch: https://joestrout.itch.io/inversion-institute/devlog/1523721/new-notebook-feature-complete
+
+
 
