@@ -16,6 +16,7 @@ previewArea = Rect.Make(528, 212, 308, 287)
 
 Entry = new listbox.ListRow
 Entry.name = ""
+Entry.path = ""
 Entry.image = null
 Entry.width = function; return self.image.width; end function
 Entry.height = function; return self.image.height; end function
@@ -119,16 +120,20 @@ loadEntries = function
 	selName = ""
 	if circuitList.selectedIdx != null then selName = circuitList.selectedRow.name
 	circuitList.rows = []
+	circuitList.selectRow null
+	newIdx = 0
 	for fname in file.children(gameData.notebookFolder).sort
 		if not fname.endsWith(".png") then continue
 		path = file.child(gameData.notebookFolder, fname)
 		img = file.loadImage(path)
 		if img == null then continue
-		circuitList.rows.push Entry.Make((fname - ".png").replace("_", " "), img)
-		if circuitList.rows[-1].name == selName then
-			circuitList.selectedIdx = circuitList.rows.len - 1
-		end if
+		newEntry = Entry.Make((fname - ".png").replace("_", " "), img)
+		newEntry.path = path
+		circuitList.rows.push newEntry
+		if circuitList.rows[-1].name == selName then newIdx = circuitList.rows.len - 1
 	end for
+	circuitList.selectRow newIdx
+	print "At end of loadEntries, selectedIdx = " + circuitList.selectedIdx
 end function
 
 clipboardAvailable = function
@@ -162,27 +167,35 @@ drawLetter = function
 	  "- Alicia"
 	letterFont.printWrapped page2, x, y, wrapWidth, color.black
   
+	useBtn.hidden = true
+	deleteBtn.hidden = true
+	useBtn.draw
+	deleteBtn.draw
 end function
 
 drawPreview = function
 	gfx.setClip previewArea.left, previewArea.bottom, previewArea.width, previewArea.height
 	gfx.drawImage backgroundImage, 
 	  480 - backgroundImage.width/2, 320 - backgroundImage.height/2
-	if circuitList and circuitList.selectedIdx != null then
+	if circuitList and circuitList.selectedRow then
 		img = circuitList.selectedRow.image
 		scale = mathUtil.min(previewArea.width / img.width, previewArea.height / img.height)
 		dw = img.width * scale
 		dh = img.height * scale
 		gfx.drawImage img, previewArea.midX - dw/2, previewArea.midY - dh/2, dw, dh		  
+		useBtn.hidden = false
+		deleteBtn.hidden = false
+	else
+		useBtn.hidden = true
+		deleteBtn.hidden = true
 	end if
 	gfx.clearClip
-	useBtn.hidden = false
-	deleteBtn.hidden = false
 	useBtn.draw
 	deleteBtn.draw
 end function
 
 addNewPage = function(circuitPic)
+	if circuitList == null then loadEntries
 	circuitList.rows.push Entry.Make("Untitled", circuitPic)
 	circuitList.selectRow circuitList.rows.len - 1
 	circuitList.scrollIntoView
@@ -190,10 +203,18 @@ addNewPage = function(circuitPic)
 	drawPreview
 	circuitList.editRow
 	selRow = circuitList.rows[circuitList.selectedIdx]
-	circuitList.rows.sort "name" // (Note: sorts lowercase after all uppercase)
-	circuitList.selectRow circuitList.rows.indexOf(selRow)
-	circuitList.scrollIntoView
-	circuitList.draw
+	newFileName = selRow.name.replace(" ", "_") - ".png" + ".png"
+	result = file.saveImage(file.child(gameData.notebookFolder, newFileName), circuitPic)
+	print "saveImage result: " + result
+	loadEntries
+	for i in circuitList.rows.indexes
+		if circuitList.rows[i].name == selRow.name then
+			circuitList.selectRow i
+			circuitList.scrollIntoView
+			break
+		end if
+	end for
+	if circuitList.rows.len == 1 then drawAll else circuitList.draw
 end function
 
 newFromClipboard = function
@@ -208,11 +229,25 @@ newFromSelection = function
 	addNewPage pic
 end function
 
-setup = function
-	loadResources
+drawAll = function
 	bgLeft = 480 - backgroundImage.width/2
 	bgBotm = 320 - backgroundImage.height/2
 	gfx.drawImage backgroundImage, bgLeft, bgBotm
+
+	for btn in SimpleTextButton.Instances
+		btn.draw
+	end for
+
+	if circuitList and circuitList.rows.len > 0 then
+		circuitList.draw
+		drawPreview
+	else
+		drawLetter
+	end if
+end function
+
+setup = function
+	loadResources
 
 	SimpleTextButton.Instances = []
 	SimpleTextButton.font = buttonFont
@@ -233,15 +268,19 @@ setup = function
 	
 	outer.deleteBtn = SimpleTextButton.Make("Delete", 759, 182)
 	deleteBtn.hidden = true
+	deleteBtn.action = @deleteCircuit
 
+	bgLeft = 480 - backgroundImage.width/2
+	bgBotm = 320 - backgroundImage.height/2
 	for btn in SimpleTextButton.Instances
 		b = btn.bounds
 		btn.background = backgroundImage.getImage(
 		  b.left - bgLeft, b.bottom - bgBotm, b.width, b.height)
-		btn.draw
 	end for
 	
-	drawPreview
+	loadEntries
+
+	drawAll
 end function
 
 useSelectedRow = function
@@ -253,19 +292,26 @@ useCircuit = function(entry)
 	print "Using circuit: " + entry.name
 end function
 
+deleteCircuit = function(entry)
+	idx = circuitList.selectedIdx
+	result = file.delete(circuitList.selectedRow.path)
+	print "delete " + circuitList.selectedRow.path + ": " + result
+	loadEntries
+	if circuitList.rows.len == 0 then
+		drawAll
+	else
+		circuitList.selectRow mathUtil.min(idx, circuitList.rows.len - 1)
+		circuitList.draw
+		drawPreview
+	end if
+end function
+	
+
 present = function(circuitPath)
 	display(1).setMode displayMode.pixel
 	globals.gfx = display(1)
 	gfx.clear color.clear
 	setup
-	loadEntries
-	
-	if not circuitList.rows then
-		drawLetter
-		outer.circuitList = null
-	else
-		circuitList.draw
-	end if
 	
 	lastSelIdx = null
 	outer.done = false

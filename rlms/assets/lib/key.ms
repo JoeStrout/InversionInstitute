@@ -162,7 +162,7 @@ _extraKeys[raylib.KEY_HOME] = 1
 _extraKeys[raylib.KEY_END] = 5
 _extraKeys[raylib.KEY_ESCAPE] = 27
 _extraKeys[raylib.KEY_ENTER] = 10
-_extraKeys[raylib.KEY_KP_ENTER] = 3
+_extraKeys[raylib.KEY_KP_ENTER] = 10
 
 
 // In order to make all keys work properly, including ones that Raylib

@@ -150,8 +150,8 @@ saveToDisk = function
 //		dlog.okBtn.visible = false
 //		dlog.show 2
 	else
-		dlog = textUtil.Dialog.Make("Unable to Save File", err)
-		dlog.show
+//		dlog = textUtil.Dialog.Make("Unable to Save File", err)
+//		dlog.show
 	end if
 end function
 
@@ -1054,8 +1054,8 @@ showHelp = function
 	lines.push "Backspace/Delete - Clear"
 	lines.push "S - Save                "
 	lines.push "Q - Quit                "
-	d = textUtil.Dialog.Make("Keyboard Shortcuts", lines.join(char(13)))
-	d.show
+//	d = textUtil.Dialog.Make("Keyboard Shortcuts", lines.join(char(13)))
+//	d.show
 end function
 
 handleKeys = function

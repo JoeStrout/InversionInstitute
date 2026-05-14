@@ -254,3 +254,6 @@ The only thing missing here is an easy way to replace a previous design.  But I 
 
 Renamed clip to clipboard.  Now working on page creation/management in notebook.ms.
 
+...OK, looking good now!  You can always do either "New from Selection" or "New from Table", and if you've copied something you can also do "New from Clipboard".  New entries are saved to disk and auto-selected.  If you specify an existing file name, it replaces it.  You can Use or Delete existing entries, and if you delete them all, Alicia's note reappears.  I think the notebook is done!
+
+

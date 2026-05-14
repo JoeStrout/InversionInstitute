@@ -41,7 +41,8 @@ Listbox.state = State.IDLE
 Listbox.selectedIdx = null
 
 Listbox.selectedRow = function
-	if self.selectedIdx == null or self.selectedIdx >= self.rows.len then return null
+	if self.selectedIdx < 0 or self.selectedIdx >= self.rows.len then self.selectedIdx = null
+	if self.selectedIdx == null then return null
 	return self.rows[self.selectedIdx]
 end function
 
@@ -169,6 +170,7 @@ Listbox.selectRow = function(rowIdx)
 	for i in self.rows.indexes
 		self.rows[i].isSelected = (i == rowIdx)
 	end for
+	if rowIdx < 0 or rowIdx >= self.rows.len then rowIdx = null
 	self.selectedIdx = rowIdx
 end function
 
