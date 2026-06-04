@@ -103,8 +103,10 @@ end function
 
 switchToFreeplay = function
 	music.playEditor
+	context = {"title": "Free Play"}
+	globals.returnFunc = @backToTitle
 	assetsDir = file.child(env.MS_EXE_DIR, "assets")
-	run file.child(assetsDir, "freeplay.ms")
+	run file.child(assetsDir, "editor.ms")
 end function
 
 playSunRiseOrSet = function(startAlpha, endAlpha)

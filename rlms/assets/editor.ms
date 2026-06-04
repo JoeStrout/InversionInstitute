@@ -78,8 +78,6 @@ if not globals.hasIndex("context") then
 	context.update = null		// (called every time through main loop)
 end if
 context.objectivesDrawn = false
-print "context: " + context
-print "map.indexes: " + map.indexes
 context.isFreePlay = not context.get("number")
 if not context.hasIndex("margin") then context.margin = Rect.Make(0, 0, picW, picH)
 if not globals.hasIndex("clipboard") then globals.clipboard = null
@@ -264,6 +262,9 @@ Button.unhide = function
 	self.bgSprite.y = self.bgSprite.y % 10000
 	self.iconSprite.y = self.iconSprite.y % 10000
 end function
+Button.isHidden = function
+	return self.bgSprite.y > 10000
+end function
 
 Button.handleClick = function
 	if self.toggles then
@@ -291,6 +292,7 @@ Tool.mode = null
 Tool.instances = []
 Tool.init = function(name, left, top, mode)
 	super.init "tool" + name, left, top	
+	self.name = name
 	self.mode = mode
 	Tool.instances.push self
 end function
@@ -349,7 +351,7 @@ prepareScreen = function
 	area = paintArea.offset(gfx.scrollX, gfx.scrollY)
 	area.fill gfx, color.clear
 	area.grow(1,1).frame gfx, color.black, 4, -4
-	backdrop.color = color.red // HACK; color.black
+	backdrop.color = color.black
 	drawGrid
 //	gfx.print "press ? for help", 955 - 16*9, 640-18, color.silver, "small"
 	font = bigPrinter.boldFont
@@ -885,12 +887,12 @@ ModeButton.iconDownTint = color.white
 ModeButton.btnDownImg = file.loadImage(resourceDir + "toolButtonWideDown.png")
 ModeButton.btnUpImg = file.loadImage(resourceDir + "toolButtonWideUp.png")
 
-ModeButton.init = function(label, left, bottom)
+ModeButton.init = function(label, left, bottom, alwaysAvailable=true)
 	self.bgSprite = new Sprite
 	self.bgSprite.image = self.btnUpImg
 	self.bgSprite.x = left + self.btnUpImg.width/2
 	self.bgSprite.y = bottom + self.btnUpImg.height/2
-	alwaysSprites.push self.bgSprite
+	if alwaysAvailable then alwaysSprites.push self.bgSprite
 	
 	self.label = label
 	w = smallPrinter.boldFont.width(label)
@@ -905,7 +907,7 @@ ModeButton.init = function(label, left, bottom)
 	self.iconSprite.x = self.bgSprite.x
 	self.iconSprite.y = self.bgSprite.y
 	self.iconSprite.tint = color.black
-	alwaysSprites.push self.iconSprite
+	if alwaysAvailable then alwaysSprites.push self.iconSprite
 	
 	self.bgSprite.addBounds
 
@@ -915,7 +917,9 @@ end function
 exitToStory = function
 	if not testMode then
 		globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
-		gameData.saveCircuitForChapter context.number, circuitPic
+		if context.get("number") then
+			gameData.saveCircuitForChapter context.number, circuitPic
+		end if
 	end if
 	if globals.hasIndex("returnFunc") then
 		returnFunc
@@ -957,7 +961,7 @@ checkButton.hide
 notebookButton = new ModeButton
 notebookButton.btnDownImg = file.loadImage(resourceDir + "toolButtonExtraWideDown.png")
 notebookButton.btnUpImg = file.loadImage(resourceDir + "toolButtonExtraWideUp.png")
-notebookButton.init ":book: NOTEBOOK", paletteArea.left, paletteArea.bottom - 28
+notebookButton.init ":book: NOTEBOOK", paletteArea.left, paletteArea.bottom - 28, false
 // We need to customize our labelImg so the emoji doesn't come out black :|
 w = notebookButton.iconSprite.image.width
 scratch.clear color.clear, w, 14
@@ -968,16 +972,19 @@ notebookButton.iconSprite.image = scratch.getImage
 notebookButton.iconUpTint = color.white
 notebookButton.iconSprite.tint = notebookButton.iconUpTint
 // Grr.  ToDo: rework all these buttons.
+editSprites.push notebookButton.bgSprite
+editSprites.push notebookButton.iconSprite
 notebookButton.handleClick = function; notebook.present; end function
 notebook.useCircuit = function(entry)
 	notebook.close
 	paste entry.image
 end function
 
+statsArea = Rect.Make(760, 525, 192, 92)
 drawSimStats = function
-	gfx.fillRect 760, 525, 192, 92, bgColor
-	x = 848
-	y = 575
+	statsArea.fill gfx, bgColor
+	x = statsArea.midX - 8
+	y = statsArea.top - 42
 	gap = 12
 	helpFont.printRight "Glyphs:", x,y, 1, color.silver
 	helpFont.print str(sim.gates.len), x + gap,y, 1, color.white
@@ -989,12 +996,12 @@ drawSimStats = function
 	y = y - 20
 	helpFont.printRight "Core Area:", x,y, 1, color.silver
 	helpFont.print str(sim.coreArea.area), x + gap,y, 1, color.white
-	
 end function
 
 setTestMode = function(enterTestMode = true)
 	if testMode == enterTestMode then return	// (already in the correct mode)
 	outer.testMode = enterTestMode
+	print "in setTestMode, gfx.index = " + gfx.index
 	editModeButton.isDown = not testMode; editModeButton.update
 	testModeButton.isDown = testMode; testModeButton.update
 	if testMode then
@@ -1007,6 +1014,7 @@ setTestMode = function(enterTestMode = true)
 		drawHelp "Click any ink to toggle it on or off."
 	else
 		displays.simSprite.clear
+		statsArea.offset(gfx.scrollX, gfx.scrollY).fill gfx, bgColor
 		fatbits.drawImage circuitPic, 0, 0
 		spriteDisp.sprites = alwaysSprites + editSprites
 		checkButton.hide
@@ -1029,6 +1037,7 @@ prepareScreen
 fatbits.clear color.clear, picW, picH
 fatbits.scale = ps
 fatbits.drawImage circuitPic
+sim.nodes = []
 updatePaintScroll
 setTestMode false
 

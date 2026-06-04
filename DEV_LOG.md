@@ -250,7 +250,7 @@ Clicking either "New" button plops your circuit into the preview area, and creat
 
 The only thing missing here is an easy way to replace a previous design.  But I think that's probably OK -- you can just delete the old one, then create a new one of the same name.  It's probably not something you do commonly enough to require a faster method.
 
-## May 14 2025
+## May 14 2026
 
 Renamed clip to clipboard.  Now working on page creation/management in notebook.ms.
 
@@ -259,6 +259,26 @@ Renamed clip to clipboard.  Now working on page creation/management in notebook.
 Posting an update via https://steamcommunity.com/games/2145480/partnerevents
 Update: https://store.steampowered.com/news/app/2145480/view/525376260116840580
 And also on itch: https://joestrout.itch.io/inversion-institute/devlog/1523721/new-notebook-feature-complete
+
+
+## Jun 4 2026
+
+In testing, I observed a bug where, even in EDIT mode, the top two rows of tools were missing and the glyph stats shown instead.  I could not get the tools back without exiting to the cut scene and then returning to the editor.  And since then, I have not yet been able to reproduce the problem.  (But see below.)
+
+But I also noticed that the Notebook button is remaining visible (and usable) even in testing mode — that should probably hide, like the other tool buttons.
+
+Also: if I go through a chapter to an already-solved puzzle, and then exit out, it is not testing as it should -- resulting in Alicia saying that the puzzle must be tough!
+
+Aaaaaand, the Free Play button on the main menu is not working.
+
+So, several issues to fix today.  ...Now fixed:
+- Free Play button ✔️
+- Missing tools: reproducible by (1) launch title, (2) Free Play, (3) Notebook, (4) Use a circuit, (5) Test, (6) Edit. ✔️
+- Notebook button available during test ✔️
+- Failing to evaluate an earlier-chapter circuit ✔️
+
+(That last one was only an issue when you first evaluated one circuit, then exited and reloaded a *different* chapter, as the sim still held data from the first circuit.)
+
 
 
 

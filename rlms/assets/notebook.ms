@@ -308,6 +308,8 @@ end function
 	
 
 present = function(circuitPath)
+	oldDisp1Mode = display(1).mode
+	oldGfxIdx = gfx.index
 	display(1).setMode displayMode.pixel
 	globals.gfx = display(1)
 	gfx.clear color.clear
@@ -327,6 +329,9 @@ present = function(circuitPath)
 		end if
 		if key.pressed("escape") then close
 	end while
+
+	display(1).setMode oldDisp1Mode
+	globals.gfx = display(oldGfxIdx)
 end function
 
 test = function

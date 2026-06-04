@@ -256,6 +256,8 @@ end function
 // non-black pixels.  We find these by doing a flood-fill on any
 // non-black pixel that hasn't already been assigned to a node.
 analyze = function
+	print "pixelLogicSim.analyze: " + stackTrace
+	
 	// Start by ensuring the alpha of all pixels is FF, i.e.,
 	// the pixel is full "on".  Then we'll change them to F0
 	// as we go, to keep track of which pixels have already
