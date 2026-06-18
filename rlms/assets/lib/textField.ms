@@ -120,7 +120,7 @@ end function
 TextField.handleKey = function(k)
 	code = k.code
 	ctrl = key.pressed("left ctrl") or key.pressed("right ctrl")
-	print "^" * ctrl + code
+	//print "^" * ctrl + code
 	if k >= " " and code != 127 then
 		self.setSelText k
 	else if code == 8 then		// backspace

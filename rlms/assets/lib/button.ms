@@ -24,11 +24,11 @@ Button.init = function(image, leftx=null, midy=320, keys)
 	self.localBounds = new Bounds
 	self.localBounds.width = image.width
 	self.localBounds.height = image.height
-	sprites.push self
+	outer.sprites.push self
 	Button.instances.push self
 end function
 
-Button.make = function(image, leftx=null, midy=320, keys)
+Button.Make = function(image, leftx=null, midy=320, keys)
 	noob = new Button
 	noob.init image, leftx, midy, keys
 	return noob
@@ -41,7 +41,7 @@ Button.close = function
 	if idx >= 0 then sprites.remove idx
 end function
 
-Button.closeAll = function
+Button.CloseAll = function
 	for inst in Button.instances[:]
 		inst.close
 	end for
@@ -97,7 +97,7 @@ Button.update = function
 	end for
 end function
 
-Button.updateAll = function
+Button.UpdateAll = function
 	for sp in Button.instances
 		sp.update
 	end for

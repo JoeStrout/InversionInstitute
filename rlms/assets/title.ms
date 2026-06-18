@@ -48,7 +48,7 @@ music.preloadAll
 ensureImport "drawing"
 ensureImport "gameData"
 ensureImport "json"
-import "button"
+ensureImport "button"
 button.sprites = displays.tiSprite.sprites
 
 //bigFont = bmfFonts.Font.load("fonts/ArialBlack18.bmf")
@@ -75,7 +75,7 @@ chapters = toc.chapters
 smallFont.printCentered "SELECT CHAPTER:", 480, 410, 1, "#FFFF00CC"
 
 cleanUp = function
-	button.Button.closeAll
+	button.Button.CloseAll
 end function
 
 ChapterButton = new button.Button
@@ -164,12 +164,12 @@ freePlayBtn.x = 826
 freePlayBtn.y = 34
 
 // create other UI
-optsBtn = button.Button.make(file.loadImage("pics/ui/optionsButton.png"), 960-90, 600)
+optsBtn = button.Button.Make(file.loadImage("pics/ui/optionsButton.png"), 960-90, 600)
 optsBtn.action = function
 	ensureImport "optionScreen"
 	cleanUp
 	optionScreen.present
-	run
+	scene.backToTitle
 end function
 
 // special welcome dialog during Early Access
@@ -201,7 +201,7 @@ end if
 
 // main loop
 while true
-	button.Button.updateAll
+	button.Button.UpdateAll
 	music.update
 	yield
 end while

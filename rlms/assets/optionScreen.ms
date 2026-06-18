@@ -30,7 +30,7 @@ OnOffSwitch.init = function(leftx=null, midy=320, keys)
 	super.init self.images[0], leftx, midy, keys
 end function
 
-OnOffSwitch.make = function(leftx=null, midy=320, keys)
+OnOffSwitch.Make = function(leftx=null, midy=320, keys)
 	noob = new OnOffSwitch
 	noob.init leftx, midy, keys
 	return noob
@@ -40,9 +40,11 @@ OnOffSwitch.action = function
 	self.setOn not self.isOn
 end function
 
+titleFont = null
+
 setup = function
 	clear
-	button.Button.closeAll
+	button.Button.CloseAll
 
 	display(6).setMode displayMode.solidColor
 	display(6).color = "#000066"
@@ -59,6 +61,10 @@ setup = function
 	outer.uiSprites = display(2)
 	uiSprites.clear
 	
+	if titleFont == null then
+		outer.titleFont = ttFonts.TTFont.Load(drawing.fontName + "-Bold.ttf", 80)
+	end if
+	
 	outer.circuitBg = new Sprite
 	circuitBg.image = file.loadImage("pics/Backgrounds/circuitPattern.png")
 	circuitBg.scale = 8
@@ -66,7 +72,7 @@ setup = function
 	circuitBg.x = 480; circuitBg.y = 320
 	bgSprites.sprites.push circuitBg
 	
-	font.printCentered "Game Options", 480, 580, 2, color.yellow
+	titleFont.printCentered "Game Options", 480, 580, 1, color.yellow
 	x = 400; y = 500
 	font.printRight "Player Name:", x, y
 	outer.nameField = new TextField
@@ -112,11 +118,11 @@ setup = function
 		fld.onChange = @updateExample
 	end for
 	
-	backBtn = button.Button.make(file.loadImage("pics/ui/backButton.png"), 10, 600)
+	backBtn = button.Button.Make(file.loadImage("pics/ui/backButton.png"), 10, 600)
 	backBtn.action = @cleanUp
 	backBtn.keys = ["escape"]
 	
-	outer.musicSwitch = OnOffSwitch.make(200, 100)
+	outer.musicSwitch = OnOffSwitch.Make(200, 100)
 	musicSwitch.setOn music.isOn
 	musicSwitch.action = function
 		super.action
@@ -140,13 +146,13 @@ pronounAction = function
 end function
 
 updateExample = function
-	box = Rect.Make(380, 280-100, 320, 100)
+	box = Rect.Make(380, 280-200, 320, 200)
 	box.fill gfx, color.clear
-//	box.frame gfx, color.aqua
+	//box.frame gfx, color.aqua
 	s = "If you see " + nameField.text + ", tell " + pronounFields[1].text +
 	 " that " + pronounFields[0].text + " can play " + pronounFields[2].text +
 	 " game because it is " + pronounFields[3].text + "."
-	font.printWrapped s, box.left + 4, box.top - 20, box.width - 16
+	bigPrinter.boldFont.printWrapped s, box.left + 4, box.top - 24, box.width - 16
 end function
 
 cleanUp = function
@@ -157,7 +163,8 @@ cleanUp = function
 	gameData.playerName = nameField.text
 	gameData.writeToDisk
 	
-	TextField.closeAll
+	button.Button.CloseAll
+	TextField.CloseAll
 	uiSprites.sprites = []
 	bgSprites.sprites = []
 	outer.done = true
@@ -178,8 +185,8 @@ doMainLoop = function
 	while not done
 		yield
 		shiftBg
-		TextField.updateAll
-		button.Button.updateAll
+		TextField.UpdateAll
+		button.Button.UpdateAll
 	end while
 	cleanUp
 	key.clear
@@ -189,7 +196,6 @@ present = function
 	setup
 	doMainLoop
 end function
-
 
 if locals == globals then
 	present

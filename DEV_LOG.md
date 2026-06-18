@@ -280,5 +280,22 @@ So, several issues to fix today.  ...Now fixed:
 (That last one was only an issue when you first evaluated one circuit, then exited and reloaded a *different* chapter, as the sim still held data from the first circuit.)
 
 
+## Jun 18 2026
+
+Today I'm going to tackle the options screen (accessed via the gear button on the title screen, or by directly running optionScreen.ms).
+
+After fixing some inconsistencies in case (we now capitalize "static" methods like UpdateAll), the option screen runs.  The title font is a bit ugly, though... That's because I was just scaling the standard font by 2; now I load a properly sized title font, and it looks great.  I also fixed an issue in TTFont.printWrapped.  All working well now.
+
+I also ran into a tricky issue where the music on/off button went missing on the *second* (and subsequent) visit to the option screen from the title screen.  This turned out to be caused by titleScreen.ms doing `import "button"` (rather than using `ensureImport`), which loaded a fresh copy of the button module -- but OnOffButton.__isa still referred to the Button class in the *old* module.  A cautionary tale about the dangers of mixing `import` with `ensureImport`.
+
+But now it's all working.  However I am increasingly dissatisfied with the visual design of my UI elements.  We currently have several different styles:
+
+- smooth plasticy looking gradient buttons
+- parchment-like buttons ("notebook" in the editor)
+- circuit-like buttons (music on/off)
+- text-only (backgroundless) buttons
+
+It's a mess.  I need to pick a style and apply it consistently.
+
 
 

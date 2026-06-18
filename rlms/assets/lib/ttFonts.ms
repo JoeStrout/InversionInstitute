@@ -220,12 +220,13 @@ TTFont.wrapLines = function(s="", width=550)
 			break
 		end if
 		while lenToFit > 1
-			c = s[lenToFit+1]
+			c = s[lenToFit]
 			if c <= " " then break
-			lenToFit = lenToFit - 1
+			lenToFit -= 1
 		end while
-		result.push s[:lenToFit+1]
-		s = s[lenToFit+1:].trimLeft
+		if lenToFit == 1 then lenToFit = self.lenToFit(s, width)
+		result.push s[:lenToFit]
+		s = s[lenToFit:].trimLeft
 	end while
 	return result
 end function
