@@ -98,6 +98,7 @@ clear = function
 	display(5).clear
 	display(7).color = "#00000000"
 	globals.gfx = display(5)
+	globals.text = display(3)
 end function
 
 globals.clear = @clear

@@ -65,12 +65,15 @@ fromList = function(rgbaList)
 end function
 
 rgba = function(r, g, b, a=255)
-	return "#" + 
+	return "#" +
 	  _hexDigits[floor(r /16)] + _hexDigits[r % 16] +
 	  _hexDigits[floor(g /16)] + _hexDigits[g % 16] +
 	  _hexDigits[floor(b /16)] + _hexDigits[b % 16] +
 	  _hexDigits[floor(a /16)] + _hexDigits[a % 16]
 end function
+
+// rgb: same as rgba, but with alpha defaulting to fully opaque (255).
+rgb = @rgba
 
 lerp = function(c1, c2, t)
 	return fromList(raylib.ColorLerp(c1, c2, t))
