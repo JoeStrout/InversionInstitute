@@ -1,5 +1,5 @@
 import "importUtil"
-ensureImport "color"
+ensureImport ["color"]
 
 globals.displayMode = {
   "off": 0,
@@ -25,10 +25,12 @@ Display.render = null
 Display._installed = [null] * 8
 
 Display.NewDisplayOfMode = function(mode)
-	if mode == 0 then return new Display
-	if mode == 1 then return new SolidColorDisplay
-	if mode == 3 then return PixelDisplay.Make
-	if mode == 5 then return SpriteDisplay.Make
+	if mode == displayMode.off then return new Display
+	if mode == displayMode.solidColor then return SolidColorDisplay.Make
+	if mode == displayMode.pixel then return PixelDisplay.Make
+	if mode == displayMode.tile then return TileDisplay.Make
+	if mode == displayMode.sprite then return SpriteDisplay.Make
+	if mode == displayMode.text then return TextDisplay.Make
 	print "Not implemented yet: display mode " + mode
 	exit
 end function
@@ -70,7 +72,7 @@ Display.install = function(slotNum)
 			break
 		end if
 	end for
-	disps.insert 0, d
+	disps.insert 0, self
 end function
 
 globals.display = function(index)
@@ -90,14 +92,15 @@ end function
 clear = function
 	modes = [0, 0, 0, 2, 5, 3, 0, 1]
 	for i in range(0, 7)
-		if modes[i] == 2 then modes[i] = 0 // HACK until we have TextDisplay
 		display(i).setMode modes[i]
 	end for
 	display(4).clear
 	display(5).clear
 	display(7).color = "#00000000"
 	globals.gfx = display(5)
+	globals.text = display(3)
 end function
+
 globals.clear = @clear
 
 Display.RenderAll = function

@@ -3,7 +3,7 @@
 // Backed by a raylib RenderTexture.
 
 import "importUtil"
-ensureImport "color"
+ensureImport ["color", "Display"]
 
 colorToList = @color.toList
 colorFromList = @color.fromList
@@ -20,6 +20,10 @@ PixelDisplay.width = 960
 PixelDisplay.height = 640
 PixelDisplay._renderTex = null
 PixelDisplay._clip = null  // [left, bottom, width, height] in display coords, or null
+
+PixelDisplay.Make = function
+	return new PixelDisplay
+end function
 
 // Begin drawing to the render texture in "replace" blend mode,
 // so that drawn colors fully overwrite the destination (matching
@@ -153,6 +157,22 @@ PixelDisplay.drawPoly = function(points, color=null, penSize=1)
 		rl.DrawLineEx([prev[0]+h, self.height-prev[1]+h], [pt[0]+h, self.height-pt[1]+h], penSize, color)
 		prev = pt
 	end for
+	self._endDraw
+end function
+
+// Print a string using a built-in font.  Compatible with the Mini Micro
+// PixelDisplay.print API: https://miniscript.org/wiki/PixelDisplay.print
+PixelDisplay._fontSizes = {"small":14, "medium":20, "normal":24, "large":32}
+
+PixelDisplay.print = function(str="", x=0, y=0, color=null, fontName="normal")
+	if color == null then color = self.color
+	color = colorToList(color)
+	fontSize = self._fontSizes.normal
+	if self._fontSizes.hasIndex(fontName) then fontSize = self._fontSizes[fontName]
+	font = rl.GetFontDefault
+	measured = rl.MeasureTextEx(font, str, fontSize, 1)
+	self._beginDraw true  // (alpha blend, so anti-aliased glyph edges don't punch holes)
+	rl.DrawTextEx font, str, [x, self.height - y - measured.y], fontSize, 1, color
 	self._endDraw
 end function
 

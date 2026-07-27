@@ -25,8 +25,10 @@ load = function(path)
 		if parts[0] == "height" then height = val(parts[1])
 		if parts[0] == "alignment" then
 			sp = new Sprite
-			sp.image = srcImg.getImage(x, y, width, height)
+			sp.image = srcImg    // shared -- same texture for every sprite from this sheet
+			sp.srcRect = [x, srcImg.height - y - height, width, height]   // bottom-up -> top-down
 			sp.name = name
+			sp.addBounds
 			result[name] = sp
 		end if
 	end while
@@ -36,7 +38,7 @@ end function
 if locals == globals then
 	ss = load("/usr/pics/Girl5/Body.png")
 	for kv in ss
-		print kv.key + ": " + kv.value.image.width + " x " + kv.value.image.height
+		r = kv.value.srcRect
+		print kv.key + ": " + r[2] + " x " + r[3]
 	end for
-	view ss.HeadImg.image
 end if

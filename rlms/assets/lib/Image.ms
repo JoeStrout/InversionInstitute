@@ -96,7 +96,7 @@ end function
 Image.setPixel = function(x, y, color)
 	ry = self.height - 1 - y
 	rl.ImageDrawPixel self._img, x, ry, colorToRGBA(color)
-	if self._tex then rl.UnloadTexture(self._tex)
+	if self._tex then self._invalidateTexture
 end function
 
 // Extract a rectangular sub-region as a new Image.
@@ -116,7 +116,7 @@ Image.flip = function(vertical=false)
 	else
 		rl.ImageFlipHorizontal self._img
 	end if
-	if self._tex then rl.UnloadTexture(self._tex)
+	if self._tex then self._invalidateTexture
 end function
 
 // Rotate the image in place, counter-clockwise, in 90-degree increments.
@@ -133,7 +133,15 @@ Image.rotate = function(degrees=90)
 	end if
 	self.width = self._img.width
 	self.height = self._img.height
-	if self._tex then rl.UnloadTexture(self._tex)
+	if self._tex then self._invalidateTexture
+end function
+
+// Reliably releases texture and sets the texture cache so that the draw call works properly
+Image._invalidateTexture = function
+	if self._tex then
+		rl.UnloadTexture(self._tex)
+		self._tex = null
+	end if
 end function
 
 // Add a load method to the global file module.
