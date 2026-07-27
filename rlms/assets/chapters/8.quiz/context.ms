@@ -3,9 +3,6 @@ folderName = "8.quiz"
 title = "Quiz Game"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(14, 0, 52, circuitPic.height)
 
 drawObjs = function

@@ -3,9 +3,6 @@ folderName = "9.xor"
 title = "Ex-Oarsley's Discord Alert"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(18, 0, 46, circuitPic.height)
 
 drawObjs = function

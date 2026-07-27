@@ -52,7 +52,7 @@ end function
 playSteps.push function
 	displays.vnBackground.drawImage backgrounds.lab
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
-	drawing.drawSpeech "For example, 0 is still 0, and 1 is still 1, but 2 would be written *10*, and 3 would be written *11*.  I call these numbers ""binary"" based on the Ancient word _binarius_, which means ""consisting of two"".",
+	drawing.drawSpeech "For example, 0 is still 0, and 1 is still 1, but 2 would be written *10*, and 3 would be written *11*.  I call these numbers ""binary"" based on the Ancient word _binarius_, which means ""consisting of two.""",
 		drawing.Speaker.Left, "Alicia"
 end function
 playSteps.push function

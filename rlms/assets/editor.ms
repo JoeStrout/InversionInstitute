@@ -139,6 +139,8 @@ end function
 //print pointsOnLine({"x":20, "y":0}, {"x":10, "y":5}); exit
 
 saveToDisk = function
+	// ToDo: rework this to save as a notebook pgae rather than trying
+	// to use freePlayFolder, which is now obsolete.
 	if not testMode then globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
 	path = file.child(gameData.freePlayFolder, context.filename)
 	err = file.saveImage(path, circuitPic)
@@ -915,11 +917,10 @@ ModeButton.init = function(label, left, bottom, alwaysAvailable=true)
 end function
 
 exitToStory = function
-	if not testMode then
-		globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
-		if context.get("number") then
-			gameData.saveCircuitForChapter context.number, circuitPic
-		end if
+	if testMode then setTestMode false
+	globals.circuitPic = fatbits.getImage(0, 0, picW, picH)
+	if context.get("number") then
+		gameData.saveCircuitForChapter context.number, circuitPic
 	end if
 	if globals.hasIndex("returnFunc") then
 		returnFunc

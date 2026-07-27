@@ -13,10 +13,10 @@ drawObjs = function
 	objectives.print "Connect the inputs (A, B, and C) to the outputs (1 and 2) " +
 	"such that:"
 	objectives.print
-	objectives.print "• if no inputs are on, no output lights up"
-	objectives.print "• if one input is on, 1 lights up"
-	objectives.print "• if any two inputs are on, 2 lights up"
-	objectives.print "• if all three inputs are on, 1 AND 2 light up"
+	objectives.print "- if no inputs are on, no output lights up"
+	objectives.print "- if one input is on, 1 lights up"
+	objectives.print "- if any two inputs are on, 2 lights up"
+	objectives.print "- if all three inputs are on, 1 AND 2 light up"
 	objectives.print
 end function
 

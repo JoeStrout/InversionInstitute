@@ -3,9 +3,6 @@ folderName = "2.diode"
 title = "Recess is Over"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(11, 0, 34, circuitPic.height)
 
 drawObjs = function

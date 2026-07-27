@@ -297,5 +297,12 @@ But now it's all working.  However I am increasingly dissatisfied with the visua
 
 It's a mess.  I need to pick a style and apply it consistently.
 
+Meanwhile, doing some playtesting.  Notes:
+- It does not seem to save my edits when I exit (at least, when the puzzle is not solved).  ✔️
+- Upon doing a Copy, the help text should provide some feedback (e.g. "Copied 20 x 17 area").
+- I found Chapter 8 really hard, and ultimately had to cheat and look at a previous solution.  Alicia and Bob didn't provide any helpful hints.
+- The game crashed trying to load Chapter 9.  Looks like it might crash for any chapter where we don't already have a saved circuit from previous play.
+- We really need an Undo for when you use the wrong tool. :/
+- I don't think we have a 3-input AND puzzle, at least not before Ch. 13, where having one would provide an alternate solution (to a gate matrix).  Might be something to add.
 
 

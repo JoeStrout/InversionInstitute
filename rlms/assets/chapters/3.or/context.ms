@@ -3,9 +3,6 @@ folderName = "3.or"
 title = "Mrs. Oarsley's Children"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(17, 0, 31, circuitPic.height)
 
 drawObjs = function

@@ -48,7 +48,7 @@ playSteps.push function
 	Alicia.setExpression alicia.eyebrows.normal, alicia.eyes.normal, alicia.mouth.normal
 	Baab.setExpression baab.eyebrows.normal, baab.eyes.normal, baab.mouth.normal
 	drawing.drawSpeech "Ms. Mixwell, the art teacher, has a new class starting soon. " +
-	"And she this idea to help her students learn how to mix paints.",
+	"And she has this idea to help her students learn how to mix paints.",
 		drawing.Speaker.Right, "Baab"
 end function
 playSteps.push function

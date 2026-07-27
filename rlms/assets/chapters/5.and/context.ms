@@ -3,9 +3,6 @@ folderName = "5.and"
 title = "Andi's Gate"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(14, 0, 51, circuitPic.height)
 
 drawObjs = function

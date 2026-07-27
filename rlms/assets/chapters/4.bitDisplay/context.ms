@@ -3,9 +3,6 @@ folderName = "4.bitDisplay"
 title = "0/1 Display"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(19, 0, 40, circuitPic.height)
 
 drawObjs = function

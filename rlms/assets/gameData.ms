@@ -140,7 +140,12 @@ circuitPathForChapter = function(chapterNum)
 end function
 
 loadCircuitForChapter = function(chapterNum)
-	return file.loadImage(circuitPathForChapter(chapterNum))
+	circuit = file.loadImage(circuitPathForChapter(chapterNum))
+	if not circuit then
+		path = file.child(toc.pathForChapter(chapterNum), "start.png")
+		circuit = file.loadImage(path)
+	end if
+	return circuit
 end function
 
 saveCircuitForChapter = function(chapterNum, circuitPic)

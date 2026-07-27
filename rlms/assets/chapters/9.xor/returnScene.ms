@@ -99,7 +99,7 @@ else
 	playSteps.push function
 		gameData.data.curChapter = context.number + 1
 		gameData.writeToDisk
-		load "meetLeo"; run
+		run file.child(chapterPath, "meetLeo.ms")
 	end function
 
 end if

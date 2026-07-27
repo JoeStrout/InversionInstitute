@@ -60,12 +60,17 @@ reload = function
 end function
 reload
 
-startChapter = function(chapterNum)
+pathForChapter = function(chapterNum)
 	if chapterNum == null then chapterNum = gameData.data.curChapter
 	ch = chapterByNum[chapterNum]
 	path = file.child(env.MS_EXE_DIR, "assets")
 	path = file.child(path, "chapters")
 	path = file.child(path, ch.folderName)
+	return path
+end function
+
+startChapter = function(chapterNum)
+	path = pathForChapter(chapterNum)
 	print "toc.startChapter: path = " + path
 	globals.chapterPath = path
 	run file.child(path, "introScene.ms")

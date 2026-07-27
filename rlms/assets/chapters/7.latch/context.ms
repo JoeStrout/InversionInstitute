@@ -3,9 +3,6 @@ folderName = "7.latch"
 title = "Latch Set & Reset"
 
 globals.circuitPic = gameData.loadCircuitForChapter(number)
-if circuitPic == null then
-	globals.circuitPic = file.loadImage("start.png")
-end if
 margin = Rect.Make(18, 0, 44, circuitPic.height)
 
 drawObjs = function
