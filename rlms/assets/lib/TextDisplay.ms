@@ -1,351 +1,673 @@
-import "importUtil"
-ensureImport ["Display", "ttFonts", "listUtil", "color", "qa"]
+// TextDisplay: a grid of character cells, each with its own foreground and
+// background color, drawn with the Mini Micro screen font.
+//
+// Possible future features:
+//
+//   * Support selection of different screen fonts.
+//   * Support scrolling.
 
-// TextDisplay reads screen size and loads a texture as soon as this module
-// loads, so (unlike most Display subclasses) it needs a live GL context up
-// front.  Normally soda.ms has already created the window by the time this
-// runs; this guard just makes the module (and its self-tests) work when
-// run standalone too.
-if not raylib.IsWindowReady then raylib.InitWindow 960, 640
+import "importUtil"
+ensureImport ["Display", "ScreenFont", "color", "listUtil"]
+
+rl = raylib
+
+// TextDisplay loads a font texture as soon as this module loads, so (unlike
+// most Display subclasses) it needs a live GL context up front.  Normally
+// soda.ms has already created the window by the time this runs; this guard
+// just makes the module (and its self-tests) work standalone too.
+if not rl.IsWindowReady then rl.InitWindow 960, 640
+
+// Control characters interpreted by `put`.
+BEEP = 7
+BACKSPACE = 8
+TAB = 9
+LF = 10
+CR = 13
+INVERSE_ON = 134
+INVERSE_OFF = 135
 
 globals.TextDisplayCell = {}
-TextDisplayCell.character = ""
-TextDisplayCell.color = color.aqua
-TextDisplayCell.backColor = color.clear
-TextDisplayCell.inverse = false
+TextDisplayCell.character = " "
+TextDisplayCell.color = "#FFFFFF"
+TextDisplayCell.backColor = "#000000"
+TextDisplayCell.inverse = false		// used for the hardware cursor
 
-TextDisplayCell.Make = function(fg=null, bg=null, inv=false)
-  noob = new TextDisplayCell
-  if fg == null then fg = color.aqua
-  if bg == null then bg = color.clear
-  noob.color = fg
-  noob.backColor = bg
-  noob.inverse = inv
-  return noob
+TextDisplayCell.Make = function(fore, back)
+	noob = new TextDisplayCell
+	noob.character = " "
+	noob.color = fore
+	noob.backColor = back
+	noob.inverse = false
+	return noob
 end function
 
 TextDisplay = new Display
 TextDisplay.mode = displayMode.text
 
+TextDisplay.visible = true
+
+TextDisplay.cols = 68
+TextDisplay.rows = 26
+TextDisplay.colSpacing = 14		// pixels between the left edges of adjacent columns
+TextDisplay.rowSpacing = 24		// pixels between the top edges of adjacent rows
+TextDisplay.offsetX = 0			// pixels from the left edge of the screen to column 0
+TextDisplay.offsetY = 0			// pixels from the TOP edge of the screen to the top row
+
+TextDisplay.column = 0			// cursor column, 0 to cols-1
+TextDisplay.row = 0				// cursor row, 0 (bottom) to rows-1 (top)
+
+TextDisplay.cursorShown = false
+TextDisplay.cursorOnTime = 0.7
+TextDisplay.cursorOffTime = 0.3
+TextDisplay._cursorBlinking = false		// true while in the "off" half of a blink
+TextDisplay._cursorTime = 0
+// Note that actual blinking is driven by the console, not by the display itself.
+// We'll return to this and might end up removing some of the above bookkeeping
+// when we get to that point.
+
+// The color, backColor and inverse used by subsequent print/put calls.
+// (raylib's GREEN, matching the C++ default.)
+TextDisplay.color = "#00E430"
+TextDisplay.backColor = color.clear
+TextDisplay.inverse = false
+TextDisplay.delimiter = char(13)	// printed after every `print`, by default
+
+TextDisplay.font = null			// a ScreenFont
+TextDisplay._cells = null		// _cells[row][col] -> TextDisplayCell
+
 TextDisplay.Make = function
-  return new TextDisplay
-end function
-TextDisplay.charW = 8
-TextDisplay.charH = 8
-TextDisplay.padX = 1
-TextDisplay.padY = 2
-TextDisplay.gridW = floor(raylib.GetScreenWidth / (TextDisplay.charW + TextDisplay.padX))
-TextDisplay.gridH = floor(raylib.GetScreenHeight / (TextDisplay.charH + TextDisplay.padY))
-TextDisplay.offsetX = floor((raylib.GetScreenWidth - ((TextDisplay.charW + TextDisplay.padX) * TextDisplay.gridW)) / 2)
-TextDisplay.offsetY = floor((raylib.GetScreenHeight - ((TextDisplay.charH + TextDisplay.padY) * TextDisplay.gridH)) / 2)
-TextDisplay.grid = null
-TextDisplay.fontImage = null
-TextDisplay._fontCols = 16   // columns of glyphs in the font sheet
-
-TextDisplay.color	= color.aqua      // get or set the text color (used on subsequent TextDisplay.print)
-TextDisplay.backColor = color.clear	// get or set the background color (used on subsequent TextDisplay.print)
-TextDisplay.column = 0	            // get/set the cursor column, 0-67 (where subsequent TextDisplay.print begins)
-TextDisplay.row	   = 0              // get or set the cursor row, 0-25 (used on subsequent TextDisplay.print)
-TextDisplay.inverse	= false         // when true, subsequent printing swaps text and background color
-TextDisplay.delimiter	= char(13)    // get/set the extra character output after every TextDisplay.print)
-
-// Loads a new font sheet (a grid of charW x charH glyphs, in ASCII order),
-// and resizes the text grid to fit the screen using the new character size.
-TextDisplay.setFont = function(path, charW=8, charH=8)
-  self.fontImage = raylib.LoadTexture(path)
-  raylib.SetTextureFilter self.fontImage, raylib.TEXTURE_FILTER_POINT
-  self.charW = charW
-  self.charH = charH
-  self._fontCols = floor(self.fontImage.width / self.charW)
-  self.gridW = floor(raylib.GetScreenWidth / (self.charW + self.padX))
-  self.gridH = floor(raylib.GetScreenHeight / (self.charH + self.padY))
-  self.offsetX = floor((raylib.GetScreenWidth - ((self.charW + self.padX) * self.gridW)) / 2)
-  self.offsetY = floor((raylib.GetScreenHeight - ((self.charH + self.padY) * self.gridH)) / 2)
-  self.clear
+	noob = new TextDisplay
+	noob.setSize noob.cols, noob.rows
+	return noob
 end function
 
-// get the character at the given column and row
+// Resize the character grid.  Discards the current contents and homes
+// the cursor.
+TextDisplay.setSize = function(newCols, newRows)
+	self.cols = newCols
+	self.rows = newRows
+	self._cells = list.init(newRows, null)
+	for row in range(0, newRows - 1, 1)
+		cellRow = list.init(newCols, null)
+		for col in range(0, newCols - 1, 1)
+			cellRow[col] = TextDisplayCell.Make(self.color, self.backColor)
+		end for
+		self._cells[row] = cellRow
+	end for
+	self.column = 0
+	self.row = 0
+	self.updateOffsets
+end function
+
+// Center the grid on the screen.  (The C++ version hardcodes an offset that
+// accounts for its window bezel; here the display fills the window, so we
+// just split the leftover pixels evenly.)
+TextDisplay.updateOffsets = function
+	self.offsetX = floor((rl.GetScreenWidth - self.cols * self.colSpacing) / 2)
+	self.offsetY = floor((rl.GetScreenHeight - self.rows * self.rowSpacing) / 2)
+end function
+
+TextDisplay.setCellSpacing = function(colSp, rowSp)
+	self.colSpacing = colSp
+	self.rowSpacing = rowSp
+	self.updateOffsets
+end function
+
+// Load a font texture (a 16x16 grid of glyphs) for this display to use.
+// Returns true on success.
+TextDisplay.loadFont = function(fontTexturePath)
+	f = new ScreenFont
+	if not f.load(fontTexturePath) then return false
+	self.font = f
+	return true
+end function
+
+//----------------------------------------------------------------------
+// Cell access.  These take x (column) and y (row), matching the Mini Micro
+// TextDisplay API.  Note that _cellAt, and everything ported directly from
+// the C++, takes (row, col) instead.
+//----------------------------------------------------------------------
+
+// Get the cell map at the given row and column, or null if out of range.
+TextDisplay._cellAt = function(row, col)
+	if row < 0 or row >= self.rows or col < 0 or col >= self.cols then return null
+	return self._cells[row][col]
+end function
+
 TextDisplay.cell = function(x, y)
-  return self.grid[y][x].character
+	c = self._cellAt(y, x)
+	if c == null then return null
+	return c.character
 end function
 
-// store character k into the given column and row
-TextDisplay.setCell = function(x, y, k)
-  self.grid[y][x].character = k
+TextDisplay.setCell = function(x, y, character)
+	c = self._cellAt(y, x)
+	if c != null then c.character = character
 end function
 
-// get the text color at the given column and row
 TextDisplay.cellColor = function(x, y)
-  return self.grid[y][x].color
+	c = self._cellAt(y, x)
+	if c == null then return null
+	return c.color
 end function
 
-// set the text color at the given column and row to c
-TextDisplay.setCellColor = function(x, y, c)
-  self.grid[y][x].color = c
+TextDisplay.setCellColor = function(x, y, foreColor)
+	c = self._cellAt(y, x)
+	if c != null then c.color = foreColor
 end function
 
-// get the background color at the given column and row
 TextDisplay.cellBackColor = function(x, y)
-  return self.grid[y][x].backColor
+	c = self._cellAt(y, x)
+	if c == null then return null
+	return c.backColor
 end function
 
-// set the background color at the given column and row to c
-TextDisplay.setCellBackColor = function(x, y, c)
-  self.grid[y][x].backColor = c
+TextDisplay.setCellBackColor = function(x, y, backColor)
+	c = self._cellAt(y, x)
+	if c != null then c.backColor = backColor
 end function
 
-// Internal: move the cursor to the start of the next row, scrolling
-// the grid up by one row if the cursor would go past the bottom.
-TextDisplay._newLine = function
-  self.column = 0
-  self.row += 1
-  if self.row >= self.gridH then
-    for r in range(0, self.gridH - 2)
-      self.grid[r] = self.grid[r + 1]
-    end for
-    self.grid[self.gridH - 1] = list.init(self.gridW, null)
-    for c in range(0, self.gridW - 1)
-      self.grid[self.gridH - 1][c] = new TextDisplayCell
-    end for
-    self.row = self.gridH - 1
-  end if
+// Store a character (with colors) at the given row and column.  Colors
+// default to the display's current color/backColor; if inverse is on, the
+// two are swapped as they go into the cell.
+TextDisplay._set = function(row, col, character, foreColor=null, backColor=null)
+	if foreColor == null then foreColor = self.color
+	if backColor == null then backColor = self.backColor
+	c = self._cellAt(row, col)
+	if c == null then return
+	c.character = character
+	if self.inverse then
+		c.color = backColor
+		c.backColor = foreColor
+	else
+		c.color = foreColor
+		c.backColor = backColor
+	end if
 end function
 
-// Internal: write a single character at the cursor and advance it,
-// wrapping and/or scrolling as needed.  Handles CR/LF as a newline.
-TextDisplay._putChar = function(c)
-  if c.code == 13 or c.code == 10 then
-    self._newLine
-    return
-  end if
-  if self.column >= self.gridW then self._newLine
-  cell = self.grid[self.row][self.column]
-  cell.character = c
-  if self.inverse then
-    cell.color = self.backColor
-    cell.backColor = self.color
-  else
-    cell.color = self.color
-    cell.backColor = self.backColor
-  end if
-  cell.inverse = self.inverse
-  self.column += 1
+//----------------------------------------------------------------------
+// Filling and clearing
+//----------------------------------------------------------------------
+
+// Fill one row with the given character, in the current colors.
+TextDisplay.fillRow = function(row, character=" ")
+	if row < 0 or row >= self.rows then return
+	cellRow = self._cells[row]
+	for col in range(0, self.cols - 1, 1)
+		c = cellRow[col]
+		c.character = character
+		c.color = self.color
+		c.backColor = self.backColor
+		c.inverse = self.inverse
+	end for
 end function
 
-// print string s (followed by the delimiter d, which defaults to self.delimiter)
-TextDisplay.print = function(s, d=null)
-  if d == null then d = self.delimiter
-  if s == null then s = ""
-  for c in s
-    self._putChar c
-  end for
-  for c in d
-    self._putChar c
-  end for
+TextDisplay.clearRow = function(row)
+	self.fillRow row, " "
 end function
 
-// Clears and resets TextDisplay
+// Fill the whole grid with the given character, in the current colors.
+TextDisplay.fill = function(character=" ")
+	for row in range(0, self.rows - 1, 1)
+		self.fillRow row, character
+	end for
+end function
+
+// Fill the grid with spaces and hide the cursor.  Note that this does not
+// move the cursor; see the note at the top of this file.
 TextDisplay.clear = function
-  self.grid = list.init2d(self.gridH, self.gridW, null)
-  for row in range(0, self.gridH - 1)
-    for col in range(0, self.gridW - 1)
-      self.grid[row][col] = new TextDisplayCell
-    end for
-  end for
-  self.column = 0
-  self.row = 0
+	self.fill " "
+	self.cursorShown = false
 end function
 
-// Internal: source rect into fontImage for the given character.
-// The sheet's cell 0 holds code point 1, not 0 (cell 0 = SOH, always
-// blank), so every code is shifted down by one cell.
-TextDisplay._srcRectFor = function(c)
-  index = c.code - 1
-  col = index % self._fontCols
-  row = floor(index / self._fontCols)
-  return [col * self.charW, row * self.charH, self.charW, self.charH]
+//----------------------------------------------------------------------
+// Printing and cursor movement
+//----------------------------------------------------------------------
+
+// Print a string, followed by the delimiter (which defaults to
+// self.delimiter, i.e. a carriage return).  Pass "" for no delimiter.
+TextDisplay.print = function(s="", delimiter=null)
+	if delimiter == null then delimiter = self.delimiter
+	if s == null then s = ""
+	if not s isa string then s = str(s)
+	self._hideCursorVisual
+	for c in s
+		self.put c
+	end for
+	for c in delimiter
+		self.put c
+	end for
 end function
 
-// Draw text grid
+// Write a single character at the cursor, interpreting the handful of
+// control codes Mini Micro understands.
+TextDisplay.put = function(character)
+	code = character.code
+	if code == CR or code == LF then
+		self.nextLine
+	else if code == TAB then
+		// Advance to the next multiple of 4, blanking as we go.
+		while true
+			self._set self.row, self.column, " "
+			self.advance
+			if self.column % 4 == 0 then break
+		end while
+	else if code == BEEP then
+		// Nothing for now; a sound could be triggered here.
+	else if code == BACKSPACE then
+		self.backup
+	else if code == INVERSE_ON then
+		self.inverse = true
+	else if code == INVERSE_OFF then
+		self.inverse = false
+	else
+		self._set self.row, self.column, character
+		self.advance
+	end if
+end function
+
+// Move the cursor one column right, wrapping to the next line at the edge.
+TextDisplay.advance = function
+	self.column += 1
+	if self.column >= self.cols then self.nextLine
+end function
+
+// Move the cursor one column left, wrapping back to the end of the line
+// above (i.e. the next higher row index).  Stops at the top-left corner.
+TextDisplay.backup = function
+	self._hideCursorVisual
+	self.column -= 1
+	if self.column < 0 then
+		if self.row >= self.rows - 1 then
+			self.column = 0
+			return
+		end if
+		self.row += 1
+		self.column = self.cols - 1
+	end if
+end function
+
+// Move the cursor to the start of the next line down, scrolling if we've
+// run off the bottom.
+TextDisplay.nextLine = function
+	self.row -= 1
+	while self.row < 0
+		self.scroll
+	end while
+	self.column = 0
+end function
+
+// Scroll the contents up one row, clearing the bottom row.
+TextDisplay.scroll = function
+	// Rotate the row lists rather than copying cell by cell; row 0 is about
+	// to be overwritten wholesale by clearRow anyway, so its cells can be
+	// recycled as the new top row.
+	recycled = self._cells[self.rows - 1]
+	for row in range(self.rows - 1, 1, -1)
+		self._cells[row] = self._cells[row - 1]
+	end for
+	self._cells[0] = recycled
+
+	if self.row < self.rows - 1 then self.row += 1
+	self.clearRow 0
+end function
+
+// Move the cursor, clamping to the grid.  (Assigning to .row and .column
+// directly works too, but skips the clamping and the cursor bookkeeping.)
+TextDisplay.setCursor = function(row, col)
+	wasShown = self.cursorShown
+	if self.cursorShown then self.hideCursor
+
+	self.column = col
+	if self.column < 0 then
+		self.column = 0
+	else if self.column >= self.cols then
+		self.column = self.cols - 1
+	end if
+
+	self.row = row
+	if self.row < 0 then self.row = 0
+	if self.row >= self.rows then self.row = self.rows - 1
+
+	if wasShown then self.showCursor
+end function
+
+//----------------------------------------------------------------------
+// Hardware cursor
+//----------------------------------------------------------------------
+
+// Internal: un-invert the cell the cursor is on, without changing the
+// "cursor is on" state.  Used before anything that moves the cursor or
+// writes to the screen.
+TextDisplay._hideCursorVisual = function
+	if not self.cursorShown then return
+	c = self._cellAt(self.row, self.column)
+	if c != null then c.inverse = false
+end function
+
+TextDisplay.hideCursor = function
+	self._hideCursorVisual
+	self._cursorTime = 0
+	self.cursorShown = false
+end function
+
+TextDisplay.showCursor = function
+	c = self._cellAt(self.row, self.column)
+	if c != null then c.inverse = true
+	self._cursorTime = 0
+	self.cursorShown = true
+end function
+
+// Advance the cursor blink.  Nothing calls this for you: a blinking cursor
+// means "waiting for input", which is a Console's business, not a
+// TextDisplay's.  Whatever owns the input loop should call this once per
+// frame with the elapsed time (raylib.GetFrameTime).
+TextDisplay.update = function(deltaTime)
+	if not self.cursorShown then return
+	self._cursorTime += deltaTime
+	if not self._cursorBlinking and self._cursorTime > self.cursorOnTime then
+		self.hideCursor
+		self.cursorShown = true		// (still logically on; just blinked off)
+		self._cursorBlinking = true
+	else if self._cursorBlinking and self._cursorTime > self.cursorOffTime then
+		self.showCursor
+		self._cursorBlinking = false
+	end if
+end function
+
+//----------------------------------------------------------------------
+// Rendering
+//----------------------------------------------------------------------
+
 TextDisplay.render = function
-  if self.fontImage == null then return
-  for row in range(0, self.gridH - 1)
-    for col in range(0, self.gridW - 1)
-      cell = self.grid[row][col]
-      x = self.offsetX + col * (self.charW + self.padX)
-      y = self.offsetY + row * (self.charH + self.padY)
-      if cell.backColor != color.clear then
-        // fill the full cell pitch (not just the glyph box), so the padding
-        // gap between cells doesn't show through as a gap between fills
-        raylib.DrawRectangle x, y, self.charW + self.padX, self.charH + self.padY, color.toList(cell.backColor)
-      end if
-      if cell.character != "" then
-        src = self._srcRectFor(cell.character)
-        // center the glyph within the cell pitch, rather than flush against
-        // its top-left, so the backColor padding is split evenly around it
-        glyphX = x + floor(self.padX / 2)
-        glyphY = y + floor(self.padY / 2)
-        dest = [glyphX, glyphY, self.charW, self.charH]
-        raylib.DrawTexturePro self.fontImage, src, dest, [0, 0], 0, color.toList(cell.color)
-      end if
-    end for
-  end for
+	if not self.visible then return
+	if self.font == null or not self.font.isLoaded then return
+
+	clearColor = color.clear
+	for row in range(0, self.rows - 1, 1)
+		cellRow = self._cells[row]
+		// Row 0 is the bottom row, but raylib's y grows downward.
+		y = self.offsetY + (self.rows - 1 - row) * self.rowSpacing
+		for col in range(0, self.cols - 1, 1)
+			c = cellRow[col]
+			ch = c.character
+			if c.inverse then
+				fore = c.backColor
+				back = c.color
+			else
+				fore = c.color
+				back = c.backColor
+			end if
+			if ch == "" then ch = " "
+			// A blank glyph over a fully transparent background draws
+			// nothing at all, so skip it.  (Purely an optimization, but an
+			// important one: most cells on a typical screen are empty.)
+			if ch == " " and back == clearColor then continue
+			self.font.drawChar ch.code, self.offsetX + col * self.colSpacing, y, fore, back
+		end for
+	end for
 end function
 
-TextDisplay.setFont "assets/lib/font/TextUI.png"
+// All TextDisplays share one font texture by default; loadFont on a
+// particular display gives that display its own.
+TextDisplay.font = ScreenFont.Make("assets/lib/font/ScreenFont.png")
 
 if locals == globals then
-  import "soda"
+	ensureImport "qa"
+	import "soda"
+
+	td = TextDisplay.Make
 
 	print "== Pure logic tests (no rendering needed) =="
 
-	print "clear resets the grid shape and cursor"
-	TextDisplay.clear
-	qa.assert TextDisplay.grid.len == TextDisplay.gridH, "grid should have gridH rows"
-	qa.assert TextDisplay.grid[0].len == TextDisplay.gridW, "grid should have gridW columns"
-	qa.assertEqual TextDisplay.column, 0, "clear should reset column"
-	qa.assertEqual TextDisplay.row, 0, "clear should reset row"
-	qa.assertEqual TextDisplay.cell(0, 0), "", "new cells should be blank"
+	print "setSize allocates a grid of the right shape and homes the cursor"
+	td.setSize 10, 4
+	qa.assertEqual td._cells.len, 4, "grid should have 4 rows"
+	qa.assertEqual td._cells[0].len, 10, "grid should have 10 columns"
+	qa.assertEqual td.row, 0, "setSize should reset row to 0"
+	qa.assertEqual td.column, 0, "setSize should reset column to 0"
+	qa.assertEqual td.cell(0, 0), " ", "new cells should hold a space"
 
-	print "setCell / cell round-trip"
-	TextDisplay.clear
-	TextDisplay.setCell 3, 2, "Q"
-	qa.assertEqual TextDisplay.cell(3, 2), "Q", "setCell then cell should return 'Q'"
-	qa.assertEqual TextDisplay.cell(0, 0), "", "untouched cells should remain blank"
+	print "setCell / cell round-trip, in (x, y) = (column, row) order"
+	td.setCell 3, 2, "Q"
+	qa.assertEqual td.cell(3, 2), "Q", "setCell then cell should return 'Q'"
+	qa.assertEqual td.cell(0, 0), " ", "untouched cells should remain blank"
+	qa.assertEqual td.cell(99, 0), null, "out-of-range cell should return null"
 
-	print "setCellColor / cellColor and setCellBackColor / cellBackColor round-trip"
-	TextDisplay.clear
-	TextDisplay.setCellColor 1, 1, color.red
-	TextDisplay.setCellBackColor 1, 1, color.blue
-	qa.assertEqual TextDisplay.cellColor(1, 1), color.red, "cell color should round-trip"
-	qa.assertEqual TextDisplay.cellBackColor(1, 1), color.blue, "cell backColor should round-trip"
+	print "setCellColor / setCellBackColor round-trip"
+	td.setCellColor 1, 1, color.red
+	td.setCellBackColor 1, 1, color.blue
+	qa.assertEqual td.cellColor(1, 1), color.red, "cell color should round-trip"
+	qa.assertEqual td.cellBackColor(1, 1), color.blue, "cell backColor should round-trip"
 
-	print "print writes characters at the cursor and advances the column"
-	TextDisplay.clear
-	TextDisplay.column = 5
-	TextDisplay.row = 2
-	TextDisplay.print "Hi", ""
-	qa.assertEqual TextDisplay.cell(5, 2), "H", "first char should land at the starting column"
-	qa.assertEqual TextDisplay.cell(6, 2), "i", "second char should land one column over"
-	qa.assertEqual TextDisplay.column, 7, "column should advance past the printed text"
-	qa.assertEqual TextDisplay.row, 2, "row should be unchanged with an empty delimiter"
+	print "_set applies the current colors, and swaps them when inverse is on"
+	td.setSize 10, 4
+	td.color = color.yellow
+	td.backColor = color.navy
+	td.inverse = false
+	td._set 0, 0, "A"
+	qa.assertEqual td.cellColor(0, 0), color.yellow, "cell color should be the fore color"
+	qa.assertEqual td.cellBackColor(0, 0), color.navy, "cell backColor should be the back color"
+	td.inverse = true
+	td._set 0, 1, "B"
+	qa.assertEqual td.cellColor(1, 0), color.navy, "inverse should swap the cell's colors"
+	qa.assertEqual td.cellBackColor(1, 0), color.yellow, "inverse should swap the cell's colors"
+	td.inverse = false
 
-	print "print applies the current color, backColor and inverse to each cell"
-	TextDisplay.clear
-	TextDisplay.color = color.yellow
-	TextDisplay.backColor = color.navy
-	TextDisplay.inverse = false
-	TextDisplay.print "A", ""
-	qa.assertEqual TextDisplay.cellColor(0, 0), color.yellow, "non-inverse cell color should be the fg color"
-	qa.assertEqual TextDisplay.cellBackColor(0, 0), color.navy, "non-inverse cell backColor should be the bg color"
-	TextDisplay.inverse = true
-	TextDisplay.print "B", ""
-	qa.assertEqual TextDisplay.cellColor(1, 0), color.navy, "inverse cell color should be swapped with backColor"
-	qa.assertEqual TextDisplay.cellBackColor(1, 0), color.yellow, "inverse cell backColor should be swapped with color"
-	TextDisplay.inverse = false
+	print "put writes at the cursor and advances the column"
+	td.setSize 10, 4
+	td.setCursor 2, 5
+	td.put "H"
+	td.put "i"
+	qa.assertEqual td.cell(5, 2), "H", "first char should land at the starting column"
+	qa.assertEqual td.cell(6, 2), "i", "second char should land one column over"
+	qa.assertEqual td.column, 7, "column should have advanced past the text"
+	qa.assertEqual td.row, 2, "row should be unchanged"
 
-	print "print's default delimiter starts a new line"
-	TextDisplay.clear
-	TextDisplay.print "Hi"
-	qa.assertEqual TextDisplay.column, 0, "default delimiter should return column to 0"
-	qa.assertEqual TextDisplay.row, 1, "default delimiter should advance to the next row"
+	print "advance wraps to the next line at the right edge"
+	td.setSize 10, 4
+	td.setCursor 2, 9
+	td.advance
+	qa.assertEqual td.column, 0, "advancing off the right edge should wrap to column 0"
+	qa.assertEqual td.row, 1, "...and drop to the next row down (one lower index)"
 
-	print "print wraps to the next row when it reaches the right edge"
-	TextDisplay.clear
-	TextDisplay.column = TextDisplay.gridW - 1
-	TextDisplay.row = 0
-	TextDisplay.print "XY", ""
-	qa.assertEqual TextDisplay.cell(TextDisplay.gridW - 1, 0), "X", "last char of row 0 should hold X"
-	qa.assertEqual TextDisplay.cell(0, 1), "Y", "wrapped char should land at column 0 of the next row"
-	qa.assertEqual TextDisplay.row, 1, "cursor row should have advanced on wrap"
-	qa.assertEqual TextDisplay.column, 1, "cursor column should be 1 after the wrapped char"
+	print "nextLine moves down a row, since row 0 is the bottom"
+	td.setSize 10, 4
+	td.setCursor 3, 4
+	td.nextLine
+	qa.assertEqual td.row, 2, "nextLine should decrement the row"
+	qa.assertEqual td.column, 0, "nextLine should return to column 0"
 
-	print "print scrolls the grid up when it overflows the bottom row"
-	TextDisplay.clear
-	TextDisplay.setCell 0, 1, "T"   // row 1, so it survives the scroll by becoming row 0
-	TextDisplay.column = TextDisplay.gridW - 1
-	TextDisplay.row = TextDisplay.gridH - 1
-	TextDisplay.print "YZ", ""     // Y fills the last cell of the bottom row; Z forces a wrap+scroll
-	qa.assertEqual TextDisplay.row, TextDisplay.gridH - 1, "row should stay pinned to the bottom after scrolling"
-	qa.assertEqual TextDisplay.cell(0, 0), "T", "row 1 should have shifted up to become row 0"
-	qa.assertEqual TextDisplay.cell(TextDisplay.gridW - 1, TextDisplay.gridH - 2), "Y", "old bottom row should shift up by one"
-	qa.assertEqual TextDisplay.cell(0, TextDisplay.gridH - 1), "Z", "new char should land on the new bottom row"
+	print "nextLine from the bottom row scrolls instead of going negative"
+	td.setSize 10, 4
+	td.setCell 0, 0, "B"		// bottom row
+	td.setCell 0, 1, "M"		// one up from the bottom
+	td.setCursor 0, 3
+	td.nextLine
+	qa.assertEqual td.row, 0, "cursor should stay pinned to the bottom row"
+	qa.assertEqual td.column, 0, "cursor should be at column 0"
+	qa.assertEqual td.cell(0, 1), "B", "old bottom row should have moved up one"
+	qa.assertEqual td.cell(0, 2), "M", "the row above it should have moved up too"
+	qa.assertEqual td.cell(0, 0), " ", "the new bottom row should be blank"
 
-	print "_srcRectFor maps ASCII codes to the font sheet, offset by the blank leading cell"
-	qa.assertEqual TextDisplay._srcRectFor("A"), [0, 32, 8, 8], "'A' (code 65) should be sheet cell (0,4)"
-	qa.assertEqual TextDisplay._srcRectFor(" "), [120, 8, 8, 8], "' ' (code 32) should be sheet cell (15,1)"
-	qa.assertEqual TextDisplay._srcRectFor("0"), [120, 16, 8, 8], "'0' (code 48) should be sheet cell (15,2)"
-	qa.assertEqual TextDisplay._srcRectFor("3"), [16, 24, 8, 8], "'3' (code 51) should be sheet cell (2,3)"
+	print "scroll moves every row up one and clears row 0"
+	td.setSize 10, 4
+	for r in range(0, 3)
+		td.setCell 0, r, str(r)
+	end for
+	td.setCursor 3, 0		// already at the top, so scroll shouldn't move the cursor
+	td.scroll
+	qa.assertEqual td.row, 3, "cursor at the top row should not move on scroll"
+	qa.assertEqual td.cell(0, 3), "2", "row 2 should have become row 3"
+	qa.assertEqual td.cell(0, 2), "1", "row 1 should have become row 2"
+	qa.assertEqual td.cell(0, 1), "0", "row 0 should have become row 1"
+	qa.assertEqual td.cell(0, 0), " ", "row 0 should have been cleared"
 
-	print "All tests passed!"
+	print "backup steps left, and wraps to the end of the line above"
+	td.setSize 10, 4
+	td.setCursor 1, 3
+	td.backup
+	qa.assertEqual td.column, 2, "backup should decrement the column"
+	qa.assertEqual td.row, 1, "backup within a line should not change the row"
+	td.setCursor 1, 0
+	td.backup
+	qa.assertEqual td.row, 2, "backing up past column 0 should go up a row"
+	qa.assertEqual td.column, 9, "...to the last column"
+	td.setCursor 3, 0		// top-left corner: nowhere left to go
+	td.backup
+	qa.assertEqual td.row, 3, "backup at the top-left corner should stay put"
+	qa.assertEqual td.column, 0, "backup at the top-left corner should stay put"
+
+	print "print appends the delimiter (a carriage return) by default"
+	td.setSize 10, 4
+	td.setCursor 3, 0
+	td.print "Hi"
+	qa.assertEqual td.cell(0, 3), "H", "text should print at the cursor"
+	qa.assertEqual td.cell(1, 3), "i", "text should print at the cursor"
+	qa.assertEqual td.row, 2, "the default delimiter should start a new line"
+	qa.assertEqual td.column, 0, "the default delimiter should return to column 0"
+	td.print "no delim", ""
+	qa.assertEqual td.row, 2, "an empty delimiter should leave the row alone"
+	qa.assertEqual td.column, 8, "an empty delimiter should leave the column past the text"
+
+	print "put handles tab, backspace, and the inverse on/off control codes"
+	td.setSize 12, 4
+	td.setCursor 3, 1
+	td.put char(9)
+	qa.assertEqual td.column, 4, "tab should advance to the next multiple of 4"
+	qa.assertEqual td.cell(1, 3), " ", "tab should blank the cells it passes over"
+	td.setCursor 3, 4
+	td.put char(9)
+	qa.assertEqual td.column, 8, "tab from a multiple of 4 should advance a full 4"
+	td.setCursor 3, 5
+	td.put char(8)
+	qa.assertEqual td.column, 4, "backspace should back the cursor up"
+	td.inverse = false
+	td.put char(134)
+	qa.assert td.inverse, "char 134 should turn inverse on"
+	qa.assertEqual td.column, 4, "control codes should not advance the cursor"
+	td.put char(135)
+	qa.assert not td.inverse, "char 135 should turn inverse off"
+
+	print "clear fills with spaces and hides the cursor, but leaves the cursor put"
+	td.setSize 10, 4
+	td.color = color.lime
+	td.backColor = color.clear
+	td.print "text to be wiped", ""
+	td.setCursor 2, 5
+	td.showCursor
+	qa.assert td.cursorShown, "showCursor should set cursorShown"
+	td.clear
+	qa.assertEqual td.cell(0, 0), " ", "clear should blank every cell"
+	qa.assert not td.cursorShown, "clear should hide the cursor"
+	qa.assertEqual td.row, 2, "clear should leave the cursor row alone"
+	qa.assertEqual td.column, 5, "clear should leave the cursor column alone"
+
+	print "setCursor clamps to the grid"
+	td.setSize 10, 4
+	td.setCursor(-5, -5)	// (parens required: a bare leading minus would parse as subtraction)
+	qa.assertEqual td.row, 0, "negative row should clamp to 0"
+	qa.assertEqual td.column, 0, "negative column should clamp to 0"
+	td.setCursor 99, 99
+	qa.assertEqual td.row, 3, "too-large row should clamp to rows-1"
+	qa.assertEqual td.column, 9, "too-large column should clamp to cols-1"
+
+	print "showCursor / hideCursor invert the cell under the cursor"
+	td.setSize 10, 4
+	td.setCursor 1, 2
+	td.showCursor
+	qa.assert td._cellAt(1, 2).inverse, "showCursor should invert the cell"
+	td.hideCursor
+	qa.assert not td._cellAt(1, 2).inverse, "hideCursor should un-invert the cell"
+	qa.assert not td.cursorShown, "hideCursor should clear cursorShown"
+
+	print "the cursor blinks off and back on again"
+	td.setCursor 1, 2
+	td.showCursor
+	td.update td.cursorOnTime + 0.01
+	qa.assert not td._cellAt(1, 2).inverse, "the cell should un-invert after cursorOnTime"
+	qa.assert td.cursorShown, "the cursor is still logically shown while blinked off"
+	td.update td.cursorOffTime + 0.01
+	qa.assert td._cellAt(1, 2).inverse, "the cell should re-invert after cursorOffTime"
+	td.hideCursor
+
+	print "the shared font loaded"
+	qa.assert TextDisplay.font != null and TextDisplay.font.isLoaded, "ScreenFont.png should load"
+	qa.assertEqual TextDisplay.font.charWidth, 16, "screen font glyphs are 16 px wide"
+	qa.assertEqual TextDisplay.font.charHeight, 24, "screen font glyphs are 24 px tall"
+
+	print "All TextDisplay tests passed!"
 
 	print "== Visual test (look at the app window) =="
-	TextDisplay.clear
-	// the tests above leave color/backColor/inverse set to whatever they last
-	// tested; clear doesn't touch that "pen" state (matching Mini Micro), so
-	// reset it explicitly rather than inheriting leftover values here.
-	TextDisplay.color = color.white
-	TextDisplay.backColor = color.clear
-	TextDisplay.inverse = false
+	t = display(3)		// soda's Display.Initialize puts a TextDisplay in slot 3
+	t.clear
+	t.setCursor t.rows - 1, 0
+	t.color = color.white
+	t.backColor = color.clear
+	t.inverse = false
 
-	TextDisplay.print "TextDisplay visual test"
-	TextDisplay.print "------------------------"
-	TextDisplay.print ""
+	t.print "TextDisplay visual test"
+	t.print "-----------------------"
+	t.print ""
 
-	TextDisplay.print "Text colors: ", ""
-	textColors = [["red", color.red], ["orange", color.orange], ["yellow", color.yellow],
-	  ["lime", color.lime], ["aqua", color.aqua], ["blue", color.blue],
-	  ["purple", color.purple], ["pink", color.pink]]
-	for c in textColors
-		TextDisplay.color = c[1]
-		TextDisplay.print c[0] + " ", ""
+	t.print "Text colors: ", ""
+	for c in [["red", color.red], ["orange", color.orange], ["yellow", color.yellow],
+	   ["lime", color.lime], ["aqua", color.aqua], ["blue", color.blue],
+	   ["purple", color.purple], ["pink", color.pink]]
+		t.color = c[1]
+		t.print c[0] + " ", ""
 	end for
-	TextDisplay.color = color.white
-	TextDisplay.print ""
+	t.color = color.white
+	t.print ""
 
-	TextDisplay.print "Background colors: ", ""
-	backColors = [["navy", color.navy], ["maroon", color.maroon], ["teal", color.teal], ["olive", color.olive]]
-	for c in backColors
-		TextDisplay.backColor = c[1]
-		TextDisplay.print " " + c[0] + " ", ""
-		TextDisplay.backColor = color.clear
-		TextDisplay.print " ", ""
+	t.print "Background colors: ", ""
+	for c in [["navy", color.navy], ["maroon", color.maroon], ["teal", color.teal],
+	   ["olive", color.olive]]
+		t.backColor = c[1]
+		t.print " " + c[0] + " ", ""
+		t.backColor = color.clear
+		t.print " ", ""
 	end for
-	TextDisplay.print ""
+	t.print ""
 
-	TextDisplay.print "Inverse: normal ", ""
-	TextDisplay.backColor = color.black   // inverse swaps color <-> backColor, so this becomes the visible text color
-	TextDisplay.inverse = true
-	TextDisplay.print " INVERTED ", ""
-	TextDisplay.inverse = false
-	TextDisplay.backColor = color.clear
-	TextDisplay.print " normal again", ""
-	TextDisplay.print ""
+	t.print "Inverse: normal ", ""
+	t.backColor = color.black		// inverse swaps color <-> backColor
+	t.put char(134)
+	t.print " INVERTED ", ""
+	t.put char(135)
+	t.backColor = color.clear
+	t.print " normal again", ""
+	t.print ""
 
-	TextDisplay.color = color.yellow
-	TextDisplay.print "Wrapping (this line is longer than the screen is wide, so it should wrap to a second row):"
-	TextDisplay.print "0123456789" * 12
-	TextDisplay.color = color.white
-	TextDisplay.print ""
+	t.print "Tabs:", ""
+	t.put char(9)
+	t.print "col 8", ""
+	t.put char(9)
+	t.print "col 16"
+	t.print ""
 
-	TextDisplay.print "setCell / setCellColor (direct grid access, bypassing print):"
-	word = "TEXTDISPLAY"
-	wordRow = TextDisplay.row
-	wordColors = [color.red, color.orange, color.yellow, color.lime, color.aqua, color.blue, color.purple, color.pink]
-	for i in range(0, word.len - 1)
-		TextDisplay.setCell i, wordRow, word[i]
-		TextDisplay.setCellColor i, wordRow, wordColors[i % wordColors.len]
-	end for
-	TextDisplay.row = wordRow + 1
-	TextDisplay.column = 0
-	TextDisplay.print ""
+	t.color = color.yellow
+	t.print "Wrapping (this line runs past the right edge, so it wraps to the next row):"
+	t.print "0123456789" * 8
+	t.color = color.white
+	t.print ""
 
-	TextDisplay.color = color.lime
-	TextDisplay.print "All TextDisplay unit tests passed!"
+	t.print "Special glyphs: " + char(8592) + char(8593) + char(8594) + char(8595) +
+	   " " + char(9824) + char(9827) + char(9829) + char(9830) +
+	   " " + char(960) + char(964) + " " + char(9856) + char(9857) + char(9858) +
+	   " " + char(9744) + char(9745) + char(9746) + " unknown: " + char(20013)
+	t.print ""
 
-  while not raylib.WindowShouldClose
-    yield
-  end while
+	t.color = color.lime
+	//t.print "All TextDisplay tests passed!  (Cursor blinks below.)"
+	t.showCursor
+
+	// TextDisplay doesn't drive the cursor blink itself; normally a Console
+	// would.  This loop stands in for one.
+	while not rl.WindowShouldClose
+		//t.update rl.GetFrameTime   <-- triggers an MS2 bug; commented out for now
+		yield
+	end while
 	exit
 else
 	return TextDisplay
