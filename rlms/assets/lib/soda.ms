@@ -13,19 +13,26 @@ end if
 import "importUtil"
 
 ensureImport ["color", "Image", "Sound", "Display", "SolidColorDisplay", "PixelDisplay",
-  "SpriteDisplay", "TileDisplay", "TextDisplay", "mouse", "key", "Atlas", "Assets", "Input", "Scene"]
+  "SpriteDisplay", "TileDisplay", "TextDisplay", "mouse", "key"]
 
 Display.Initialize
+
+// updateCallbacks: a list of methods to call on every frame.  This includes standard
+// Soda update methods, but you may add your own methods to ensure they are invoked
+// at update time as well.
+updateCallbacks = [
+	@mouse.update,
+	@key.update,
+	@Sound.UpdateAll,
+]
 
 update = function(beginEndRaylibDrawing = true)
 	if beginEndRaylibDrawing then raylib.BeginDrawing
 	Display.RenderAll
 	if beginEndRaylibDrawing then raylib.EndDrawing
-	mouse.update
-	key.update
-	Input.update          // NEW: advance InputAction state machines, fire action signals
-	SceneManager.update   // NEW: tick whatever's active on the scene stack
-	Sound.UpdateAll
+	for f in updateCallbacks
+		f
+	end for
 end function
 
 // Override (actually, shadow) the `yield` intrinsic to do our standard
