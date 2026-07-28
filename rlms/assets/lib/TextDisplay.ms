@@ -358,22 +358,6 @@ TextDisplay.showCursor = function
 	self.cursorShown = true
 end function
 
-// Advance the cursor blink.  Nothing calls this for you: a blinking cursor
-// means "waiting for input", which is a Console's business, not a
-// TextDisplay's.  Whatever owns the input loop should call this once per
-// frame with the elapsed time (raylib.GetFrameTime).
-TextDisplay.update = function(deltaTime)
-	if not self.cursorShown then return
-	self._cursorTime += deltaTime
-	if not self._cursorBlinking and self._cursorTime > self.cursorOnTime then
-		self.hideCursor
-		self.cursorShown = true		// (still logically on; just blinked off)
-		self._cursorBlinking = true
-	else if self._cursorBlinking and self._cursorTime > self.cursorOffTime then
-		self.showCursor
-		self._cursorBlinking = false
-	end if
-end function
 
 //----------------------------------------------------------------------
 // Rendering
@@ -581,16 +565,6 @@ if locals == globals then
 	qa.assert not td._cellAt(1, 2).inverse, "hideCursor should un-invert the cell"
 	qa.assert not td.cursorShown, "hideCursor should clear cursorShown"
 
-	print "the cursor blinks off and back on again"
-	td.setCursor 1, 2
-	td.showCursor
-	td.update td.cursorOnTime + 0.01
-	qa.assert not td._cellAt(1, 2).inverse, "the cell should un-invert after cursorOnTime"
-	qa.assert td.cursorShown, "the cursor is still logically shown while blinked off"
-	td.update td.cursorOffTime + 0.01
-	qa.assert td._cellAt(1, 2).inverse, "the cell should re-invert after cursorOffTime"
-	td.hideCursor
-
 	print "the shared font loaded"
 	qa.assert TextDisplay.font != null and TextDisplay.font.isLoaded, "ScreenFont.png should load"
 	qa.assertEqual TextDisplay.font.charWidth, 16, "screen font glyphs are 16 px wide"
@@ -659,13 +633,10 @@ if locals == globals then
 	t.print ""
 
 	t.color = color.lime
-	//t.print "All TextDisplay tests passed!  (Cursor blinks below.)"
+	t.print "All TextDisplay tests passed!  (Solid cursor below.)"
 	t.showCursor
 
-	// TextDisplay doesn't drive the cursor blink itself; normally a Console
-	// would.  This loop stands in for one.
 	while not rl.WindowShouldClose
-		//t.update rl.GetFrameTime   <-- triggers an MS2 bug; commented out for now
 		yield
 	end while
 	exit
